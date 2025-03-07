@@ -1,4 +1,3 @@
-// ===== AIDCRAFT: GLOBAL DEVELOPMENT FINANCE SIMULATION =====
 /**
  * AidCraft - Global Development Finance Simulation
  * 
