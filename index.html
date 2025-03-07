@@ -504,7 +504,7 @@
                             <div class="metric-bar">
                                 <div class="fill fill-community" style="width: 40%"></div>
                             </div>
-                            <div class="metric-value value-medium">40%</div>
+                            <div class="metric-value value-medium">40%</</div>
                         </div>
                         
                         <div class="metric" id="esgMetric">
@@ -515,7 +515,7 @@
                             <div class="metric-bar">
                                 <div class="fill fill-esg" style="width: 60%"></div>
                             </div>
-                            <div class="metric-value value-medium">60%</div>
+                            <div class="metric-value value-medium">60%</</div>
                         </div>
                         
                         <div class="metric" id="accountabilityMetric">
@@ -526,7 +526,7 @@
                             <div class="metric-bar">
                                 <div class="fill fill-accountability" style="width: 30%"></div>
                             </div>
-                            <div class="metric-value value-low">30%</div>
+                            <div class="metric-value value-low">30%</</div>
                         </div>
                     </div>
                 </div>
@@ -661,5 +661,26 @@
 
     <!-- External JavaScript -->
     <script src="test.js"></script>
+    <script>
+        document.getElementById('playButton').addEventListener('click', function() {
+            document.getElementById('splashScreen').style.display = 'none';
+            document.getElementById('missionDrawer').style.transform = 'translateY(0)';
+        });
+
+        document.getElementById('startMissionBtn').addEventListener('click', function() {
+            document.getElementById('missionDrawer').style.transform = 'translateY(100%)';
+            document.getElementById('mainContainer').style.display = 'grid';
+            document.getElementById('gameHeader').style.display = 'flex';
+        });
+
+        document.getElementById('submitRecommendationBtn').addEventListener('click', function() {
+            document.getElementById('endGameModal').style.display = 'none';
+            document.getElementById('verdictModal').classList.add('active');
+        });
+
+        document.getElementById('completeGameBtn').addEventListener('click', function() {
+            alert('Congratulations! You have completed the mission.');
+        });
+    </script>
 </body>
 </html>
