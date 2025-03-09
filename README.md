@@ -40,6 +40,14 @@ In AidCraft, you will navigate complex financial and political scenarios to achi
 - The `styles.css` file defines the styles for the game.
 - The game allows users to fully demo it from the splash screen to getting their result at the end of the game.
 
+## Deploying to GitHub Pages
+
+To deploy the project to GitHub Pages, follow these steps:
+
+1. Ensure that you have the necessary permissions to deploy to GitHub Pages.
+2. Push your changes to the `main` branch of the repository.
+3. The GitHub Actions workflow will automatically build and deploy the site to GitHub Pages.
+
 ## License
 
 This project is licensed under the MIT License.
