@@ -1,2900 +1,4582 @@
 /**
- * AidCraft - Global Development Finance Simulation
- * 
- * This script powers the interactive simulation game where players take on 
- * the role of a Finance Ministry Official managing debt repayment, political influence,
- * environmental concerns, and diplomatic relations.
- * 
- * Developer: Enhanced by Claude (based on original by Sethu Nguna)
- * Version: 2.1
- * Last Updated: March 2025
+ * Debt & Diplomacy: The Global Development Finance Game
+ * Main JavaScript file for game functionality
+ * Version 1.2
  */
 
-// ===== GLOBAL VARIABLES AND STATE =====
+// Wrap everything in an IIFE to avoid global scope pollution
+(function() {
+    'use strict';
 
-// Add this function definition near the top of tester.js
-async function preloadGameAssets() {
-    // Insert your asset preloading logic here.
-    // For now, this stub simulates asset loading.
-    console.log("Preloading game assets...");
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log("Game assets preloaded.");
-        resolve();
-      }, 500);
-    });
-  }
-/**
- * Game state manager for controlled access to game state
- * Provides validation, change notification, and safe access patterns
- */
-const gameStateManager = {
-    // Original game state
-    state: {
+    // ===== GAME STATE =====
+    /**
+     * Central game state object that holds all game data
+     * @type {Object}
+     */
+    const gameState = {
+        // Game flow state
+        initialized: false,
+        tutorialCompleted: false,
+        
+        // Current mission and progress data
+        currentMission: 1,
         currentDay: 1,
         totalDays: 10,
-        budget: 15000000,
-        influence: 60,
-        staff: 6,
-        metrics: {
-            fiscalSustainability: 35,
-            environmentalCompliance: 40,
-            politicalCapital: 60,
-            internationalRelations: 30
-        },
-        completedActions: [],
-        unlockedDocuments: [],
-        currentMission: 1,
-        gameStarted: false,
-        missionProgress: 10,
-        lastUpdatedResource: null, // Tracks last updated resource for animations
-        simulationSpeed: 1, // Controls speed of game progression (1 = normal)
-        difficulty: "medium", // Game difficulty setting
-        notifications: [], // Tracks pending notifications
-        lastAction: null, // Tracks the last action taken for sequential effects
-        achievements: [], // Tracks unlocked achievements
-        eventHistory: [], // Tracks major events that have occurred
-        tutorialCompleted: false, // Tracks whether tutorial has been completed
-        intervals: [], // Stores interval IDs for cleanup
-        gamePaused: false, // Tracks whether game is paused
-        eventHandlers: [] // Stores event handlers for cleanup
-    },
-    
-    // Safe getter for game state
-    get(property) {
-        const props = property.split('.');
-        let value = this.state;
         
-        for (const prop of props) {
-            if (value === undefined || value === null) {
-                console.warn(`Accessing undefined property: ${property}`);
-                return undefined;
-            }
-            value = value[prop];
-        }
-        
-        return value;
-    },
-    
-    // Safe setter with validation
-    set(property, value) {
-        const props = property.split('.');
-        const lastProp = props.pop();
-        let target = this.state;
-        
-        // Navigate to the target object
-        for (const prop of props) {
-            if (target[prop] === undefined) {
-                target[prop] = {};
-            }
-            target = target[prop];
-        }
-        
-        // Validate the new value based on property
-        if (property === 'metrics.fiscalSustainability' || 
-            property === 'metrics.environmentalCompliance' ||
-            property === 'metrics.politicalCapital' ||
-            property === 'metrics.internationalRelations') {
-            // Ensure metrics are between 0-100
-            value = Math.max(0, Math.min(100, value));
-        }
-        
-        // Set the value
-        const oldValue = target[lastProp];
-        target[lastProp] = value;
-        
-        // Track last updated property for animations
-        if (property === 'budget' || property === 'influence' || 
-            property === 'staff' || property === 'currentDay') {
-            this.state.lastUpdatedResource = property.split('.').pop();
-        }
-        
-        // Fire change event for UI updates
-        if (!this.batchUpdating) {
-            this.notifyChange(property, oldValue, value);
-        }
-        
-        return value;
-    },
-    
-    // Update multiple properties at once
-    batchUpdate(updates) {
-        // Start a batch update to prevent multiple UI refreshes
-        this.batchUpdating = true;
-        
-        try {
-            for (const [property, value] of Object.entries(updates)) {
-                this.set(property, value);
-            }
-        } finally {
-            this.batchUpdating = false;
-            this.notifyBatchComplete();
-        }
-    },
-    
-    // Change notification system
-    listeners: {},
-    
-    // Add a listener for property changes
-    onChange(property, callback) {
-        if (!this.listeners[property]) {
-            this.listeners[property] = [];
-        }
-        this.listeners[property].push(callback);
-    },
-    
-    // Remove a listener
-    offChange(property, callback) {
-        if (this.listeners[property]) {
-            if (callback) {
-                this.listeners[property] = this.listeners[property].filter(cb => cb !== callback);
-            } else {
-                delete this.listeners[property];
-            }
-        }
-    },
-    
-    // Notify listeners of changes
-    notifyChange(property, oldValue, newValue) {
-        if (this.listeners[property]) {
-            this.listeners[property].forEach(callback => {
-                try {
-                    callback(newValue, oldValue);
-                } catch (error) {
-                    console.error(`Error in listener for ${property}:`, error);
-                }
-            });
-        }
-        
-        // Also notify "all" listeners
-        if (this.listeners['*']) {
-            this.listeners['*'].forEach(callback => {
-                try {
-                    callback(property, newValue, oldValue);
-                } catch (error) {
-                    console.error(`Error in global listener:`, error);
-                }
-            });
-        }
-    },
-    
-    // Notify that a batch update is complete
-    notifyBatchComplete() {
-        if (this.listeners['batchComplete']) {
-            this.listeners['batchComplete'].forEach(callback => {
-                try {
-                    callback(this.state);
-                } catch (error) {
-                    console.error(`Error in batch complete listener:`, error);
-                }
-            });
-        }
-    },
-    
-    // Reset game state to initial values
-    reset() {
-        const tutorialCompleted = this.state.tutorialCompleted; // Preserve this setting
-        
-        this.state = {
-            currentDay: 1,
-            totalDays: 10,
+        // Player resources
+        resources: {
             budget: 15000000,
             influence: 60,
             staff: 6,
-            metrics: {
-                fiscalSustainability: 35,
-                environmentalCompliance: 40,
-                politicalCapital: 60,
-                internationalRelations: 30
-            },
-            completedActions: [],
-            unlockedDocuments: [],
-            currentMission: 1,
-            gameStarted: false,
-            missionProgress: 10,
-            lastUpdatedResource: null,
-            simulationSpeed: 1,
-            difficulty: "medium",
-            notifications: [],
-            lastAction: null,
-            achievements: [],
-            eventHistory: [],
-            tutorialCompleted: tutorialCompleted, // Preserve this setting
-            intervals: [],
-            gamePaused: false,
-            eventHandlers: []
-        };
+            timeRemaining: 10
+        },
         
-        this.notifyBatchComplete();
-    },
-    
-    // Load game state from storage
-    load(savedState) {
-        if (!savedState) return false;
-        
-        try {
-            // Apply saved state with validation
-            for (const [key, value] of Object.entries(savedState)) {
-                if (key in this.state) {
-                    this.state[key] = value;
-                }
-            }
-            
-            this.notifyBatchComplete();
-            return true;
-        } catch (error) {
-            console.error('Error loading game state:', error);
-            return false;
-        }
-    }
-};
-
-// Use a direct reference to gameStateManager.state for compatibility with existing code
-let gameState = gameStateManager.state;
-
-/**
- * Modal management system for handling modal dialogs
- * Supports stacking, focus management, and cleanup
- */
-const modalManager = {
-    activeModals: [],
-    baseZIndex: 1000,
-    
-    // Open a modal with proper stacking
-    openModal(modal) {
-        if (!modal) return;
-        
-        // Set proper z-index for stacking
-        const zIndex = this.baseZIndex + (this.activeModals.length * 10);
-        modal.style.zIndex = zIndex;
-        
-        // Add to active modals stack
-        this.activeModals.push(modal);
-        
-        // Show the modal
-        modal.classList.add('active');
-        
-        // Set focus to first focusable element
-        setTimeout(() => {
-            const focusableElements = modal.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusableElements.length > 0) {
-                focusableElements[0].focus();
-            }
-        }, 100);
-        
-        // Prevent background scrolling
-        if (this.activeModals.length === 1) {
-            document.body.classList.add('no-scroll');
-        }
-    },
-    
-    // Close a modal with proper stacking
-    closeModal(modal) {
-        if (!modal) return;
-        
-        // Find modal in stack
-        const index = this.activeModals.indexOf(modal);
-        if (index !== -1) {
-            // Remove from stack
-            this.activeModals.splice(index, 1);
-            
-            // Hide the modal
-            modal.classList.remove('active');
-            
-            // Return focus to previous element if possible
-            if (this.activeModals.length > 0) {
-                const topModal = this.activeModals[this.activeModals.length - 1];
-                const focusableElements = topModal.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
-                if (focusableElements.length > 0) {
-                    focusableElements[0].focus();
-                }
-            } else {
-                // No more modals, enable scrolling
-                document.body.classList.remove('no-scroll');
-            }
-        }
-    },
-    
-    // Close all modals
-    closeAll() {
-        [...this.activeModals].forEach(modal => this.closeModal(modal));
-    }
-};
-
-// ===== DATA MODELS =====
-
-/**
- * Stakeholders data - represents key actors in the simulation
- * Each stakeholder has influence and trust metrics that change based on player actions
- */
-const stakeholders = [
-    {
-        id: 1,
-        name: "Finance Minister",
-        avatar: "FM",
-        relationship: "friendly",
-        influenceLevel: 80,
-        trustLevel: 70,
-        details: {
-            role: "Oversees national budget and fiscal policy",
-            interests: "Budget discipline, debt management, economic growth",
-            concerns: "The port's underperformance is creating significant fiscal strain",
-            background: "A respected economist with 15 years in government service, the Finance Minister is primarily concerned with maintaining Azuria's sovereign credit rating and ensuring fiscal stability. While supportive of your appointment, they're under pressure from the Prime Minister to resolve the port financing crisis without additional budget allocations."
-        }
-    },
-    {
-        id: 2,
-        name: "Chinese Lenders",
-        avatar: "CL",
-        relationship: "neutral",
-        influenceLevel: 65,
-        trustLevel: 40,
-        details: {
-            role: "Provided the initial $500M loan for port construction",
-            interests: "Loan repayment, strategic influence, trade advantages",
-            concerns: "Will enforce collateral clauses if payments are missed",
-            background: "A consortium of Chinese state-backed financial institutions that financed the port development as part of broader infrastructure investments across the region. They have significant leverage through the collateral clauses in the loan agreement, and their primary motivation is securing either full repayment or strategic advantages through operational control of the port facility."
-        }
-    },
-    {
-        id: 3,
-        name: "Port Authority",
-        avatar: "PA",
-        relationship: "friendly",
-        influenceLevel: 50,
-        trustLevel: 60,
-        details: {
-            role: "Manages port operations and staffing",
-            interests: "Port expansion, operational efficiency, job security",
-            concerns: "Needs to increase capacity utilization from 40% to at least 70%",
-            background: "Led by a career civil servant with shipping industry experience, the Port Authority is responsible for day-to-day operations and commercial development. They face pressure to increase utilization rates while navigating bureaucratic constraints. Their staff of 450 workers are concerned about potential restructuring or foreign takeover of management."
-        }
-    },
-    {
-        id: 4,
-        name: "Fishing Communities",
-        avatar: "FC",
-        relationship: "hostile",
-        influenceLevel: 30,
-        trustLevel: 20,
-        details: {
-            role: "Local community affected by port operations",
-            interests: "Environmental protection, livelihood preservation",
-            concerns: "Port dredging has damaged fishing grounds and reduced catches by 35%",
-            background: "Five coastal villages with a population of approximately 8,000 people have relied on fishing for generations. Since port construction began, they've experienced significant declines in fish stocks and water quality. Led by a charismatic local council head, they have begun organizing protests and have attracted attention from international environmental NGOs."
-        }
-    },
-    {
-        id: 5,
-        name: "Western Development Banks",
-        avatar: "WB",
-        relationship: "neutral",
-        influenceLevel: 60,
-        trustLevel: 50,
-        details: {
-            role: "Potential alternative financing source",
-            interests: "Governance reforms, environmental standards, regional influence",
-            concerns: "Requires transparency on existing loan terms as precondition for refinancing",
-            background: "A consortium of multilateral development institutions with strong ties to Western governments. They offer potentially more favorable financing terms but come with stringent governance and environmental requirements. Senior officials have expressed interest in supporting Azuria as part of their strategic engagement in the region to counter Chinese influence."
-        }
-    }
-];
-
-/**
- * Action cards data - represents possible player actions in the game
- * Each action has costs, metric impacts, and stakeholder effects
- */
-const actions = [
-    {
-        id: 1,
-        title: "Financial Audit",
-        description: "Commission an independent audit of port finances and loan agreements to identify fiscal risks and irregularities.",
-        cost: "$2,000,000",
-        resourceCost: 2000000,
-        influenceCost: 10,
-        staffCost: 2,
-        timeCost: 2,
-        unlocks: [1, 2],
+        // Performance metrics
         metrics: {
-            fiscalSustainability: +15,
-            politicalCapital: -5,
-            internationalRelations: +10
+            fiscal: 35,
+            environmental: 40,
+            political: 60,
+            international: 30
         },
-        stakeholderEffects: {
-            1: +10, // Finance Minister
-            2: -15, // Chinese Lenders
-            5: +20  // Western Development Banks
+        
+        // Game progress trackers
+        completedObjectives: [],
+        decisions: [],
+        actionsHistory: [],
+        updates: [],
+        documentHistory: [],
+        
+        // Key thresholds for game-over conditions
+        thresholds: {
+            influence: 10,
+            budget: 0,
+            staff: 0,
+            fiscal: 20,
+            environmental: 20,
+            political: 20,
+            international: 20
         },
-        followUpText: "The audit has revealed concerning financial arrangements that weren't fully disclosed to parliament. Now you must decide how to proceed with this sensitive information.",
-        followUpActions: [3, 5]
+        
+        // Educational insights unlocked by player
+        unlockedInsights: [],
+        
+        // Stakeholder engagement history
+        stakeholderEngagements: [],
+        
+        // Stakeholder data
+        stakeholders: [
+            { 
+                id: 1, 
+                name: "Prime Minister", 
+                relationship: "neutral", 
+                influence: "High", 
+                bio: "The Prime Minister is focused on economic growth but also faces political pressure over debt levels. He expects quick results and accountability. Your performance will directly impact his support for you.", 
+                image: "P",
+                interests: ["Maintaining economic growth", "Political stability", "Avoiding negative media coverage"],
+                educationalContext: "In development finance, project success often depends on managing relationships with high-level government officials who balance multiple priorities and constituencies."
+            },
+            { 
+                id: 2, 
+                name: "Chinese Export-Import Bank", 
+                relationship: "neutral", 
+                influence: "High", 
+                bio: "As the primary lender, the Bank has significant leverage. They prefer not to take control of the port but need to show their investment is secure. Relations are professional but tense as repayment deadline approaches.", 
+                image: "C",
+                interests: ["Securing loan repayment", "Maintaining commercial relationship", "Preserving international reputation"],
+                educationalContext: "Bilateral lenders like Export-Import banks often have both commercial and diplomatic objectives in their lending practices, creating complex negotiation scenarios."
+            },
+            { 
+                id: 3, 
+                name: "World Bank", 
+                relationship: "neutral", 
+                influence: "Medium", 
+                bio: "Interested in offering refinancing with governance conditions. They can offer more favorable terms but require transparency and environmental compliance standards that may be politically challenging.", 
+                image: "W",
+                interests: ["Governance improvements", "Environmental standards", "Transparency in financial management"],
+                educationalContext: "Multilateral development banks typically offer better financial terms than commercial lenders but attach policy conditions aimed at institutional reform."
+            },
+            { 
+                id: 4, 
+                name: "Fishing Communities", 
+                relationship: "hostile", 
+                influence: "Low", 
+                bio: "Local fishing communities have seen their livelihoods impacted by port dredging. They're organizing protests and gaining media attention. Addressing their concerns could improve political capital.", 
+                image: "F",
+                interests: ["Environmental remediation", "Livelihood protection", "Community consultation"],
+                educationalContext: "Large infrastructure projects often create externalities for local communities that, if left unaddressed, can generate political resistance and operational challenges."
+            },
+            { 
+                id: 5, 
+                name: "Port Authority", 
+                relationship: "friendly", 
+                influence: "Medium", 
+                bio: "Managing day-to-day operations, they're eager for increased funding to boost efficiency. They have technical expertise about port operations but are defensive about current performance issues.", 
+                image: "P",
+                interests: ["Increased operational budget", "Technical upgrades", "Maintaining management autonomy"],
+                educationalContext: "State-owned enterprises managing infrastructure often have technical expertise but may lack commercial orientation needed for financial sustainability."
+            }
+        ],
+        
+        // Document data
+        documents: [
+            { 
+                id: 1, 
+                title: "Port Project Financial Overview", 
+                type: "financial", 
+                icon: "💰",
+                content: "Financial Analysis: Azuria Port Development Project\n\nInitial Investment: $450 million\nFunding Source: Chinese Export-Import Bank commercial loan\nInterest Rate: 4.5%\nTerm: 15 years (3-year grace period followed by 12-year repayment)\nCurrent Status: Year 3 (grace period ending)\n\nRevenue Projections vs. Actuals:\n- Original Projection: $65 million annual revenue by Year 3\n- Current Revenue: $26 million (40% of projection)\n\nCash Flow Analysis:\n- Annual Debt Service (starting next quarter): $42 million\n- Current Operating Expenses: $18 million\n- Current Net Income: $8 million\n- Projected Shortfall: $34 million\n\nDebt Sustainability Indicators:\n- Debt Service Coverage Ratio (DSCR): 0.62 (healthy is >1.20)\n- Revenue to Debt Service Ratio: 0.62 (healthy is >1.50)\n- Operating Margin: 30.8% (below industry standard of 40%)\n\nNote: Undisclosed sections of the loan agreement appear to include provisions for asset transfer in case of default. Legal counsel advises further investigation of collateral terms."
+            },
+            { 
+                id: 2, 
+                title: "Environmental Impact Report", 
+                type: "report", 
+                icon: "🌿",
+                content: "Key Findings:\n1. Dredging operations have disrupted marine habitats in a 5km radius from the port\n2. Sediment disposal has affected water quality in areas traditionally used by local fishing communities\n3. Fish populations have decreased by approximately 35% in affected areas\n4. Three protected species have shown population decline in the port vicinity\n\nRegulatory Compliance:\n- Port operations are technically in compliance with national environmental regulations\n- However, operations fall short of international best practices and World Bank standards\n- Gap analysis shows 6 areas requiring remediation to meet international financing standards\n\nCommunity Impact:\n- 200+ fishing households report significant decrease in catch volumes\n- Economic impact estimated at $2.5 million annually to local fishing economy\n- Community consultations were insufficient during project planning phase\n- No formal grievance mechanism has been established\n\nRecommendations:\n1. Implement sediment containment systems: Est. cost $4-6 million\n2. Establish marine protected areas with community co-management: Est. cost $1.5 million\n3. Develop alternative livelihood programs for affected fishers: Est. cost $3 million\n4. Create formal stakeholder engagement process and grievance mechanism: Est. cost $500,000"
+            },
+            { 
+                id: 3, 
+                title: "Loan Agreement (Partial)", 
+                type: "legal", 
+                icon: "📜",
+                content: "Article 4: Security and Collateral\n4.1 The Borrower (Government of Azuria) hereby grants to the Lender (Export-Import Bank of China) a first priority security interest in the Project Assets.\n4.2 [REDACTED SECTION - REQUESTED FROM LEGAL DEPARTMENT]\n4.3 In the event of Default as defined in Article 8, the Lender shall have the right to [REDACTED SECTION]\n\nArticle 8: Events of Default\n8.1 Failure to make payment of principal or interest when due\n8.2 Material breach of operational covenants\n8.3 Failure to achieve minimum capacity utilization of 60% by end of Year 3\n8.4 Change in management or ownership structure without prior written consent\n8.5 Material adverse change in the financial condition of the Project\n\nArticle 10: Governing Law and Dispute Resolution\n10.1 This Agreement shall be governed by and construed in accordance with the laws of the People's Republic of China.\n10.2 Any dispute arising from or in connection with this Agreement shall be resolved through friendly consultation. If consultation fails, the dispute shall be submitted to the China International Economic and Trade Arbitration Commission for arbitration.\n\nArticle 12: Confidentiality\n12.1 The Borrower agrees to maintain confidentiality regarding all terms and conditions of this Agreement except as required by applicable law or regulation.\n12.2 Public announcements regarding the Project shall be subject to prior written approval by both Parties."
+            },
+            { 
+                id: 4, 
+                title: "Port Efficiency Analysis", 
+                type: "report", 
+                icon: "📊",
+                content: "Current Capacity Utilization: 40%\n- Container Handling: 35% of capacity\n- Bulk Cargo: 52% of capacity\n- Liquid Cargo: 28% of capacity\n\nRegional Market Context:\n- Regional shipping volume growing at 6% annually\n- Competing ports operating at 65-75% capacity\n- Current market share: 12% (vs. projected 30%)\n\nKey Operational Challenges:\n1. Insufficient marketing to international shipping companies\n2. Lack of specialized handling equipment for certain cargo types\n3. Higher fees compared to competing regional ports (15-20% above average)\n4. Inadequate rail connections to inland commercial centers\n5. Operational inefficiencies increasing turnaround time by 40%\n6. Outdated digital management systems\n\nStaffing Assessment:\n- Current staffing at 85% of required levels\n- Training gaps identified in 3 key operational areas\n- Management structure not aligned with international best practices\n\nImprovement Recommendations:\n1. Reduce port fees temporarily to attract new business ($3-5M revenue impact)\n2. Invest in specialized cargo handling equipment ($8M investment)\n3. Establish direct marketing office in Singapore shipping hub ($1.2M annually)\n4. Develop performance incentives for port management team\n5. Implement digital management system upgrade ($3.5M)\n6. Staff capacity building program ($1.2M)\n\nFinancial Impact Analysis:\n- Implementation of all recommendations: $17.9M total cost\n- Projected capacity increase: 25-30 percentage points within 12 months\n- Return on investment period: 24-30 months\n- Potential annual revenue increase: $22-28M after full implementation"
+            },
+            { 
+                id: 5, 
+                title: "Refinancing Options Analysis", 
+                type: "financial", 
+                icon: "💹",
+                content: "OPTION 1: Chinese Belt and Road Initiative Restructuring\n- Extended term: Additional 5 years (20 years total)\n- Interest rate adjustment: Potential reduction to 3.8%\n- Requires: Commitment to additional Chinese investment projects\n- Annual payment reduction: Approximately $8 million\n- Maintains relationship with current lender\n- No governance conditions\n- Implementation timeline: 3-4 months\n\nOPTION 2: World Bank Infrastructure Financing\n- New loan: $400 million at 2.5% over 25 years\n- Requires: Enhanced environmental standards, management transparency\n- Governance conditions: Independent oversight board, public disclosure of all terms\n- Annual payment reduction: Approximately $17 million\n- Political implications: Potential diplomatic tension with current Chinese partners\n- Implementation timeline: 8-12 months\n- Addresses environmental concerns\n\nOPTION 3: Public-Private Partnership Recapitalization\n- Partial privatization: 30% equity stake to international port operator\n- Capital infusion: $150 million\n- Operational control: Shared management with performance requirements\n- Benefits: Professional management, established shipping relationships\n- Risks: Loss of full sovereign control over strategic asset\n- Implementation timeline: 6-8 months\n- Requires legislative approval\n\nOPTION 4: Regional Development Bank Consortium\n- Multi-source financing: Asian Development Bank, African Development Bank, Islamic Development Bank\n- Blended terms: Approximately 3% over 18 years\n- Technical assistance package included\n- Diplomatic advantage: Diversified international relationships\n- Complexity: Coordinating multiple lending institutions and requirements\n- Implementation timeline: 10-14 months\n- Moderate governance conditions\n\nCOMPARATIVE ANALYSIS:\n- Lowest Interest Cost: Option 2 (World Bank)\n- Fastest Implementation: Option 1 (Chinese Restructuring)\n- Lowest Political Sensitivity: Option 4 (Regional Consortium)\n- Best Operational Improvements: Option 3 (PPP)\n- Most Fiscal Space Created: Option 2 (World Bank)"
+            },
+            { 
+                id: 6, 
+                title: "Community Impact Testimonials", 
+                type: "testimonial", 
+                icon: "👥",
+                content: "Fishing Village Representatives:\n\n\"My family has fished these waters for three generations. Since the port dredging began, our catch has dropped by half. We cannot feed our families this way. We're not against development, but we need solutions that allow both the port and our livelihoods to coexist.\" - Ibrahim Keita, Village Elder\n\n\"The sediment has driven away the fish. The water is cloudy where it was once clear. We've asked for meetings with port officials for months, but no one will speak with us. It feels like our community doesn't matter to the government.\" - Maria Semboa, Fishing Cooperative Leader\n\n\"We are not against development. We just want to be included in the discussion and compensated fairly for our losses. We can provide valuable local knowledge about marine conditions that could actually help port operations.\" - Thomas Nkomo, Community Spokesperson\n\nLocal Business Owners:\n\n\"We were promised jobs and business opportunities from the port, but most contracts go to foreign companies. We local suppliers can't even get in the door for procurement bids. The economic benefits aren't flowing to our communities as promised.\" - Habiba Nuru, Chamber of Commerce Representative\n\n\"The road traffic has increased dramatically, but no infrastructure improvements have been made in town. We bear the costs while seeing none of the benefits. Our roads are deteriorating rapidly with the increased truck traffic.\" - Carlos Diallo, Transportation Company Owner\n\nEnvironmental Advocates:\n\n\"The environmental impact assessment was rushed and inadequate. It failed to consider seasonal marine migration patterns that are critical to our ecosystem. We warned about these issues during the consultation, but our input was ignored.\" - Dr. Fatima Osei, Marine Biologist\n\n\"We've documented concerning levels of heavy metals in sediment samples that weren't addressed in the official reports. This could have long-term health implications for coastal communities relying on seafood for nutrition.\" - Environmental Protection Alliance\n\nCONSOLIDATED COMMUNITY REQUESTS:\n1. Establish formal consultation mechanism with affected communities\n2. Implement environmental remediation measures, particularly for water quality\n3. Create local business preference program for port-related contracts\n4. Develop alternative livelihood programs for most affected fishing households\n5. Improve infrastructure in communities experiencing increased port traffic"
+            },
+        ],
+// Action definitions
+actions: [
+    {
+        id: 1,
+        title: "Debt Analysis",
+        description: "Commission a detailed analysis of the loan terms and potential restructuring options.",
+        cost: 500000,
+        timeCost: 1,
+        staffCost: 1,
+        educationalValue: "Provides insight into debt sustainability analysis and loan term evaluation.",
+        impactDescription: "Your analysis reveals concerning collateral clauses that could transfer port control to Chinese lenders upon default. The Prime Minister is displeased by these findings, questioning why Finance Ministry didn't identify these terms earlier. However, this information is crucial for your negotiation strategy.",
+        impacts: {
+            influence: -5,
+            fiscal: 15,
+            political: -5,
+            international: 0
+        },
+        stakeholderImpacts: [
+            {id: 1, relationship: "hostile", reason: "Upset about previously undisclosed loan terms"},
+            {id: 2, relationship: "neutral", reason: "Monitoring your investigation of loan terms"}
+        ],
+        objectiveProgress: [
+            {id: 1, progress: 25, reason: "Better understanding of debt structure and options"}
+        ],
+        newsUpdate: {
+            title: "Azuria Financial Times: Hidden Loan Terms Revealed",
+            content: "Finance Ministry analysis uncovers controversial collateral terms in the Chinese port loan agreement. Sources report these terms could potentially transfer operational control of the strategic port facility in case of default. The Prime Minister has called for an emergency cabinet meeting to discuss implications."
+        },
+        unlocksInsight: {
+            id: 1,
+            title: "Debt Sustainability Analysis",
+            content: "Financial sustainability depends on a project's ability to generate sufficient revenue to cover both operational costs and debt service. When debt service coverage ratio falls below 1.0, default risk increases significantly, potentially triggering collateral clauses.",
+            stakeholdersInvolved: [1, 2, 3]
+        }
     },
     {
         id: 2,
         title: "Environmental Assessment",
-        description: "Fund a comprehensive study of the port's environmental impact on marine ecosystems and local fishing grounds.",
-        cost: "$1,500,000",
-        resourceCost: 1500000,
-        influenceCost: 5,
-        staffCost: 1,
+        description: "Evaluate environmental impacts of the port and develop mitigation strategies.",
+        cost: 750000,
         timeCost: 2,
-        unlocks: [3],
-        metrics: {
-            environmentalCompliance: +20,
-            politicalCapital: +10,
-            fiscalSustainability: -5
+        staffCost: 2,
+        educationalValue: "Demonstrates environmental impact assessment methods and mitigation planning.",
+        impactDescription: "The assessment documents significant ecological impact from port dredging, affecting local fishing communities. Remediation costs are estimated at $8 million. While addressing these issues would improve community relations, it will strain your already tight budget.",
+        impacts: {
+            influence: -10,
+            fiscal: 0,
+            environmental: 25,
+            political: -8
         },
-        stakeholderEffects: {
-            4: +25, // Fishing Communities
-            5: +10  // Western Development Banks
+        stakeholderImpacts: [
+            {id: 4, relationship: "neutral", reason: "Acknowledging their concerns through formal assessment"},
+            {id: 1, relationship: "hostile", reason: "Concerned about additional expenses and negative publicity"}
+        ],
+        objectiveProgress: [
+            {id: 2, progress: 30, reason: "Created comprehensive environmental impact assessment"}
+        ],
+        newsUpdate: {
+            title: "Coastal Weekly: Port Environmental Damage \"Worse Than Expected\"",
+            content: "Independent assessment commissioned by the Finance Ministry has documented extensive ecological damage from port dredging operations. Local fishing communities have welcomed the acknowledgment of their concerns, but worry remediation will come too late. Environmental advocates are calling for immediate action and compensation for affected communities."
         },
-        followUpText: "The assessment has documented significant ecological damage that requires remediation. How will you balance environmental obligations with financial constraints?",
-        followUpActions: [4, 5]
+        unlocksInsight: {
+            id: 2,
+            title: "Environmental Externalities",
+            content: "Large infrastructure projects frequently create negative externalities that affect communities not directly benefiting from the project. Addressing these externalities early through consultation and mitigation strategies is typically less costly than managing conflicts after they escalate.",
+            stakeholdersInvolved: [4, 3]
+        }
     },
     {
         id: 3,
-        title: "Renegotiate Loan Terms",
-        description: "Engage with Chinese lenders to restructure debt repayment schedule and revise collateral clauses.",
-        cost: "15 Influence",
-        resourceCost: 0,
-        influenceCost: 15,
-        staffCost: 2,
-        timeCost: 3,
-        unlocks: [4, 5],
-        metrics: {
-            fiscalSustainability: +25,
-            internationalRelations: -10
+        title: "Diplomatic Meeting",
+        description: "Arrange high-level discussions with Chinese officials to explore restructuring options.",
+        cost: 200000,
+        timeCost: 1,
+        staffCost: 0,
+        educationalValue: "Illustrates negotiation strategies and bilateral financial diplomacy.",
+        impactDescription: "Your meeting with Chinese officials was productive. They're open to restructuring the loan with extended terms, but require formal commitments to prioritize Chinese shipping companies at the port. The Prime Minister sees this as a viable path forward.",
+        impacts: {
+            influence: 5,
+            fiscal: 0,
+            international: 15,
+            political: 0
         },
-        stakeholderEffects: {
-            1: +15, // Finance Minister
-            2: -20, // Chinese Lenders
-            3: +10  // Port Authority
+        stakeholderImpacts: [
+            {id: 2, relationship: "friendly", reason: "Appreciates direct engagement on debt issues"},
+            {id: 1, relationship: "friendly", reason: "Supports pursuit of restructuring options"},
+            {id: 3, relationship: "hostile", reason: "Concerned about preferential arrangements with Chinese entities"}
+        ],
+        objectiveProgress: [
+            {id: 1, progress: 20, reason: "Established potential restructuring framework"},
+            {id: 3, progress: 30, reason: "Improved relations with key financial partner"}
+        ],
+        newsUpdate: {
+            title: "International Finance Daily: Azuria and China in Debt Restructuring Talks",
+            content: "High-level financial diplomacy appears to be yielding results as Azuria's Finance Ministry reports productive discussions with Chinese lenders. Sources suggest loan terms may be renegotiated to ease immediate repayment pressure, though specific concessions remain undisclosed. Western financial institutions express concern over possible preferential arrangements."
         },
-        followUpText: "Your negotiations have yielded a modified payment schedule, but Chinese lenders remain firm on collateral terms. What's your next move to secure Azuria's interests?",
-        followUpActions: [6]
+        unlocksInsight: {
+            id: 3,
+            title: "Bilateral Debt Restructuring",
+            content: "When approaching bilateral creditors for debt restructuring, timing and diplomatic context significantly impact outcomes. Restructuring negotiations often involve trade-offs between financial relief and economic concessions in other areas such as market access or future investment opportunities.",
+            stakeholdersInvolved: [1, 2]
+        }
     },
     {
         id: 4,
-        title: "Port Efficiency Program",
-        description: "Implement operational improvements to increase capacity utilization and revenue generation.",
-        cost: "$3,000,000",
-        resourceCost: 3000000,
-        influenceCost: 5,
-        staffCost: 3,
-        timeCost: 2,
-        unlocks: [6],
-        metrics: {
-            fiscalSustainability: +20,
-            environmentalCompliance: -5
+        title: "Western Institution Consultation",
+        description: "Explore refinancing options with World Bank and IMF representatives.",
+        cost: 300000,
+        timeCost: 1,
+        staffCost: 0,
+        educationalValue: "Explores multilateral financing options and governance conditionality.",
+        impactDescription: "World Bank representatives offer favorable refinancing terms at 2.5% interest over 25 years, but with governance conditions including independent oversight. This has angered Chinese officials who see this as undermining their relationship with Azuria.",
+        impacts: {
+            influence: -8,
+            fiscal: 10,
+            international: 10,
+            political: -10
         },
-        stakeholderEffects: {
-            3: +20, // Port Authority
-            4: -10  // Fishing Communities
+        stakeholderImpacts: [
+            {id: 3, relationship: "friendly", reason: "Appreciates engagement with multilateral institutions"},
+            {id: 2, relationship: "hostile", reason: "Views approach to Western institutions as undermining bilateral relationship"}
+        ],
+        objectiveProgress: [
+            {id: 1, progress: 15, reason: "Identified potential alternative financing solution"},
+            {id: 3, progress: -10, reason: "Created tension with Chinese partners"}
+        ],
+        newsUpdate: {
+            title: "Global Finance Review: Western Institutions Offer Azuria Alternative Financing",
+            content: "The World Bank has proposed a comprehensive refinancing package for Azuria's port debt at significantly lower interest rates than the current Chinese loan. However, the offer comes with governance and transparency requirements that could complicate geopolitical relationships. Chinese officials have expressed 'serious concern' over what they describe as Western interference in bilateral arrangements."
         },
-        followUpText: "Operational efficiencies have increased capacity utilization to 55%, but environmental concerns have intensified. How will you address the resulting tensions?",
-        followUpActions: [5, 6]
+        unlocksInsight: {
+            id: 4,
+            title: "Multilateral Financing Conditionality",
+            content: "Multilateral development banks typically offer financing with lower interest rates and longer tenors than commercial lenders, but attach policy conditions focused on governance, transparency, and social/environmental standards. These conditions often create domestic political challenges despite their financial advantages.",
+            stakeholdersInvolved: [3, 2]
+        }
     },
     {
         id: 5,
-        title: "Community Outreach",
-        description: "Establish a dialogue with fishing communities and fund initial environmental remediation projects.",
-        cost: "$1,000,000",
-        resourceCost: 1000000,
-        influenceCost: 10,
-        staffCost: 2,
-        timeCost: 1,
-        unlocks: [7],
-        metrics: {
-            environmentalCompliance: +15,
-            politicalCapital: +10
+        title: "Marketing Campaign",
+        description: "Launch international marketing to attract more shipping companies to the port.",
+        cost: 1000000,
+        timeCost: 3,
+        staffCost: 1,
+        educationalValue: "Explores operational improvements to increase infrastructure utilization.",
+        impactDescription: "Your international marketing campaign has attracted interest from several major shipping companies. Projections suggest port utilization could increase to 60% within six months. The Prime Minister is pleased with this proactive approach to boosting revenue.",
+        impacts: {
+            influence: 15,
+            fiscal: 20,
+            political: 15,
+            international: 5
         },
-        stakeholderEffects: {
-            4: +30 // Fishing Communities
+        stakeholderImpacts: [
+            {id: 1, relationship: "friendly", reason: "Approves of proactive approach to boosting port utilization"},
+            {id: 5, relationship: "friendly", reason: "Appreciates investment in port promotion"}
+        ],
+        objectiveProgress: [
+            {id: 1, progress: 30, reason: "Increasing port utilization directly improves revenue and debt sustainability"}
+        ],
+        newsUpdate: {
+            title: "Shipping Industry Today: Azuria Port Launches Global Marketing Initiative",
+            content: "The Finance Ministry has spearheaded an aggressive international marketing campaign to attract shipping traffic to Azuria's underutilized port facility. Initial responses from major shipping lines have been positive, with three companies expressing interest in establishing regular routes. Port authority officials project a potential 20% increase in utilization within six months if current negotiations are successful."
         },
-        followUpText: "Your engagement with local communities has eased tensions, but they still expect concrete environmental improvements. What's your long-term strategy for sustainable development?",
-        followUpActions: [7, 8]
+        unlocksInsight: {
+            id: 5,
+            title: "Infrastructure Utilization Economics",
+            content: "Infrastructure projects have high fixed costs and relatively low variable costs, making utilization rates a critical factor in financial sustainability. Increasing utilization from 40% to 60% can disproportionately improve financial performance by spreading fixed costs across more revenue-generating activities.",
+            stakeholdersInvolved: [5, 1]
+        }
     },
     {
         id: 6,
-        title: "Explore Refinancing Options",
-        description: "Open discussions with Western development banks on potential refinancing packages with new terms.",
-        cost: "10 Influence",
-        resourceCost: 0,
-        influenceCost: 10,
+        title: "Public Stakeholder Meeting",
+        description: "Organize community consultation to address local concerns about the port.",
+        cost: 150000,
+        timeCost: 1,
         staffCost: 1,
-        timeCost: 2,
-        unlocks: [8],
-        metrics: {
-            internationalRelations: +15,
-            fiscalSustainability: +10
+        educationalValue: "Demonstrates stakeholder engagement strategies and community relations.",
+        impactDescription: "The meeting with fishing communities generated valuable goodwill, though some demands for compensation will strain your budget. The Prime Minister appreciates your effort to address local concerns, but Chinese officials question whether community issues should delay loan repayments.",
+        impacts: {
+            influence: 10,
+            environmental: 15,
+            political: 8,
+            international: -5
         },
-        stakeholderEffects: {
-            2: -25, // Chinese Lenders
-            5: +25  // Western Development Banks
+        stakeholderImpacts: [
+            {id: 4, relationship: "friendly", reason: "Appreciates formal acknowledgment of concerns and willingness to engage"},
+            {id: 2, relationship: "hostile", reason: "Concerned about potential delays to repayment"}
+        ],
+        objectiveProgress: [
+            {id: 2, progress: 25, reason: "Established dialogue with affected communities"},
+            {id: 4, progress: 15, reason: "Improved local political standing"}
+        ],
+        newsUpdate: {
+            title: "Azuria Daily News: Finance Ministry Meets with Affected Communities",
+            content: "In an unprecedented move, Finance Ministry officials held open consultations with fishing communities affected by port operations. Community leaders presented evidence of declining catches and called for compensation and environmental remediation. Ministry representatives committed to incorporating community concerns into the port's financial restructuring plans, though specific commitments remain undefined."
         },
-        followUpText: "Western banks have shown strong interest in refinancing, but their terms include governance reforms and full transparency. How will you navigate the delicate geopolitical implications?",
-        followUpActions: [7, 9]
+        unlocksInsight: {
+            id: 6,
+            title: "Stakeholder Engagement",
+            content: "Effective stakeholder engagement requires early identification of affected parties, transparent communication, and meaningful response to concerns. While immediate costs may seem high, addressing social and environmental issues early typically reduces long-term project risks and costs.",
+            stakeholdersInvolved: [4, 1]
+        }
     },
     {
         id: 7,
-        title: "Public Transparency Initiative",
-        description: "Release key financial details about the port project and establish a citizen oversight committee.",
-        cost: "20 Influence",
-        resourceCost: 500000,
-        influenceCost: 20,
+        title: "Port Efficiency Upgrade",
+        description: "Invest in operational improvements and staff training to increase port efficiency.",
+        cost: 2000000,
+        timeCost: 2,
         staffCost: 2,
-        timeCost: 1,
-        unlocks: [9],
-        metrics: {
-            politicalCapital: +20,
-            fiscalSustainability: +5,
-            internationalRelations: +10
+        educationalValue: "Explores operational improvements in infrastructure management.",
+        impactDescription: "Your investments in digital management systems, staff training, and equipment upgrades have significantly improved port operations. Turnaround times have decreased by 30%, making the port more attractive to shipping companies. Port Authority leadership is enthusiastic about the changes.",
+        impacts: {
+            influence: 5,
+            fiscal: 15,
+            political: 5,
+            international: 10
         },
-        stakeholderEffects: {
-            1: +10, // Finance Minister
-            2: -15, // Chinese Lenders
-            4: +15, // Fishing Communities
-            5: +20  // Western Development Banks
+        stakeholderImpacts: [
+            {id: 5, relationship: "friendly", reason: "Strongly supports operational improvements"},
+            {id: 2, relationship: "neutral", reason: "Recognizes efforts to improve port performance"}
+        ],
+        objectiveProgress: [
+            {id: 1, progress: 25, reason: "Improved operational efficiency directly impacts revenue potential"}
+        ],
+        newsUpdate: {
+            title: "Maritime Business Review: Azuria Port Modernization Shows Early Results",
+            content: "A comprehensive efficiency upgrade at Azuria's main port facility is showing promising results, with vessel turnaround times reduced by nearly a third. The Finance Ministry's investment in digital systems and staff capacity has improved the port's competitiveness in the regional shipping market. Industry analysts suggest these operational improvements could significantly boost utilization rates if sustained."
         },
-        followUpText: "Your transparency initiative has garnered public support but exposed previously hidden aspects of the deal. How will you address the political fallout?",
-        followUpActions: [8, 9]
+        unlocksInsight: {
+            id: 7,
+            title: "Operational Efficiency",
+            content: "In infrastructure projects, operational inefficiencies often compound financial challenges. Digital systems, staff training, and process optimization can yield returns far exceeding their implementation costs by improving service quality, increasing utilization, and enhancing competitive position.",
+            stakeholdersInvolved: [5]
+        }
     },
     {
         id: 8,
-        title: "Strategic Asset Protection Plan",
-        description: "Develop legal frameworks to safeguard strategic infrastructure from foreign control.",
-        cost: "$1,000,000",
-        resourceCost: 1000000,
-        influenceCost: 15,
-        staffCost: 2,
+        title: "Environmental Remediation",
+        description: "Implement measures to address environmental damage from port operations.",
+        cost: 3000000,
         timeCost: 2,
-        unlocks: [],
-        metrics: {
-            fiscalSustainability: +10,
-            politicalCapital: +15,
-            internationalRelations: -15
+        staffCost: 1,
+        educationalValue: "Demonstrates environmental mitigation strategies in development projects.",
+        impactDescription: "Your investment in sediment containment systems and marine habitat restoration has significantly reduced the port's environmental impact. Fishing communities report improved water quality and early signs of fish population recovery. This action has dramatically improved your standing with local communities and environmental organizations.",
+        impacts: {
+            influence: -15,
+            fiscal: -5,
+            environmental: 40,
+            political: 20,
+            international: 10
         },
-        stakeholderEffects: {
-            1: +20, // Finance Minister
-            2: -25, // Chinese Lenders
-            3: +15, // Port Authority
-            5: -10  // Western Development Banks
+        stakeholderImpacts: [
+            {id: 4, relationship: "friendly", reason: "Deeply appreciates tangible action on environmental concerns"},
+            {id: 3, relationship: "friendly", reason: "Values commitment to environmental standards"},
+            {id: 1, relationship: "neutral", reason: "Mixed feelings about expense but recognizes political benefits"}
+        ],
+        objectiveProgress: [
+            {id: 2, progress: 50, reason: "Direct action on environmental concerns"}
+        ],
+        newsUpdate: {
+            title: "Environmental Monitor: Azuria Port Launches Major Remediation Initiative",
+            content: "The Finance Ministry has allocated substantial resources to address environmental damage caused by port operations. New sediment containment systems are already improving water quality in areas used by local fishing communities. The initiative has been praised by environmental groups as a model for how infrastructure projects can adapt to address ecological concerns. Community leaders express cautious optimism about the remediation efforts."
         },
-        followUpText: "Your legal measures have strengthened Azuria's position, but strained diplomatic relations. What diplomatic counterbalance will you pursue?",
-        followUpActions: []
+        unlocksInsight: {
+            id: 8,
+            title: "Environmental Compliance and Financing",
+            content: "Environmental standards have become increasingly significant in infrastructure financing. Projects meeting higher environmental standards can access preferential financing from certain institutions and avoid costly retrofitting or remediation expenses later in their lifecycle.",
+            stakeholdersInvolved: [3, 4]
+        }
     },
     {
         id: 9,
-        title: "International Diplomatic Campaign",
-        description: "Launch a diplomatic initiative to gain international support for Azuria's development challenges.",
-        cost: "15 Influence",
-        resourceCost: 2000000,
-        influenceCost: 15,
-        staffCost: 1,
+        title: "Local Economic Development Program",
+        description: "Create programs to increase local economic benefits from the port.",
+        cost: 1200000,
         timeCost: 2,
-        unlocks: [],
-        metrics: {
-            internationalRelations: +25,
-            politicalCapital: +10,
-            fiscalSustainability: -5
+        staffCost: 1,
+        educationalValue: "Explores strategies for maximizing local economic benefits from infrastructure.",
+        impactDescription: "Your program establishing preferential procurement for local businesses and a small business development fund has created significant economic opportunities for Azurian companies. Local business leaders are enthusiastic about the initiative, and early data shows it's generating jobs and tax revenue that partially offset the program costs.",
+        impacts: {
+            influence: -8,
+            fiscal: 5,
+            political: 20,
+            international: 5
         },
-        stakeholderEffects: {
-            2: +10, // Chinese Lenders
-            5: +15  // Western Development Banks
+        stakeholderImpacts: [
+            {id: 4, relationship: "friendly", reason: "Appreciates creation of alternative livelihood opportunities"},
+            {id: 1, relationship: "friendly", reason: "Values job creation and positive political feedback"}
+        ],
+        objectiveProgress: [
+            {id: 2, progress: 15, reason: "Created economic alternatives for affected communities"},
+            {id: 4, progress: 25, reason: "Demonstrated commitment to domestic economic benefits"}
+        ],
+        newsUpdate: {
+            title: "Business Today: Port Launches Local Economic Initiative",
+            content: "The Finance Ministry has unveiled a comprehensive program to maximize local economic benefits from port operations. Key components include preferential procurement policies for Azurian businesses, a small business development fund, and training programs for local entrepreneurs. Early estimates suggest the initiative could generate up to 500 new jobs and significantly increase the port's contribution to the local economy. Business associations have praised the government's commitment to domestic economic development."
         },
-        followUpText: "Your diplomatic efforts have created new options and international goodwill. How will you leverage this improved position?",
-        followUpActions: []
+        unlocksInsight: {
+            id: 9,
+            title: "Local Economic Linkages",
+            content: "Large infrastructure projects can function as economic enclaves with limited benefit to surrounding communities, or as catalysts for local economic development. Deliberate policies to strengthen linkages with local businesses, develop workforce skills, and create complementary industries significantly enhance project development impact.",
+            stakeholdersInvolved: [1, 4]
+        }
     }
-];
-/**
- * Documents data - represents in-game information sources
- * Players unlock these by taking specific actions
- */
-const documents = [
-    {
-        id: 1,
-        title: "Port Loan Agreement",
-        type: "Contract",
-        icon: "📄",
-        content: `<div class="document-header">
-            <div class="document-header-icon">📄</div>
-            <div class="document-header-info">
-                <h3>Port Loan Agreement</h3>
-                <div class="document-header-type">Legal Contract</div>
-            </div>
-        </div>
-        <div class="document-content">
-            <div class="document-section">
-                <h4>Key Terms</h4>
-                <p>Loan Amount: $500,000,000 USD</p>
-                <p>Term: 20 years</p>
-                <p>Interest Rate: 6.5% per annum</p>
-                <p>Annual Repayment: $42,000,000 USD</p>
-            </div>
-            <div class="document-section">
-                <h4>Collateral Clauses</h4>
-                <p>Article 11.3: In the event of default exceeding 90 days, operational control of the port facility shall transfer to the lender for a period of no less than 10 years.</p>
-                <p>Article 14.2: All equipment, infrastructure, and adjacent land within 2km of the port perimeter is designated as collateral for the duration of the loan.</p>
-                <p>Article 15.7: Refinancing with third parties requires written approval from the original lender, which may be withheld at their sole discretion.</p>
-            </div>
-            <div class="document-section">
-                <h4>Operational Requirements</h4>
-                <p>The borrower shall ensure priority berthing for vessels from the lender's country.</p>
-                <p>The borrower shall use lender-approved vendors for at least 60% of all port equipment and technical systems.</p>
-                <p>The borrower shall maintain a minimum capacity utilization of 70% by year 3 of operations.</p>
-            </div>
-            <div class="document-section">
-                <h4>Analysis Notes</h4>
-                <p class="analysis-note">The collateral clauses create significant sovereign risk, as default would result in loss of control over critical national infrastructure.</p>
-                <p class="analysis-note">The operational requirements effectively limit the port's commercial independence and create ongoing dependence on lender-approved systems.</p>
-                <p class="analysis-note">The refinancing restriction clause severely limits Azuria's options for securing more favorable terms from alternative sources.</p>
-            </div>
-        </div>`
-    },
-    {
-        id: 2,
-        title: "Port Financial Analysis",
-        type: "Report",
-        icon: "📊",
-        content: `<div class="document-header">
-            <div class="document-header-icon">📊</div>
-            <div class="document-header-info">
-                <h3>Port Financial Analysis</h3>
-                <div class="document-header-type">Internal Report</div>
-            </div>
-        </div>
-        <div class="document-content">
-            <div class="document-section">
-                <h4>Current Financial Status</h4>
-                <p>Annual Revenue: $30,000,000 USD</p>
-                <p>Operating Expenses: $22,000,000 USD</p>
-                <p>Net Income: $8,000,000 USD</p>
-                <p>Annual Debt Service: $42,000,000 USD</p>
-                <p>Annual Shortfall: $34,000,000 USD</p>
-            </div>
-            <div class="document-section">
-                <h4>Operational Metrics</h4>
-                <div class="port-data-visualization">
-                    <div class="data-metric">
-                        <div class="data-label">Capacity Utilization</div>
-                        <div class="data-bar">
-                            <div class="data-fill fill-container" style="width: 40%"></div>
-                            <div class="data-value">40%</div>
-                        </div>
-                    </div>
-                    <div class="data-metric">
-                        <div class="data-label">Bulk Cargo Handling</div>
-                        <div class="data-bar">
-                            <div class="data-fill fill-bulk" style="width: 55%"></div>
-                            <div class="data-value">55%</div>
-                        </div>
-                    </div>
-                    <div class="data-metric">
-                        <div class="data-label">Container Traffic</div>
-                        <div class="data-bar">
-                            <div class="data-fill fill-container" style="width: 35%"></div>
-                            <div class="data-value">35%</div>
-                        </div>
-                    </div>
-                    <div class="data-metric">
-                        <div class="data-label">Liquid Cargo</div>
-                        <div class="data-bar">
-                            <div class="data-fill fill-liquid" style="width: 25%"></div>
-                            <div class="data-value">25%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="document-section">
-                <h4>Projections</h4>
-                <p>At current growth rates, the port will reach 55% capacity in 5 years, which is still significantly below the 70% required by the loan agreement.</p>
-                <p>The cumulative shortfall over the next 5 years is projected to be $150,000,000 USD, which exceeds the nation's current foreign exchange reserves.</p>
-            </div>
-            <div class="document-section">
-                <h4>Financial Risk Assessment</h4>
-                <div class="risk-assessment">
-                    <div class="risk-item high-risk">
-                        <div class="risk-label">Default Risk</div>
-                        <div class="risk-value">High</div>
-                    </div>
-                    <div class="risk-item medium-risk">
-                        <div class="risk-label">Budget Impact</div>
-                        <div class="risk-value">Medium</div>
-                    </div>
-                    <div class="risk-item high-risk">
-                        <div class="risk-label">Asset Control Risk</div>
-                        <div class="risk-value">High</div>
-                    </div>
-                    <div class="risk-item medium-risk">
-                        <div class="risk-label">Refinancing Potential</div>
-                        <div class="risk-value">Medium</div>
-                    </div>
-                </div>
-            </div>
-        </div>`
-    },
-    {
-        id: 3,
-        title: "Environmental Impact Study",
-        type: "Report",
-        icon: "🌊",
-        content: `<div class="document-header">
-            <div class="document-header-icon">🌊</div>
-            <div class="document-header-info">
-                <h3>Environmental Impact Assessment</h3>
-                <div class="document-header-type">Scientific Report</div>
-            </div>
-        </div>
-        <div class="document-content">
-            <div class="document-section">
-                <h4>Key Findings</h4>
-                <p>The port dredging operations have significantly altered the coastal ecosystem, resulting in a 35% reduction in local fish populations.</p>
-                <p>Sediment plumes from port construction have damaged approximately 15km² of coral reefs that served as critical breeding grounds for commercial fish species.</p>
-                <p>Noise pollution from port operations has disrupted migratory patterns of several protected marine species.</p>
-            </div>
-            <div class="document-section">
-                <h4>Socioeconomic Impact</h4>
-                <p>Local fishing communities have reported a 40% reduction in catch volumes since port construction began.</p>
-                <p>Approximately 2,300 fishers from 5 coastal villages have been directly affected.</p>
-                <p>Traditional fishing grounds used by local communities for generations have become inaccessible due to port security zones.</p>
-            </div>
-            <div class="document-section">
-                <h4>Recommendations</h4>
-                <p>Implement a marine habitat restoration program focusing on damaged reef areas.</p>
-                <p>Establish no-dredge zones in sensitive ecological areas.</p>
-                <p>Create a compensation fund for affected fishing communities.</p>
-                <p>Develop alternative livelihood programs for fisherfolk, including potential employment in port operations.</p>
-                <p>Estimated cost of comprehensive remediation: $12-15 million USD.</p>
-            </div>
-            <div class="document-section">
-                <h4>Environmental Risk Map</h4>
-                <div class="env-risk-map">
-                    <div class="map-legend">
-                        <div class="legend-item">
-                            <div class="legend-color high-impact"></div>
-                            <div class="legend-label">High Impact Zone</div>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color medium-impact"></div>
-                            <div class="legend-label">Medium Impact Zone</div>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color low-impact"></div>
-                            <div class="legend-label">Low Impact Zone</div>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color fishing-grounds"></div>
-                            <div class="legend-label">Traditional Fishing Grounds</div>
-                        </div>
-                    </div>
-                    <div class="env-map-visualization"></div>
-                </div>
-            </div>
-        </div>`
-    },
-    {
-        id: 4,
-        title: "Diplomatic Communications",
-        type: "Correspondence",
-        icon: "✉️",
-        content: `<div class="document-header">
-            <div class="document-header-icon">✉️</div>
-            <div class="document-header-info">
-                <h3>Diplomatic Communications</h3>
-                <div class="document-header-type">Official Correspondence</div>
-            </div></div>
-        <div class="document-content">
-            <div class="document-section">
-                <h4>Memo from Chinese Embassy</h4>
-                <div class="correspondence-item">
-                    <div class="correspondence-header">
-                        <div class="correspondence-from">From: H.E. Ambassador Li Wei</div>
-                        <div class="correspondence-date">Date: March 2, 2025</div>
-                    </div>
-                    <div class="correspondence-body">
-                        <p>The Government of China values our partnership with Azuria and remains committed to supporting its economic development. We note with concern recent discussions regarding potential restructuring of the port financing agreement.</p>
-                        <p>We wish to remind your government that the terms of the existing agreement were mutually beneficial and agreed upon in good faith. Any unilateral attempts to alter these terms would be viewed as contrary to the spirit of our bilateral relationship.</p>
-                        <p>Our financial institutions have been flexible partners and expect the same good faith adherence to contractual obligations that has characterized our relationship thus far.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="document-section">
-                <h4>Communication from Western Development Consortium</h4>
-                <div class="correspondence-item">
-                    <div class="correspondence-header">
-                        <div class="correspondence-from">From: Sarah Williams, Regional Director</div>
-                        <div class="correspondence-date">Date: March 5, 2025</div>
-                    </div>
-                    <div class="correspondence-body">
-                        <p>Following our preliminary discussions, the Western Development Consortium (WDC) is prepared to consider a comprehensive refinancing package for Azuria's port facility, subject to due diligence and the satisfaction of our governance requirements.</p>
-                        <p>Any potential arrangement would include more favorable interest rates and extended repayment terms, but would require:</p>
-                        <ul>
-                            <li>Full transparency on existing loan terms and collateral arrangements</li>
-                            <li>Implementation of environmental remediation measures</li>
-                            <li>Adoption of WDC procurement and anti-corruption standards</li>
-                            <li>Competitive and open access to port facilities for all international shipping</li>
-                        </ul>
-                        <p>We believe these terms would not only resolve the immediate fiscal challenges but strengthen Azuria's infrastructure governance for future projects.</p>
-                    </div>
-                </div>
-            </div>
-        </div>`
-    },
-    {
-        id: 5,
-        title: "Strategic Options Analysis",
-        type: "Report",
-        icon: "🔍",
-        content: `<div class="document-header">
-            <div class="document-header-icon">🔍</div>
-            <div class="document-header-info">
-                <h3>Strategic Options Analysis</h3>
-                <div class="document-header-type">Confidential Report</div>
-            </div>
-        </div>
-        <div class="document-content">
-            <div class="document-section">
-                <h4>Option 1: Debt Restructuring</h4>
-                <div class="option-analysis">
-                    <p><strong>Description:</strong> Negotiate with Chinese lenders to modify repayment terms, extend maturity, and potentially reduce interest rates while preserving Azurian operational control.</p>
-                    <div class="option-impacts">
-                        <div class="impact-item">
-                            <div class="impact-label">Fiscal Impact</div>
-                            <div class="impact-rating positive">Positive</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Political Impact</div>
-                            <div class="impact-rating neutral">Neutral</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Diplomatic Risk</div>
-                            <div class="impact-rating low">Low</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Implementation Timeline</div>
-                            <div class="impact-rating">3-6 months</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="document-section">
-                <h4>Option 2: Western Refinancing</h4>
-                <div class="option-analysis">
-                    <p><strong>Description:</strong> Secure new financing from Western development banks to pay off Chinese loans, accepting governance reforms and environmental conditions.</p>
-                    <div class="option-impacts">
-                        <div class="impact-item">
-                            <div class="impact-label">Fiscal Impact</div>
-                            <div class="impact-rating positive">Positive</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Political Impact</div>
-                            <div class="impact-rating mixed">Mixed</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Diplomatic Risk</div>
-                            <div class="impact-rating high">High</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Implementation Timeline</div>
-                            <div class="impact-rating">6-12 months</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="document-section">
-                <h4>Option 3: Partial Privatization</h4>
-                <div class="option-analysis">
-                    <p><strong>Description:</strong> Sell a minority stake (30-40%) in the port to international operators to generate capital for debt service while retaining government control.</p>
-                    <div class="option-impacts">
-                        <div class="impact-item">
-                            <div class="impact-label">Fiscal Impact</div>
-                            <div class="impact-rating positive">Positive</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Political Impact</div>
-                            <div class="impact-rating negative">Negative</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Diplomatic Risk</div>
-                            <div class="impact-rating medium">Medium</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Implementation Timeline</div>
-                            <div class="impact-rating">8-14 months</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="document-section">
-                <h4>Option 4: Strategic Default</h4>
-                <div class="option-analysis">
-                    <p><strong>Description:</strong> Declare inability to meet payment obligations and force renegotiation of terms, leveraging strategic importance of the port to national security.</p>
-                    <div class="option-impacts">
-                        <div class="impact-item">
-                            <div class="impact-label">Fiscal Impact</div>
-                            <div class="impact-rating mixed">Mixed</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Political Impact</div>
-                            <div class="impact-rating mixed">Mixed</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Diplomatic Risk</div>
-                            <div class="impact-rating extreme">Extreme</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="impact-label">Implementation Timeline</div>
-                            <div class="impact-rating">1-2 months</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>`
-    }
-];
+],
 
-/**
- * News updates data - provides narrative context through in-game events
- * Appears in the news section and as notifications
- */
-const newsUpdates = [
-    {
-        day: 1,
-        title: "Port Revenue Falls Short of Projections",
-        summary: "Quarterly report shows Azuria's new port facility operating at 40% capacity, raising concerns about loan repayment.",
-        type: "info",
-        details: "Financial analysts are questioning the viability of Azuria's flagship port project as capacity utilization remains far below the 70% target required to meet debt obligations. The Finance Ministry has called for an urgent review of operations and financing structures."
-    },
-    {
-        day: 2,
-        title: "Fishing Communities Threaten Protests",
-        summary: "Representatives from coastal villages announce plans for demonstrations against environmental damage caused by port operations.",
-        type: "warning",
-        details: "Leaders from five coastal communities have issued a joint statement demanding compensation for declining fish stocks and environmental remediation of damaged marine habitats. They plan to block port access roads next week if their concerns aren't addressed."
-    },
-    {
-        day: 3,
-        title: "Western Development Banks Express Interest",
-        summary: "International financial institutions signal openness to refinancing discussions if transparency and governance reforms are implemented.",
-        type: "success",
-        details: "Senior officials from the Western Development Consortium have approached Azuria's government about potential refinancing options for the port project. They cite concerns about the current loan's terms but see potential for a mutually beneficial arrangement if certain conditions are met."
-    },
-    {
-        day: 4,
-        title: "Prime Minister Faces Parliamentary Questions",
-        summary: "Opposition lawmakers demand clarity on port financing arrangements and potential sovereignty implications.",
-        type: "warning",
-        details: "During a heated parliamentary session, opposition leaders questioned the government about rumors of collateral clauses in the port loan agreement that could transfer operational control to foreign entities in case of default. The Prime Minister has promised a comprehensive briefing once a full review is completed."
-    },
-    {
-        day: 5,
-        title: "Regional Shipping Association Reports",
-        summary: "Industry analysis suggests Azuria's port fees are uncompetitive, contributing to low utilization rates.",
-        type: "info",
-        details: "The Regional Shipping Association's quarterly report indicates that Azuria's port charges are 15-20% higher than comparable facilities in neighboring countries, while offering fewer services. This pricing structure is cited as a key factor in shipping companies choosing alternative routes and facilities."
-    },
-    {
-        day: 6,
-        title: "Environmental NGOs Release Satellite Imagery",
-        summary: "International environmental organizations publish evidence of extensive coastal damage from port dredging operations.",
-        type: "warning",
-        details: "Satellite images released by Global Marine Watch show severe degradation of coral reefs and coastal habitats extending over 15km from the port facility. The organization has called for immediate cessation of ongoing dredging activities and implementation of environmental protection measures."
-    },
-    {
-        day: 7,
-        title: "Chinese Embassy Issues Statement",
-        summary: "Chinese officials emphasize the importance of honoring existing agreements while expressing openness to constructive dialogue.",
-        type: "info",
-        details: "In a carefully worded diplomatic statement, the Chinese Ambassador reaffirmed his country's commitment to infrastructure partnership with Azuria while emphasizing the importance of contract sanctity. The statement also mentioned flexibility within the framework of existing agreements, interpreted by some analysts as an opening for renegotiation."
-    },
-    {
-        day: 8,
-        title: "Credit Rating Agency Places Azuria on Watch",
-        summary: "International credit rating agency signals potential downgrade over concerns about port debt obligations.",
-        type: "warning",
-        details: "Global Ratings has placed Azuria's sovereign credit on 'negative watch,' citing concerns about the government's ability to meet upcoming debt obligations for the port project. A formal downgrade would significantly increase borrowing costs for all government financing needs."
-    },
-    {
-        day: 9,
-        title: "Regional Development Forum Highlights Azuria's Challenges",
-        summary: "Economic experts discuss Azuria's experience as a cautionary tale for infrastructure financing in developing nations.",
-        type: "info",
-        details: "At the annual Regional Development Forum, multiple speakers referenced Azuria's port financing challenges as an example of the hidden risks in certain infrastructure development models. Several nations expressed solidarity with Azuria and called for international standards on transparent infrastructure financing."
-    }
-];
+// Stakeholder engagement options
+stakeholderEngagementOptions: {
+    1: [ // Prime Minister
+        {
+            id: 1,
+            title: "Formal Financial Briefing",
+            description: "Provide a comprehensive briefing on the port's financial situation and your plans to address the challenges.",
+            cost: 0,
+            influenceCost: 5,
+            outcome: "The Prime Minister appreciates your transparency and detailed approach. This builds trust, but he remains concerned about the political implications of potential solutions.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    political: 10,
+                    fiscal: 5
+                }
+            }
+        },
+        {
+            id: 2,
+            title: "Media Strategy Coordination",
+            description: "Work with the Prime Minister's office to develop a coordinated media strategy around the port financing issues.",
+            cost: 200000,
+            influenceCost: 0,
+            outcome: "Your joint media strategy helps control the narrative around the financing challenges, reducing political pressure on both of you.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    political: 15,
+                    international: 5
+                }
+            }
+        },
+        {
+            id: 3,
+            title: "Political Responsibility Distancing",
+            description: "Subtly suggest that the loan terms were negotiated before your appointment, shifting responsibility for the problematic clauses.",
+            cost: 0,
+            influenceCost: 10,
+            outcome: "While this temporarily diverts blame from you, it damages trust with the Prime Minister who views it as avoiding responsibility.",
+            impacts: {
+                relationship: "hostile",
+                metrics: {
+                    political: -10,
+                    influence: -10
+                }
+            }
+        }
+    ],
+    2: [ // Chinese Export-Import Bank
+        {
+            id: 1,
+            title: "Informal Relationship Building",
+            description: "Invest time in building personal relationships with key Bank officials through informal meetings and cultural events.",
+            cost: 100000,
+            influenceCost: 5,
+            outcome: "Your efforts to build rapport pay off, creating more flexible communication channels and a more sympathetic ear for Azuria's challenges.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    international: 10,
+                    fiscal: 5
+                }
+            }
+        },
+        {
+            id: 2,
+            title: "Technical Performance Plan",
+            description: "Present a detailed technical plan showing how you'll improve port performance and ensure loan repayment.",
+            cost: 300000,
+            influenceCost: 0,
+            outcome: "Bank officials are impressed by your thoroughness and commitment to meeting obligations, creating more willingness to discuss flexible terms.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    fiscal: 15,
+                    international: 5
+                }
+            }
+        },
+        {
+            id: 3,
+            title: "Implicit Threat of Default",
+            description: "Subtly hint that without restructuring, Azuria might be forced to consider more drastic options like payment suspension.",
+            cost: 0,
+            influenceCost: 15,
+            outcome: "This approach backfires badly, as Bank officials view it as negotiating in bad faith. They become more rigid in their position and alert their government contacts.",
+            impacts: {
+                relationship: "hostile",
+                metrics: {
+                    international: -20,
+                    political: -10
+                }
+            }
+        }
+    ],
+    3: [ // World Bank
+        {
+            id: 1,
+            title: "Governance Reform Commitment",
+            description: "Present a detailed plan for implementing the governance reforms required for World Bank financing.",
+            cost: 200000,
+            influenceCost: 0,
+            outcome: "World Bank officials are impressed by your commitment to reforms and offer additional technical assistance to support implementation.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    international: 10,
+                    fiscal: 10
+                }
+            }
+        },
+        {
+            id: 2,
+            title: "Environmental Standards Upgrade",
+            description: "Commit to upgrading port operations to meet World Bank environmental standards as part of refinancing.",
+            cost: 500000,
+            influenceCost: 0,
+            outcome: "This commitment greatly strengthens your refinancing proposal and improves relations with both the World Bank and local communities.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    environmental: 20,
+                    international: 15,
+                    political: 5
+                }
+            }
+        },
+        {
+            id: 3,
+            title: "Conditionality Negotiation",
+            description: "Aggressively push back against some World Bank conditions, arguing they infringe on national sovereignty.",
+            cost: 0,
+            influenceCost: 10,
+            outcome: "While some domestic political actors approve of your stance, World Bank officials see it as a lack of commitment to necessary reforms.",
+            impacts: {
+                relationship: "hostile",
+                metrics: {
+                    political: 5,
+                    international: -15
+                }
+            }
+        }
+    ],
+    4: [ // Fishing Communities
+        {
+            id: 1,
+            title: "Community Liaison Office",
+            description: "Establish a permanent community liaison office to address ongoing concerns from fishing communities.",
+            cost: 200000,
+            influenceCost: 0,
+            outcome: "The permanent communication channel builds trust and provides early warning of emerging issues, preventing them from escalating.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    political: 10,
+                    environmental: 5
+                }
+            }
+        },
+        {
+            id: 2,
+            title: "Compensation Fund",
+            description: "Establish a compensation fund for the most severely affected fishing households.",
+            cost: 1000000,
+            influenceCost: 0,
+            outcome: "While expensive, the fund dramatically improves community relations and reduces political pressure from fishing villages.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    political: 20,
+                    environmental: 10,
+                    fiscal: -5
+                }
+            }
+        },
+        {
+            id: 3,
+            title: "Legal Defense Preparation",
+            description: "Quietly prepare legal defenses against potential community lawsuits rather than engaging directly.",
+            cost: 300000,
+            influenceCost: 0,
+            outcome: "This approach is discovered by community leaders, who see it as evidence of bad faith, leading to increased protests and political pressure.",
+            impacts: {
+                relationship: "hostile",
+                metrics: {
+                    political: -15,
+                    environmental: -10
+                }
+            }
+        }
+    ],
+    5: [ // Port Authority
+        {
+            id: 1,
+            title: "Performance Incentive System",
+            description: "Implement a performance-based incentive system for Port Authority management and staff.",
+            cost: 500000,
+            influenceCost: 0,
+            outcome: "The incentive system aligns Port Authority goals with financial sustainability objectives and motivates staff to improve efficiency.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    fiscal: 15,
+                    international: 5
+                }
+            }
+        },
+        {
+            id: 2,
+            title: "Technical Training Program",
+            description: "Fund an international technical training program for key Port Authority staff.",
+            cost: 400000,
+            influenceCost: 0,
+            outcome: "The training program builds Port Authority capacity and introduces international best practices, while creating strong loyalty from management.",
+            impacts: {
+                relationship: "friendly",
+                metrics: {
+                    fiscal: 10,
+                    international: 10
+                }
+            }
+        },
+        {
+            id: 3,
+            title: "Management Audit",
+            description: "Commission an external audit of Port Authority management practices and efficiency.",
+            cost: 300000,
+            influenceCost: 5,
+            outcome: "While the audit identifies important operational improvements, Port Authority leadership resents the implied criticism and becomes defensive.",
+            impacts: {
+                relationship: "hostile",
+                metrics: {
+                    fiscal: 5,
+                    political: -5
+                }
+            }
+        }
+    ]
+},
 
-/**
- * Educational insights content - provides learning moments for players
- * Appears in the insights panel and unlocks progressively
- */
-const insights = [
+// Educational insights
+educationalInsights: [
     {
         id: 1,
         title: "Debt Sustainability Analysis",
-        content: "Analyzing a project's ability to generate sufficient revenue to cover debt service is crucial for financial stability. Current port capacity utilization at 40% is significantly below projections, creating fiscal risks."
+        content: "Financial sustainability depends on a project's ability to generate sufficient revenue to cover both operational costs and debt service. When debt service coverage ratio falls below 1.0, default risk increases significantly, potentially triggering collateral clauses.",
+        source: "Debt Analysis",
+        category: "Finance",
+        relatedConcepts: ["Debt Service Coverage Ratio", "Revenue Forecasting", "Collateralized Lending"]
     },
     {
         id: 2,
-        title: "Hidden Debt Mechanics",
-        content: "Collateral clauses in infrastructure loans can create contingent liabilities that don't appear in official debt statistics. These 'hidden debts' can lead to loss of strategic assets and sovereignty if activated."
+        title: "Environmental Externalities",
+        content: "Large infrastructure projects frequently create negative externalities that affect communities not directly benefiting from the project. Addressing these externalities early through consultation and mitigation strategies is typically less costly than managing conflicts after they escalate.",
+        source: "Environmental Assessment",
+        category: "Environmental",
+        relatedConcepts: ["Ecosystem Services", "Social Impact Assessment", "Environmental Compliance"]
     },
     {
         id: 3,
-        title: "Environmental-Social Governance",
-        content: "Modern development finance increasingly incorporates ESG standards. Projects must consider not just economic returns but also environmental impacts and social acceptance to be truly sustainable."
+        title: "Bilateral Debt Restructuring",
+        content: "When approaching bilateral creditors for debt restructuring, timing and diplomatic context significantly impact outcomes. Restructuring negotiations often involve trade-offs between financial relief and economic concessions in other areas such as market access or future investment opportunities.",
+        source: "Diplomatic Meeting",
+        category: "Diplomacy",
+        relatedConcepts: ["Bilateral Relations", "Debt Renegotiation", "Economic Diplomacy"]
     },
     {
         id: 4,
-        title: "Debt Trap Diplomacy",
-        content: "Some analysts argue that certain infrastructure loans are designed to create dependency and leverage over recipient countries. While controversial, this concept highlights the geopolitical dimensions of development finance."
+        title: "Multilateral Financing Conditionality",
+        content: "Multilateral development banks typically offer financing with lower interest rates and longer tenors than commercial lenders, but attach policy conditions focused on governance, transparency, and social/environmental standards. These conditions often create domestic political challenges despite their financial advantages.",
+        source: "Western Institution Consultation",
+        category: "Finance",
+        relatedConcepts: ["Conditionality", "Governance Reform", "Policy-Based Lending"]
     },
     {
         id: 5,
-        title: "Sovereign Debt Restructuring",
-        content: "When countries face unsustainable debt, restructuring can provide relief through extending maturities, reducing interest rates, or partial forgiveness. However, restructuring can impact credit ratings and future borrowing costs."
+        title: "Infrastructure Utilization Economics",
+        content: "Infrastructure projects have high fixed costs and relatively low variable costs, making utilization rates a critical factor in financial sustainability. Increasing utilization from 40% to 60% can disproportionately improve financial performance by spreading fixed costs across more revenue-generating activities.",
+        source: "Marketing Campaign",
+        category: "Operations",
+        relatedConcepts: ["Fixed vs. Variable Costs", "Capacity Utilization", "Break-Even Analysis"]
     },
     {
         id: 6,
-        title: "Strategic Infrastructure Protection",
-        content: "Many nations maintain legal frameworks to protect critical infrastructure from foreign control. These safeguards balance the need for foreign investment with national security considerations."
+        title: "Stakeholder Engagement",
+        content: "Effective stakeholder engagement requires early identification of affected parties, transparent communication, and meaningful response to concerns. While immediate costs may seem high, addressing social and environmental issues early typically reduces long-term project risks and costs.",
+        source: "Public Stakeholder Meeting",
+        category: "Social",
+        relatedConcepts: ["Social License to Operate", "Conflict Resolution", "Community Relations"]
     },
     {
         id: 7,
-        title: "Multi-stakeholder Governance",
-        content: "Effective infrastructure projects require balancing the interests of multiple stakeholders including government entities, financiers, local communities, and end users. Inclusive governance structures support long-term sustainability."
+        title: "Operational Efficiency",
+        content: "In infrastructure projects, operational inefficiencies often compound financial challenges. Digital systems, staff training, and process optimization can yield returns far exceeding their implementation costs by improving service quality, increasing utilization, and enhancing competitive position.",
+        source: "Port Efficiency Upgrade",
+        category: "Operations",
+        relatedConcepts: ["Digital Transformation", "Capacity Building", "Process Optimization"]
+    },
+    {
+        id: 8,
+        title: "Environmental Compliance and Financing",
+        content: "Environmental standards have become increasingly significant in infrastructure financing. Projects meeting higher environmental standards can access preferential financing from certain institutions and avoid costly retrofitting or remediation expenses later in their lifecycle.",
+        source: "Environmental Remediation",
+        category: "Environmental",
+        relatedConcepts: ["Green Finance", "Environmental Safeguards", "Compliance Costs"]
+    },
+    {
+        id: 9,
+        title: "Local Economic Linkages",
+        content: "Large infrastructure projects can function as economic enclaves with limited benefit to surrounding communities, or as catalysts for local economic development. Deliberate policies to strengthen linkages with local businesses, develop workforce skills, and create complementary industries significantly enhance project development impact.",
+        source: "Local Economic Development Program",
+        category: "Social",
+        relatedConcepts: ["Local Content Policies", "Economic Multipliers", "Supply Chain Development"]
     }
-];
-
-// ===== CONSTANTS AND CONFIGURATION =====
-
-/**
- * Define shared breakpoints for responsive design
- * Used in both JavaScript and CSS for consistent behavior
- */
-const BREAKPOINTS = {
-    MOBILE: 480,
-    TABLET: 768,
-    DESKTOP_SMALL: 1024,
-    DESKTOP: 1200
+]
 };
 
-// Current slide for carousel
-let currentSlide = 0;
-
-// ===== DOM ELEMENTS AND INITIALIZATION =====
-
-function initializeAccessibility() {
-    // Set up ARIA roles, focus management, or other accessibility enhancements as needed
-    console.log('Accessibility features have been initialized.');
-  }
-
-  function setupKeyboardControls() {
-    // Initialize keyboard shortcuts here
-    console.log("Keyboard controls initialized.");
-  }
-
-// Add this function before initializeGameComponents function
-function initCarousel() {
-    // Set initial classes for carousel items
-    const itemClassName = "carousel__photo";
-    const items = document.getElementsByClassName(itemClassName);
-    const totalItems = items.length;
-    
-    if (totalItems >= 3) {
-      // Set initial classes for previous, current, and next items
-      items[totalItems - 1].classList.add("prev");
-      items[0].classList.add("active");
-      items[1].classList.add("next");
-    }
-    
-    // Set up event listeners for carousel navigation
-    const prevButton = document.querySelector('.carousel__button--prev');
-    const nextButton = document.querySelector('.carousel__button--next');
-    
-    if (prevButton) {
-      prevButton.addEventListener('click', movePrevHandler);
-    }
-    
-    if (nextButton) {
-      nextButton.addEventListener('click', moveNextHandler);
-    }
-    
-    // Set moving to false now that the carousel is ready
-    return {
-      slide: 0,
-      isMoving: false
-    };
-  }
-  
-  // Add these supporting functions if they don't exist
-  function movePrevHandler(evt) {
-    const carousel = this.carousel || window.carousel;
-    if (!carousel.isMoving) {
-      carousel.slide = movePrev(carousel.slide, carousel);
-      moveCarouselTo(carousel);
-    }
-  }
-  
-  function moveNextHandler(evt) {
-    const carousel = this.carousel || window.carousel;
-    if (!carousel.isMoving) {
-      carousel.slide = moveNext(carousel.slide, carousel);
-      moveCarouselTo(carousel);
-    }
-  }
-  
-  function movePrev(currentSlide, carousel) {
-    carousel.isMoving = true;
-    const totalItems = document.getElementsByClassName("carousel__photo").length;
-    
-    // Calculate the new position
-    let newPosition = currentSlide - 1;
-    if (newPosition < 0) {
-      newPosition = totalItems - 1;
-    }
-    
-    setTimeout(function() {
-      carousel.isMoving = false;
-    }, 500);
-    
-    return newPosition;
-  }
-  
-  function moveNext(currentSlide, carousel) {
-    carousel.isMoving = true;
-    const totalItems = document.getElementsByClassName("carousel__photo").length;
-    
-    // Calculate the new position
-    let newPosition = currentSlide + 1;
-    if (newPosition >= totalItems) {
-      newPosition = 0;
-    }
-    
-    setTimeout(function() {
-      carousel.isMoving = false;
-    }, 500);
-    
-    return newPosition;
-  }
-  
-  function moveCarouselTo(carousel) {
-    const items = document.getElementsByClassName("carousel__photo");
-    const totalItems = items.length;
-    
-    if (totalItems < 3) {
-      return;
-    }
-    
-    // Remove all classes from all items
-    for (let i = 0; i < totalItems; i++) {
-      items[i].classList.remove('prev', 'active', 'next');
-    }
-    
-    // Set new classes
-    // Previous item
-    const prevIndex = carousel.slide - 1 < 0 ? totalItems - 1 : carousel.slide - 1;
-    items[prevIndex].classList.add('prev');
-    
-    // Current item
-    items[carousel.slide].classList.add('active');
-    
-    // Next item
-    const nextIndex = carousel.slide + 1 >= totalItems ? 0 : carousel.slide + 1;
-    items[nextIndex].classList.add('next');
-  }
-
-  // Add this function before it's called at line 1257
-function initializeSplashScreen() {
-    console.log("Initializing splash screen...");
-    
-    const splashScreen = document.querySelector('.splash-screen');
-    if (!splashScreen) {
-      console.warn("Splash screen element not found");
-      return;
-    }
-    
-    // Show the splash screen
-    splashScreen.style.display = 'flex';
-    splashScreen.style.opacity = '1';
-    
-    // Add event listener to dismiss splash screen on click (optional)
-    splashScreen.addEventListener('click', () => {
-      dismissSplashScreen();
-    });
-    
-    // Automatically dismiss the splash screen after a delay
-    setTimeout(() => {
-      dismissSplashScreen();
-    }, 3000); // 3 seconds
-    
-    return splashScreen;
-  }
-  
-  // Add supporting function to dismiss the splash screen
-  function dismissSplashScreen() {
-    const splashScreen = document.querySelector('.splash-screen');
-    if (!splashScreen) return;
-    
-    // Fade out animation
-    splashScreen.style.opacity = '0';
-    
-    // Remove from DOM after animation completes
-    setTimeout(() => {
-      splashScreen.style.display = 'none';
-    }, 500); // Match this to your CSS transition time
-  }
-  
-  
-  
 /**
- * Main initialization function that runs when the document is loaded
- * Sets up event listeners and initializes the game
- */
-function initializeGame() {
-    // Wait for DOM to be fully loaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeGameComponents);
-    } else {
-        initializeGameComponents();
-    }
-}
+* Document descriptions for additional context
+* @type {Object}
+*/
+const documentDescriptions = {
+1: "A comprehensive financial overview of the port project, including initial investment details, revenue projections versus actual performance, and cash flow analysis. Includes notes on concerning collateral terms.",
+2: "Detailed assessment of the environmental impact from port operations, including disruption to marine habitats, effects on local fishing communities, and recommendations for mitigation measures.",
+3: "Excerpts from the original loan agreement with the Chinese Export-Import Bank, highlighting key clauses related to security, collateral, default conditions, and dispute resolution mechanisms.",
+4: "Analysis of the port's current operational efficiency, identifying key challenges and providing recommendations to improve capacity utilization and competitiveness.",
+5: "Comparative analysis of four potential refinancing options with different terms, requirements, benefits, and risks associated with each approach.",
+6: "First-hand testimonials from fishing village representatives, local business owners, and environmental advocates regarding the impact of port operations on their communities and livelihoods.",
+7: "Educational briefing on key concepts in development finance, including debt sustainability, collateralized lending, blended finance, conditionality, externalities, and stakeholder management."
+};
 
-/**
- * Initialize game components in sequence with proper dependencies
- */
-async function initializeGameComponents() {
-    try {
-        // Cache DOM elements for better performance
-        const elements = cacheDOMElements();
-        
-        // Initialize the loading screen
-        if (elements.loadingScreen) {
-            elements.loadingScreen.classList.add('active');
-        }
-        
-        // Set up all event listeners
-        setupEventListeners(elements);
-        
-        // Initialize screen readers and accessibility features
-        initializeAccessibility();
-        
-        // Set up keyboard controls
-        setupKeyboardControls();
-        
-        // Preload assets and data for better performance
-        await preloadGameAssets();
-        
-        // Initialize the welcome carousel
-        initCarousel();
-        
-        // Hide loading screen when initialization is complete
-        if (elements.loadingScreen) {
-            elements.loadingScreen.classList.add('fade-out');
-            setTimeout(() => {
-                elements.loadingScreen.classList.remove('active', 'fade-out');
-                initializeSplashScreen(elements);
-            }, 500);
-        }
-    } catch (error) {
-        console.error('Error initializing game:', error);
-        // Show error message to user
-        const errorNotification = 'There was a problem loading the game. Please try refreshing the page.';
-        if (typeof showNotification === 'function') {
-            showNotification('Initialization Error', errorNotification, 'error');
-        } else {
-            alert('Initialization Error: ' + errorNotification);
-        }
-    }
-}
-
-/**
- * Caches DOM elements for improved performance with error handling
- * Returns an object with all necessary DOM elements
- */
-function cacheDOMElements() {
-    const elements = {};
-    
-    // Define element selectors with fallback options
-    const selectors = {
-        // Loading and splash screen elements
-        loadingScreen: '#loadingScreen',
-        loadingBar: '#loadingBar',
-        splashScreen: '#splashScreen',
-        splashConnections: '#splashConnections',
-        playButton: '#playButton',
-        howToPlayBtn: '#howToPlayBtn',
-
-        // Mission drawer elements
-        missionDrawer: '#missionDrawer',
-        missionItems: '.mission-item',
-        startMissionBtn: '#startMissionBtn',
-
-        // Main game UI elements
-        gameHeader: '#gameHeader',
-        mainContainer: '#mainContainer',
-        networkVisualization: '#networkVisualization',
-        missionProgressFill: '#missionProgressFill',
-        missionProgressPercentage: '#missionProgressPercentage',
-        missionProgressContainer: '#missionProgressContainer',
-        welcomeCarousel: '#welcomeCarousel',
-
-        // Game panel elements
-        tabButtons: '.tab',
-        tabContents: '.tab-content',
-        actionCards: '.action-cards',
-        stakeholdersList: '.stakeholders-list',
-        timerDisplay: '#timerDisplay',
-        updatesTab: '.tab[data-tab="updates"]',
-        updatesBadge: '.updates-badge',
-        
-        // Resources panel elements
-        budgetResource: '#budgetResource',
-        influenceResource: '#influenceResource',
-        staffResource: '#staffResource',
-        timeResource: '#timeResource',
-        
-        // Metrics elements
-        transparencyMetric: '#transparencyMetric',
-        communityMetric: '#communityMetric',
-        esgMetric: '#esgMetric',
-        accountabilityMetric: '#accountabilityMetric',
-        
-        // Modal elements
-        guideModal: '#guideModal',
-        menuModal: '#menuModal',
-        stakeholderModal: '#stakeholderModal',
-        actionResultModal: '#actionResultModal',
-        endGameModal: '#endGameModal',
-        verdictModal: '#verdictModal',
-
-        // Button elements
-        menuBtn: '#menuBtn',
-        guideBtn: '#guideBtn',
-        closeGuideModal: '#closeGuideModal',
-        closeGuideBtn: '#closeGuideBtn',
-        closeMenuModal: '#closeMenuModal',
-        startTutorialBtn: '#startTutorialBtn',
-        closeStakeholderModal: '#closeStakeholderModal',
-        closeStakeholderBtn: '#closeStakeholderBtn',
-        engageStakeholderBtn: '#engageStakeholderBtn',
-        closeActionResultModal: '#closeActionResultModal',
-        acknowledgeResultBtn: '#acknowledgeResultBtn',
-        closeEndGameModal: '#closeEndGameModal',
-        submitRecommendationBtn: '#submitRecommendationBtn',
-        completeGameBtn: '#completeGameBtn',
-
-        // Other elements
-        notificationContainer: '#notificationContainer',
-        actionLoadingOverlay: '#actionLoadingOverlay'
-    };
-    
-    // Safely get elements with logging for missing ones
-    for (const [key, selector] of Object.entries(selectors)) {
-        try {
-            // Handle NodeList selectors
-            if (selector.includes('.') && !selector.includes('#') && !selector.includes(' ')) {
-                elements[key] = document.querySelectorAll(selector);
-                if (elements[key].length === 0) {
-                    console.warn(`No elements found with selector "${selector}" for "${key}"`);
-                    elements[key] = null;
-                }
-            } else {
-                // Handle single element selectors
-                elements[key] = document.querySelector(selector);
-                if (!elements[key]) {
-                    console.warn(`Element with selector "${selector}" not found for "${key}"`);
-                }
+// ===== GAME CONTROLLER =====
+    /**
+     * Core game controller that manages the game state and connections
+     * between components
+     */
+    const GameController = {
+        /**
+         * Initialize the game
+         */
+        init: function() {
+            try {
+                console.log("Initializing Debt & Diplomacy game...");
+                this.bindEvents();
+                SplashScreen.init();
+                NotificationSystem.init();
+                
+                // Initialize network visualization with a slight delay
+                setTimeout(() => {
+                    NetworkVisualizer.initSplashConnections();
+                }, 500);
+                
+                // Initialize educational content
+                this.prepareEducationalContent();
+                
+                // Mark game as initialized
+                gameState.initialized = true;
+                
+                console.log("Game initialization complete");
+            } catch (error) {
+                console.error("Error during game initialization:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Initialization Error',
+                    message: 'There was a problem starting the game. Please refresh the page.'
+                });
             }
-        } catch (error) {
-            console.error(`Error accessing element with selector "${selector}" for "${key}":`, error);
-            elements[key] = null;
-        }
-    }
-    
-    return elements;
-}
-/**
- * Sets up all event listeners for the game with improved error handling
- * Uses event delegation for dynamic elements where possible
- * @param {Object} elements - Cached DOM elements
- */
-// Global variable to track event handlers for cleanup
-let handlers = [];
-
-function setupEventListeners(elements) {
-    // Clear existing handlers
-    handlers = [];
-    
-    try {
-        // Use event delegation for dynamic elements
-        document.body.addEventListener('click', function(e) {
-            // Handle action card clicks
-            const actionButton = e.target.closest('.action-button');
-            if (actionButton) {
-                const card = actionButton.closest('.action-card');
-                if (card && !actionButton.disabled) {
-                    const actionId = parseInt(card.dataset.actionId);
-                    const action = actions.find(a => a.id === actionId);
-                    if (action && canAffordAction(action)) {
-                        takeAction(action, elements);
-                    }
+        },
+        
+        /**
+         * Prepare educational content for the game
+         */
+        prepareEducationalContent: function() {
+            // Add educational insights to stakeholders
+            gameState.stakeholders.forEach(stakeholder => {
+                if (!stakeholder.educationalValue) {
+                    stakeholder.educationalValue = `Understanding the role of ${stakeholder.name} illustrates how different stakeholders influence development finance decisions.`;
                 }
-                e.stopPropagation();
-                return;
-            }
-            
-            // Handle stakeholder item clicks
-            const stakeholderItem = e.target.closest('.stakeholder-item');
-            if (stakeholderItem) {
-                const stakeholderId = parseInt(stakeholderItem.dataset.stakeholderId);
-                const stakeholder = stakeholders.find(s => s.id === stakeholderId);
-                if (stakeholder) {
-                    openStakeholderModal(stakeholder, elements);
-                }
-                return;
-            }
-            
-            // Handle document item clicks
-            const documentItem = e.target.closest('.document-item');
-            if (documentItem) {
-                const documentId = parseInt(documentItem.dataset.documentId);
-                const doc = documents.find(d => d.id === documentId);
-                if (doc) {
-                    const documentsTab = document.querySelector('.documents-content');
-                    if (documentsTab) {
-                        showDocument(doc, documentsTab);
-                        // Mark this document as active
-                        document.querySelectorAll('.document-item').forEach(item => {
-                            item.classList.remove('active');
-                        });
-                        documentItem.classList.add('active');
-                    }
-                }
-                return;
-            }
-            
-            // Handle update item expansion
-            const updateItem = e.target.closest('.update-item');
-            if (updateItem && !e.target.closest('.update-detail-section')) {
-                updateItem.classList.toggle('expanded');
-                return;
-            }
-        });
-        
-        // Splash screen buttons
-        if (elements.playButton) {
-            const handler = () => openMissionDrawer(elements);
-            elements.playButton.addEventListener('click', handler);
-            handlers.push({ element: elements.playButton, type: 'click', handler });
-        }
-        
-        if (elements.howToPlayBtn) {
-            const handler = () => openModal(elements.guideModal);
-            elements.howToPlayBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.howToPlayBtn, type: 'click', handler });
-        }
-        
-        // Mission drawer
-        if (elements.startMissionBtn) {
-            const handler = () => startGame(elements);
-            elements.startMissionBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.startMissionBtn, type: 'click', handler });
-        }
-        
-        if (elements.missionItems && elements.missionItems.length) {
-            elements.missionItems.forEach(item => {
-                const handler = () => {
-                    elements.missionItems.forEach(mi => mi.classList.remove('active'));
-                    item.classList.add('active');
-                    updateMissionDetails(item.dataset.mission, elements);
-                };
-                item.addEventListener('click', handler);
-                handlers.push({ element: item, type: 'click', handler });
             });
-        }
-        
-        // Game header buttons
-        if (elements.menuBtn) {
-            const handler = () => openModal(elements.menuModal);
-            elements.menuBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.menuBtn, type: 'click', handler });
-        }
-        
-        if (elements.guideBtn) {
-            const handler = () => openModal(elements.guideModal);
-            elements.guideBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.guideBtn, type: 'click', handler });
-        }
-        
-        // Modal close buttons - using modalManager for proper stacking
-        const setupModalCloseHandler = (closeButton, modal) => {
-            if (closeButton && modal) {
-                const handler = () => modalManager.closeModal(modal);
-                closeButton.addEventListener('click', handler);
-                handlers.push({ element: closeButton, type: 'click', handler });
+            
+            // Add educational briefing document if not already present
+            if (!gameState.documents.find(doc => doc.id === 7)) {
+                gameState.documents.push({
+                    id: 7,
+                    title: "Development Finance Educational Briefing",
+                    type: "educational",
+                    icon: "🎓",
+                    educationalValue: "Provides core theoretical background on development finance concepts relevant to the game.",
+                    content: "DEVELOPMENT FINANCE EDUCATIONAL BRIEFING\n\nKEY CONCEPTS IN DEVELOPMENT FINANCE\n\nDebt Sustainability:\nThe ability of a country to meet its debt obligations without compromising economic growth or requiring exceptional financial assistance. Key indicators include debt-to-GDP ratio, debt service-to-revenue ratio, and debt service coverage ratio (DSCR). Projects are considered financially sustainable when they generate sufficient revenue to cover operational costs and debt service with an appropriate margin of safety.\n\nCollateralized Lending:\nLoan agreements secured by specific assets or resources that may be claimed by the lender in case of default. While common in commercial finance, collateralized lending involving strategic national infrastructure can create sovereign risks, particularly when critical assets like ports, energy facilities, or transportation hubs are involved. The rise of 'asset-based lending' in development finance has raised concerns about potential loss of control over strategic assets.\n\nBlended Finance:\nThe strategic use of development finance to mobilize additional funding for sustainable development. Typically involves combining concessional public funds with commercial finance to improve risk-return profiles and make projects more attractive to private investors. Can leverage limited public resources to attract larger private capital flows towards development objectives.\n\nConditionality:\nRequirements attached to loans or grants that borrowers must fulfill. These may include policy reforms, governance standards, environmental requirements, or specific project implementation approaches. While intended to improve development outcomes, excessive or inappropriate conditionality can become controversial and politically challenging for recipient governments.\n\nExternalities:\nSpillovers from economic activities that affect parties not directly involved in the transactions. Infrastructure projects often create both positive externalities (improved transportation, economic growth) and negative externalities (environmental degradation, displacement). Effective project design requires identifying and addressing potential negative externalities early in the planning process.\n\nStakeholder Management:\nThe process of identifying, analyzing, engaging with, and addressing the concerns of various parties interested in or affected by a project. Effective stakeholder management is crucial for development finance projects, as it can prevent operational delays, reputational damage, and political complications. Key stakeholders typically include government entities, financiers, local communities, civil society organizations, and the private sector."
+                });
+                
+                documentDescriptions[7] = "Educational briefing on key concepts in development finance, including debt sustainability, collateralized lending, blended finance, conditionality, externalities, and stakeholder management.";
             }
-        };
+        },
         
-        setupModalCloseHandler(elements.closeGuideModal, elements.guideModal);
-        setupModalCloseHandler(elements.closeGuideBtn, elements.guideModal);
-        setupModalCloseHandler(elements.closeMenuModal, elements.menuModal);
-        setupModalCloseHandler(elements.closeStakeholderModal, elements.stakeholderModal);
-        setupModalCloseHandler(elements.closeStakeholderBtn, elements.stakeholderModal);
-        
-        // Action result modal with special handling
-        if (elements.closeActionResultModal && elements.actionResultModal) {
-            const handler = () => modalManager.closeModal(elements.actionResultModal);
-            elements.closeActionResultModal.addEventListener('click', handler);
-            handlers.push({ element: elements.closeActionResultModal, type: 'click', handler });
-        }
-        
-        if (elements.acknowledgeResultBtn && elements.actionResultModal) {
-            const handler = () => {
-                modalManager.closeModal(elements.actionResultModal);
-                checkForGameUpdates(elements);
-            };
-            elements.acknowledgeResultBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.acknowledgeResultBtn, type: 'click', handler });
-        }
-        
-        setupModalCloseHandler(elements.closeEndGameModal, elements.endGameModal);
-        
-        // Other modal buttons
-        if (elements.startTutorialBtn && elements.guideModal) {
-            const handler = () => {
-                modalManager.closeModal(elements.guideModal);
-                startTutorial(elements);
-            };
-            elements.startTutorialBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.startTutorialBtn, type: 'click', handler });
-        }
-        
-        if (elements.engageStakeholderBtn && elements.stakeholderModal) {
-            const handler = () => {
-                modalManager.closeModal(elements.stakeholderModal);
-                const stakeholderId = elements.stakeholderModal.dataset.stakeholderId;
-                engageStakeholder(stakeholderId, elements);
-            };
-            elements.engageStakeholderBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.engageStakeholderBtn, type: 'click', handler });
-        }
-        
-        if (elements.submitRecommendationBtn) {
-            const handler = () => submitFinalRecommendation(elements);
-            elements.submitRecommendationBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.submitRecommendationBtn, type: 'click', handler });
-        }
-        
-        if (elements.completeGameBtn && elements.verdictModal) {
-            const handler = () => {
-                modalManager.closeModal(elements.verdictModal);
-                resetGameAndReturnToSplash(elements);
-            };
-            elements.completeGameBtn.addEventListener('click', handler);
-            handlers.push({ element: elements.completeGameBtn, type: 'click', handler });
-        }
-        
-        // Tab navigation
-        if (elements.tabButtons && elements.tabButtons.length) {
-            elements.tabButtons.forEach(button => {
-                const handler = () => {
-                    const tabName = button.dataset.tab;
-                    
-                    // Remove update notification when updates tab is clicked
-                    if (tabName === 'updates' && elements.updatesBadge) {
-                        elements.updatesBadge.style.display = 'none';
+        /**
+         * Bind all global event listeners
+         */
+        bindEvents: function() {
+            try {
+                // Splash screen events
+                document.getElementById('playButton').addEventListener('click', SplashScreen.startGame);
+                document.getElementById('aboutButton').addEventListener('click', () => ModalManager.openModal('aboutModal'));
+                document.getElementById('closeAboutModal').addEventListener('click', () => ModalManager.closeModal('aboutModal'));
+                document.getElementById('closeAboutBtn').addEventListener('click', () => ModalManager.closeModal('aboutModal'));
+                
+                document.getElementById('carouselNext').addEventListener('click', SplashScreen.nextSlide);
+                document.getElementById('carouselPrev').addEventListener('click', SplashScreen.prevSlide);
+                document.getElementById('skipCarousel').addEventListener('click', SplashScreen.skipCarousel);
+                document.getElementById('continueButton').addEventListener('click', MissionSelector.selectMission);
+                
+                document.querySelectorAll('.indicator').forEach(indicator => {
+                    indicator.addEventListener('click', function() {
+                        SplashScreen.goToSlide(parseInt(this.getAttribute('data-slide')));
+                    });
+                });
+                
+                // Mission selection events
+                document.querySelectorAll('.mission-item:not(.disabled)').forEach(item => {
+                    item.addEventListener('click', function() {
+                        MissionSelector.selectMission(parseInt(this.getAttribute('data-mission')));
+                    });
+                });
+                document.getElementById('startMissionBtn').addEventListener('click', MissionSelector.startMission);
+                document.getElementById('showGuideBtn').addEventListener('click', () => ModalManager.openModal('guideModal'));
+                
+                // Modal events
+                document.getElementById('closeGuideModal').addEventListener('click', () => ModalManager.closeModal('guideModal'));
+                document.getElementById('closeGuideBtn').addEventListener('click', () => ModalManager.closeModal('guideModal'));
+                document.getElementById('startTutorialBtn').addEventListener('click', GameController.startTutorial);
+                document.getElementById('closeMenuModal').addEventListener('click', () => ModalManager.closeModal('menuModal'));
+                document.getElementById('closeStakeholderModal').addEventListener('click', () => ModalManager.closeModal('stakeholderModal'));
+                document.getElementById('closeStakeholderBtn').addEventListener('click', () => ModalManager.closeModal('stakeholderModal'));
+                document.getElementById('closeEngagementModal').addEventListener('click', () => ModalManager.closeModal('stakeholderEngagementModal'));
+                document.getElementById('cancelEngagementBtn').addEventListener('click', () => ModalManager.closeModal('stakeholderEngagementModal'));
+                
+                // Game UI events
+                document.getElementById('menuBtn').addEventListener('click', () => ModalManager.openModal('menuModal'));
+                document.getElementById('menuGuide').addEventListener('click', () => {
+                    ModalManager.closeModal('menuModal');
+                    ModalManager.openModal('guideModal');
+                });
+                
+                document.getElementById('menuReturnMain').addEventListener('click', () => {
+                    if (confirm('Return to main menu? Your unsaved progress will be lost.')) {
+                        ModalManager.closeModal('menuModal');
+                        GameUI.hideGameUI();
+                        SplashScreen.show();
                     }
-                    
-                    // Set active tab button
-                    elements.tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    
-                    // Show corresponding tab content
-                    if (elements.tabContents && elements.tabContents.length) {
-                        elements.tabContents.forEach(content => {
-                            if (content.classList.contains(`${tabName}-content`)) {
-                                content.classList.add('active');
-                                
-                                // If switching to documents tab, initialize it if needed
-                                if (tabName === 'documents' && !content.dataset.initialized) {
-                                    initializeDocumentsTab(content);
-                                    content.dataset.initialized = 'true';
-                                }
-                                
-                                // If switching to updates tab, initialize it if needed
-                                if (tabName === 'updates' && !content.dataset.initialized) {
-                                    initializeUpdatesTab(content);
-                                    content.dataset.initialized = 'true';
-                                }
-                            } else {
-                                content.classList.remove('active');
-                            }
+                });
+                
+                // Menu items
+                document.getElementById('menuSaveGame').addEventListener('click', () => {
+                    ModalManager.closeModal('menuModal');
+                    this.saveGame();
+                });
+                
+                document.getElementById('menuLoadGame').addEventListener('click', () => {
+                    ModalManager.closeModal('menuModal');
+                    this.loadGame();
+                });
+                
+                document.getElementById('menuOptions').addEventListener('click', () => {
+                    ModalManager.closeModal('menuModal');
+                    NotificationSystem.showNotification({
+                        type: 'info',
+                        title: 'Game Options',
+                        message: 'Adjust difficulty, display, and other game settings.'
+                    });
+                });
+                
+                document.getElementById('menuStats').addEventListener('click', () => {
+                    ModalManager.closeModal('menuModal');
+                    GameController.showGameStats();
+                });
+                
+                document.getElementById('menuExit').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to exit the game? All unsaved progress will be lost.')) {
+                        ModalManager.closeModal('menuModal');
+                        NotificationSystem.showNotification({
+                            type: 'info',
+                            title: 'Exiting Game',
+                            message: 'Thank you for playing.'
                         });
                     }
-                    
-                    // Announce tab change to screen readers
-                    announceToScreenReader(`${tabName} tab activated`, false);
+                });
+                
+                // Game result modal events
+                document.getElementById('returnToMenuBtn').addEventListener('click', () => {
+                    ModalManager.closeModal('gameResultModal');
+                    GameUI.hideGameUI();
+                    SplashScreen.show();
+                });
+                
+                document.getElementById('newGameBtn').addEventListener('click', () => {
+                    ModalManager.closeModal('gameResultModal');
+                    GameController.resetGameState();
+                    GameUI.hideGameUI();
+                    SplashScreen.show();
+                });
+                
+                // Tab navigation
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        TabNavigation.switchTab(this.getAttribute('data-tab'));
+                    });
+                });
+                
+                // Stakeholder engagement events
+                document.getElementById('engageStakeholderBtn').addEventListener('click', StakeholderManager.showEngagementOptions);
+                
+                console.log("Event bindings complete");
+            } catch (error) {
+                console.error("Error binding events:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Initialization Error',
+                    message: 'There was a problem setting up game controls. Please refresh the page.'
+                });
+            }
+        },
+        
+        /**
+         * Start the tutorial
+         */
+        startTutorial: function() {
+            ModalManager.closeModal('guideModal');
+            NotificationSystem.showNotification({
+                type: 'info',
+                title: 'Tutorial Mode',
+                message: 'The tutorial will guide you through the basics of managing development finance.'
+            });
+            
+            // Mark tutorial as completed
+            gameState.tutorialCompleted = true;
+            
+            // Show a sample action for the tutorial
+            setTimeout(() => {
+                NotificationSystem.showNotification({
+                    type: 'info',
+                    title: 'First Step',
+                    message: 'Begin by analyzing the current financial situation. Try selecting "Debt Analysis" from the actions panel.'
+                });
+            }, 3000);
+            
+            // Start the mission if not already in game
+            if (!document.getElementById('gameHeader').style.display || 
+                document.getElementById('gameHeader').style.display === 'none') {
+                MissionSelector.startMission();
+            }
+        },
+        
+        /**
+         * Save the current game state
+         */
+        saveGame: function() {
+            try {
+                const saveData = {
+                    gameState: gameState,
+                    saveDate: new Date().toISOString(),
+                    version: "1.2"
                 };
                 
-                button.addEventListener('click', handler);
-                handlers.push({ element: button, type: 'click', handler });
-            });
-        }
-        
-        // Menu items
-        const setupMenuItemHandler = (id, handler) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('click', handler);
-                handlers.push({ element, type: 'click', handler });
+                localStorage.setItem('Debt & DiplomacySaveGame', JSON.stringify(saveData));
+                
+                NotificationSystem.showNotification({
+                    type: 'success',
+                    title: 'Game Saved',
+                    message: 'Your progress has been saved successfully.'
+                });
+            } catch (error) {
+                console.error("Error saving game:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Save Failed',
+                    message: 'There was a problem saving your progress. Please try again.'
+                });
             }
-        };
+        },
         
-        setupMenuItemHandler('menuSaveGame', () => {
-            saveGame();
-            showNotification('Game Saved', 'Your progress has been saved successfully.', 'success');
-            if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-        });
-        
-        setupMenuItemHandler('menuLoadGame', () => {
-            const loadSuccess = loadGame(elements);
-            if (loadSuccess) {
-                showNotification('Game Loaded', 'Your saved game has been loaded successfully.', 'success');
-            } else {
-                showNotification('Load Failed', 'No saved game was found to load.', 'error');
-            }
-            if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-        });
-        
-        setupMenuItemHandler('menuOptions', () => {
-            showNotification('Options', 'Game options will be available in the full version.', 'info');
-            if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-        });
-        
-        setupMenuItemHandler('menuStats', () => {
-            showGameStatistics(elements);
-            if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-        });
-        
-        setupMenuItemHandler('menuReturnMain', () => {
-            if (gameStateManager.get('gameStarted')) {
-                if (confirm('Return to main menu? Your unsaved progress will be lost.')) {
-                    if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-                    resetGameAndReturnToSplash(elements);
+        /**
+         * Load a saved game
+         */
+        loadGame: function() {
+            try {
+                const savedData = localStorage.getItem('Debt & DiplomacySaveGame');
+                
+                if (!savedData) {
+                    NotificationSystem.showNotification({
+                        type: 'info',
+                        title: 'No Saved Game',
+                        message: 'No saved game was found. Start a new game instead.'
+                    });
+                    return;
                 }
-            } else {
-                if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-                resetGameAndReturnToSplash(elements);
+                
+                const saveGame = JSON.parse(savedData);
+                
+                // Load game state
+                Object.assign(gameState, saveGame.gameState);
+                
+                // Update UI based on loaded state
+                GameUI.updateResourcesDisplay();
+                MetricsManager.updateAllMetrics();
+                StakeholderManager.updateStakeholdersDisplay();
+                ObjectiveManager.updateAllObjectives();
+                
+                // Show game UI if not already visible
+                if (!document.getElementById('gameHeader').style.display || 
+                    document.getElementById('gameHeader').style.display === 'none') {
+                    GameUI.showGameUI();
+                } else {
+                    // Just refresh the current tab if already in game
+                    TabNavigation.refreshCurrentTab();
+                }
+                
+                NotificationSystem.showNotification({
+                    type: 'success',
+                    title: 'Game Loaded',
+                    message: `Successfully loaded game from ${new Date(saveGame.saveDate).toLocaleString()}.`
+                });
+            } catch (error) {
+                console.error("Error loading game:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Load Failed',
+                    message: 'There was a problem loading your saved game. The save file may be corrupted.'
+                });
             }
-        });
+        },
         
-        setupMenuItemHandler('menuExit', () => {
-            if (elements.menuModal) modalManager.closeModal(elements.menuModal);
-            showNotification('Exit Game', 'Thanks for playing AidCraft!', 'info');
-            setTimeout(() => {
-                resetGameAndReturnToSplash(elements);
-            }, 1500);
-        });
-    } catch (error) {
-        console.error('Error setting up event listeners:', error);
-        showNotification('Setup Error', 'There was a problem setting up the game interface. Please refresh the page.', 'error');
-    }
-    
-    // Window resize event for responsive adjustments
-    const resizeHandler = () => handleResize(elements);
-    window.addEventListener('resize', resizeHandler);
-    handlers.push({ element: window, type: 'resize', handler: resizeHandler });
-}
-
-// Handle keyboard navigation for modals
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalManager.activeModals.length > 0) {
-        const topModal = modalManager.activeModals[modalManager.activeModals.length - 1];
-        modalManager.closeModal(topModal);
-    }
-    
-    // Tab trap for modal focus management
-    if (e.key === 'Tab' && modalManager.activeModals.length > 0) {
-        const topModal = modalManager.activeModals[modalManager.activeModals.length - 1];
-        const focusableElements = topModal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        
-        if (focusableElements.length > 0) {
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
+        /**
+         * Show the game statistics
+         */
+        showGameStats: function() {
+            const completedActions = gameState.actionsHistory.length;
+            const completedObjectives = gameState.completedObjectives.length;
+            const diplomaticStatus = gameState.stakeholders.filter(s => s.relationship === 'friendly').length + 
+                                    " friendly, " +
+                                    gameState.stakeholders.filter(s => s.relationship === 'neutral').length + 
+                                    " neutral, " +
+                                    gameState.stakeholders.filter(s => s.relationship === 'hostile').length + 
+                                    " hostile";
+            const unlockedInsights = gameState.unlockedInsights.length;
             
-            if (e.shiftKey && document.activeElement === firstElement) {
-                e.preventDefault();
-                lastElement.focus();
-            } else if (!e.shiftKey && document.activeElement === lastElement) {
-                e.preventDefault();
-                firstElement.focus();
-            }
-        }
-    }
-});
-
-// Initialize game state change listeners
-function initializeStateListeners() {
-    // Listen for batch updates to refresh UI efficiently
-    gameStateManager.onChange('batchComplete', updateAllUI);
-    
-    // Listen for specific resource changes to animate them
-    gameStateManager.onChange('budget', (newValue, oldValue) => {
-        updateResourceDisplay('budget', newValue);
-        if (oldValue !== null && newValue !== oldValue) {
-            animateResourceChange('budget');
-        }
-    });
-    
-    gameStateManager.onChange('influence', (newValue, oldValue) => {
-        updateResourceDisplay('influence', newValue);
-        if (oldValue !== null && newValue !== oldValue) {
-            animateResourceChange('influence');
-        }
-    });
-    
-    gameStateManager.onChange('staff', (newValue, oldValue) => {
-        updateResourceDisplay('staff', newValue);
-        if (oldValue !== null && newValue !== oldValue) {
-            animateResourceChange('staff');
-        }
-    });
-    
-    // Listen for metric changes to update progress bars
-    gameStateManager.onChange('metrics.fiscalSustainability', (newValue) => {
-        updateMetricDisplay('fiscalSustainability', newValue);
-    });
-    
-    gameStateManager.onChange('metrics.environmentalCompliance', (newValue) => {
-        updateMetricDisplay('environmentalCompliance', newValue);
-    });
-    
-    gameStateManager.onChange('metrics.politicalCapital', (newValue) => {
-        updateMetricDisplay('politicalCapital', newValue);
-    });
-    
-    gameStateManager.onChange('metrics.internationalRelations', (newValue) => {
-        updateMetricDisplay('internationalRelations', newValue);
-    });
-    
-    // Listen for mission progress changes
-    gameStateManager.onChange('missionProgress', (newValue) => {
-        updateMissionProgress(newValue);
-    });
-    
-    // Listen for day changes to update timer and trigger events
-    gameStateManager.onChange('currentDay', (newValue, oldValue) => {
-        updateDayDisplay(newValue);
-        if (oldValue !== null && newValue > oldValue) {
-            triggerDailyEvents(newValue);
-        }
-    });
-}
-
-// Update all UI elements based on current game state
-function updateAllUI() {
-    // Update resources
-    updateResourceDisplay('budget', gameStateManager.get('budget'));
-    updateResourceDisplay('influence', gameStateManager.get('influence'));
-    updateResourceDisplay('staff', gameStateManager.get('staff'));
-    
-    // Update metrics
-    updateMetricDisplay('fiscalSustainability', gameStateManager.get('metrics.fiscalSustainability'));
-    updateMetricDisplay('environmentalCompliance', gameStateManager.get('metrics.environmentalCompliance'));
-    updateMetricDisplay('politicalCapital', gameStateManager.get('metrics.politicalCapital'));
-    updateMetricDisplay('internationalRelations', gameStateManager.get('metrics.internationalRelations'));
-    
-    // Update mission progress
-    updateMissionProgress(gameStateManager.get('missionProgress'));
-    
-    // Update day display
-    updateDayDisplay(gameStateManager.get('currentDay'));
-    
-    // Update available actions
-    updateAvailableActions();
-    
-    // Update stakeholder relationships
-    updateStakeholderDisplay();
-    
-    // Update unlocked documents
-    updateDocumentsDisplay();
-}
-
-// Update resource displays with current values
-function updateResourceDisplay(resourceType, value) {
-    const resourceElement = document.querySelector(`.resource-value[data-resource="${resourceType}"]`);
-    if (resourceElement) {
-        if (resourceType === 'budget') {
-            resourceElement.textContent = `$${formatNumber(value)}`;
-        } else {
-            resourceElement.textContent = value;
-        }
-    }
-}
-
-// Format numbers for display (e.g., adding commas for thousands)
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-// Animate resource changes with visual feedback
-function animateResourceChange(resourceType) {
-    const resourceElement = document.querySelector(`.resource-value[data-resource="${resourceType}"]`);
-    if (resourceElement) {
-        resourceElement.classList.remove('resource-changed');
-        // Trigger reflow to restart animation
-        void resourceElement.offsetWidth;
-        resourceElement.classList.add('resource-changed');
-    }
-}
-
-// Update metric displays with current values
-function updateMetricDisplay(metricType, value) {
-    const metricFill = document.querySelector(`.fill-${metricType}`);
-    const metricValue = document.querySelector(`.metric-value[data-metric="${metricType}"]`);
-    
-    if (metricFill) {
-        metricFill.style.width = `${value}%`;
-    }
-    
-    if (metricValue) {
-        metricValue.textContent = `${value}%`;
+            NotificationSystem.showNotification({
+                type: 'info',
+                title: 'Game Statistics',
+                message: `Day: ${gameState.currentDay}/${gameState.totalDays} | 
+                          Actions: ${completedActions} | 
+                          Objectives: ${completedObjectives}/4 | 
+                          Diplomacy: ${diplomaticStatus} | 
+                          Insights: ${unlockedInsights}/${gameState.educationalInsights.length}`
+            });
+            
+            // Show more detailed stats after a delay
+            setTimeout(() => {
+                const fiscalStatus = gameState.metrics.fiscal >= 60 ? "Sustainable" : 
+                                    gameState.metrics.fiscal >= 40 ? "Concerning" : "Critical";
+                                    
+                const environmentalStatus = gameState.metrics.environmental >= 60 ? "Compliant" : 
+                                           gameState.metrics.environmental >= 40 ? "Improving" : "Non-compliant";
+                
+                NotificationSystem.showNotification({
+                    type: 'info',
+                    title: 'Key Performance Indicators',
+                    message: `Fiscal Status: ${fiscalStatus} (${gameState.metrics.fiscal}%) | 
+                              Environmental: ${environmentalStatus} (${gameState.metrics.environmental}%) | 
+                              Political Capital: ${gameState.resources.influence} points | 
+                              Budget: $${gameState.resources.budget.toLocaleString()}`
+                });
+            }, 2000);
+        },
         
-        // Update color based on value
-        metricValue.classList.remove('value-low', 'value-medium', 'value-high');
-        if (value < 30) {
-            metricValue.classList.add('value-low');
-        } else if (value < 70) {
-            metricValue.classList.add('value-medium');
-        } else {
-            metricValue.classList.add('value-high');
-        }
-    }
-}
-
-// Update mission progress display
-function updateMissionProgress(progress) {
-    const progressFill = document.querySelector('.mission-progress-fill');
-    const progressPercentage = document.querySelector('.mission-progress-percentage');
+        /**
+         * Reset the game state to initial values
+         */
+        resetGameState: function() {
+            gameState.currentDay = 1;
+            gameState.resources = {
+                budget: 15000000,
+                influence: 60,
+                staff: 6,
+                timeRemaining: 10
+            };
+            gameState.metrics = {
+                fiscal: 35,
+                environmental: 40,
+                political: 60,
+                international: 30
+            };
+            gameState.completedObjectives = [];
+            gameState.decisions = [];
+            gameState.actionsHistory = [];
+            gameState.updates = [];
+            gameState.unlockedInsights = [];
+            gameState.documentHistory = [];
+            gameState.stakeholderEngagements = [];
+            
+            // Reset stakeholder relationships
+            gameState.stakeholders.forEach(stakeholder => {
+                if (stakeholder.id === 4) {
+                    stakeholder.relationship = "hostile";
+                } else if (stakeholder.id === 5) {
+                    stakeholder.relationship = "friendly";
+                } else {
+                    stakeholder.relationship = "neutral";
+                }
+            });
+            
+            // Reset objective progress bars
+            document.querySelectorAll('.objective-item .progress').forEach(progress => {
+                progress.style.height = '0%';
+            });
+            
+            // Reset overall progress
+            document.getElementById('overallProgressFill').style.width = '0%';
+            document.getElementById('overallProgressLabel').textContent = '0%';
+            
+            console.log("Game state reset to initial values");
+        },
+        
+        /**
+         * Execute an action based on its ID
+         * @param {number} actionId - The ID of the action to execute
+         */
+        executeAction: async function(actionId) {
+            try {
+                // Find the action definition
+                const action = gameState.actions.find(a => a.id === actionId);
+                if (!action) {
+                    throw new Error(`Action with ID ${actionId} not found`);
+                }
+                
+                // Check if player has enough resources
+                if (gameState.resources.budget < action.cost) {
+                    NotificationSystem.showNotification({
+                        type: 'error',
+                        title: 'Insufficient Budget',
+                        message: `You need $${action.cost.toLocaleString()} to perform this action, but you only have $${gameState.resources.budget.toLocaleString()}.`
+                    });
+                    return;
+                }
+                
+                if (gameState.resources.timeRemaining < action.timeCost) {
+                    NotificationSystem.showNotification({
+                        type: 'error',
+                        title: 'Insufficient Time',
+                        message: `You need ${action.timeCost} days to perform this action, but you only have ${gameState.resources.timeRemaining} days remaining.`
+                    });
+                    return;
+                }
+                
+                if (gameState.resources.staff < action.staffCost) {
+                    NotificationSystem.showNotification({
+                        type: 'error',
+                        title: 'Insufficient Staff',
+                        message: `You need ${action.staffCost} staff members for this action, but you only have ${gameState.resources.staff} available.`
+                    });
+                    return;
+                }
+                
+                // Show action loading animation
+                await ActionManager.showActionLoading(action.id);
+                
+                // Update resources
+                gameState.resources.budget -= action.cost;
+                gameState.resources.timeRemaining -= action.timeCost;
+                gameState.resources.staff -= action.staffCost;
+                gameState.currentDay += action.timeCost;
+                
+                // Update metrics
+                if (action.impacts) {
+                    for (const [metric, value] of Object.entries(action.impacts)) {
+                        if (gameState.metrics[metric] !== undefined && value !== 0) {
+                            gameState.metrics[metric] += value;
+                            // Ensure metrics stay within 0-100 range
+                            gameState.metrics[metric] = Math.max(0, Math.min(100, gameState.metrics[metric]));
+                            MetricsManager.updateMetricDisplay(metric);
+                        }
+                    }
+                }
+                
+                // Apply influence change if present
+                if (action.impacts && action.impacts.influence) {
+                    gameState.resources.influence += action.impacts.influence;
+                    
+                    // Check for negative influence cap
+                    gameState.resources.influence = Math.max(0, gameState.resources.influence);
+                    
+                    // Check for influence depletion
+                    if (gameState.resources.influence <= gameState.thresholds.influence) {
+                        setTimeout(() => {
+                            GameController.triggerGameOver('influence');
+                        }, 1500);
+                    }
+                }
+                
+                // Update stakeholder relationships
+                if (action.stakeholderImpacts) {
+                    action.stakeholderImpacts.forEach(impact => {
+                        StakeholderManager.updateRelationship(impact.id, impact.relationship, impact.reason);
+                    });
+                }
+                
+                // Update objective progress
+                if (action.objectiveProgress) {
+                    action.objectiveProgress.forEach(objective => {
+                        ObjectiveManager.updateProgress(objective.id, objective.progress, objective.reason);
+                    });
+                }
+                
+                // Add to action history
+                gameState.actionsHistory.push({
+                    id: action.id,
+                    day: gameState.currentDay,
+                    title: `${action.title} Completed`,
+                    description: action.impactDescription,
+                    impacts: action.impacts,
+                    stakeholderImpacts: action.stakeholderImpacts,
+                    objectiveProgress: action.objectiveProgress,
+                    educationalValue: action.educationalValue
+                });
+                
+                // Add news update
+                if (action.newsUpdate) {
+                    gameState.updates.push({
+                        day: gameState.currentDay,
+                        title: action.newsUpdate.title,
+                        content: action.newsUpdate.content,
+                        relatedAction: action.title
+                    });
+                    
+                    // Update notification badge count
+                    document.querySelector('.updates-badge').textContent = gameState.updates.length;
+                    document.querySelector('.updates-badge').style.display = 'flex';
+                }
+                
+                // Unlock educational insight if available
+                if (action.unlocksInsight) {
+                    if (!gameState.unlockedInsights.some(insight => insight.id === action.unlocksInsight.id)) {
+                        gameState.unlockedInsights.push(action.unlocksInsight);
+                        
+                        // Show educational notification after a delay
+                        setTimeout(() => {
+                            NotificationSystem.showNotification({
+                                type: 'info',
+                                title: 'Educational Insight Unlocked',
+                                message: `You've unlocked a new insight: "${action.unlocksInsight.title}". Check the Educational Insights section for details.`
+                            });
+                        }, 2000);
+                    }
+                }
+                
+                // Update UI elements
+                GameUI.updateResourcesDisplay();
+                StakeholderManager.updateStakeholdersDisplay();
+                TabNavigation.refreshCurrentTab();
+                ObjectiveManager.updateOverallProgress();
+                
+                // Show action result notification
+                NotificationSystem.showNotification({
+                    type: 'success',
+                    title: action.title,
+                    message: action.impactDescription
+                });
+                
+                // Check for completion of all objectives
+                if (ObjectiveManager.checkAllObjectivesComplete()) {
+                    setTimeout(() => {
+                        GameController.showVictory();
+                    }, 1500);
+                }
+                
+                // Check if time has run out
+                if (gameState.resources.timeRemaining <= 0) {
+                    setTimeout(() => {
+                        GameController.triggerGameOver('time');
+                    }, 1500);
+                }
+                
+                // Check if budget has run out
+                if (gameState.resources.budget <= gameState.thresholds.budget) {
+                    setTimeout(() => {
+                        GameController.triggerGameOver('budget');
+                    }, 1500);
+                }
+                
+                // Check if staff has run out
+                if (gameState.resources.staff <= gameState.thresholds.staff) {
+                    setTimeout(() => {
+                        GameController.triggerGameOver('staff');
+                    }, 1500);
+                }
+                
+                // Check if any metric has fallen below critical threshold
+                for (const [metric, value] of Object.entries(gameState.metrics)) {
+                    if (gameState.thresholds[metric] && value <= gameState.thresholds[metric]) {
+                        setTimeout(() => {
+                            GameController.triggerGameOver(metric);
+                        }, 1500);
+                        break;
+                    }
+                }
+                
+                // Check if player can take any more actions
+                this.checkForGameEndConditions();
+                
+                console.log(`Action executed: ${action.title}`);
+                
+            } catch (error) {
+                console.error("Error executing action:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Action Failed',
+                    message: 'There was a problem executing this action. Please try again.'
+                });
+            }
+        },
+        
+        /**
+         * Check if the player can take any more actions
+         */
+        checkForGameEndConditions: function() {
+            // Check if player has resources to take any remaining actions
+            let canTakeAnyAction = false;
+            
+            for (const action of gameState.actions) {
+                // Skip actions already taken
+                if (gameState.actionsHistory.some(a => a.id === action.id)) {
+                    continue;
+                }
+                
+                // Check if player has enough resources
+                if (gameState.resources.budget >= action.cost && 
+                    gameState.resources.timeRemaining >= action.timeCost && 
+                    gameState.resources.staff >= action.staffCost) {
+                    canTakeAnyAction = true;
+                    break;
+                }
+            }
+            
+            // If no actions can be taken, end game
+            if (!canTakeAnyAction && gameState.actions.length > gameState.actionsHistory.length) {
+                setTimeout(() => {
+                    GameController.triggerGameOver('resources');
+                }, 1500);
+            }
+        },
+        
+        /**
+         * Execute a stakeholder engagement option
+         * @param {number} stakeholderId - The ID of the stakeholder
+         * @param {number} optionId - The ID of the engagement option
+         */
+        executeStakeholderEngagement: async function(stakeholderId, optionId) {
+            try {
+                // Find the stakeholder
+                const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+                if (!stakeholder) {
+                    throw new Error(`Stakeholder with ID ${stakeholderId} not found`);
+                }
+                
+                // Find the engagement option
+                const engagementOptions = gameState.stakeholderEngagementOptions[stakeholderId];
+                if (!engagementOptions) {
+                    throw new Error(`No engagement options for stakeholder ${stakeholderId}`);
+                }
+                
+                const option = engagementOptions.find(o => o.id === optionId);
+                if (!option) {
+                    throw new Error(`Engagement option ${optionId} not found for stakeholder ${stakeholderId}`);
+                }
+                
+                // Check if player has enough budget
+                if (gameState.resources.budget < option.cost) {
+                    NotificationSystem.showNotification({
+                        type: 'error',
+                        title: 'Insufficient Budget',
+                        message: `You need $${option.cost.toLocaleString()} for this engagement, but you only have $${gameState.resources.budget.toLocaleString()}.`
+                    });
+                    return;
+                }
+                
+                // Check if player has enough influence
+                if (gameState.resources.influence < option.influenceCost) {
+                    NotificationSystem.showNotification({
+                        type: 'error',
+                        title: 'Insufficient Influence',
+                        message: `You need ${option.influenceCost} influence points for this engagement, but you only have ${gameState.resources.influence}.`
+                    });
+                    return;
+                }
+                
+                // Show action loading animation
+                await ActionManager.showActionLoading(0, `Engaging with ${stakeholder.name}`);
+                
+                // Update resources
+                gameState.resources.budget -= option.cost;
+                gameState.resources.influence -= option.influenceCost;
+                
+                // Update stakeholder relationship
+                StakeholderManager.updateRelationship(stakeholderId, option.impacts.relationship, 
+                    `Further engagement: ${option.title}`);
+                
+                // Update metrics if any
+                if (option.impacts.metrics) {
+                    for (const [metric, value] of Object.entries(option.impacts.metrics)) {
+                        if (gameState.metrics[metric] !== undefined) {
+                            gameState.metrics[metric] += value;
+                            // Ensure metrics stay within 0-100 range
+                            gameState.metrics[metric] = Math.max(0, Math.min(100, gameState.metrics[metric]));
+                            MetricsManager.updateMetricDisplay(metric);
+                        }
+                    }
+                }
+                
+                // Add to stakeholder engagements history
+                gameState.stakeholderEngagements.push({
+                    stakeholderId: stakeholderId,
+                    optionId: optionId,
+                    day: gameState.currentDay,
+                    title: option.title,
+                    outcome: option.outcome,
+                    impacts: option.impacts
+                });
+                
+                // Update UI elements
+                GameUI.updateResourcesDisplay();
+                StakeholderManager.updateStakeholdersDisplay();
+                TabNavigation.refreshCurrentTab();
+                
+                // Close the engagement modal
+                ModalManager.closeModal('stakeholderEngagementModal');
+                
+                // Show engagement result notification
+                NotificationSystem.showNotification({
+                    type: 'success',
+                    title: `Engagement with ${stakeholder.name}`,
+                    message: option.outcome
+                });
+                
+                console.log(`Stakeholder engagement executed: ${option.title}`);
+                
+            } catch (error) {
+                console.error("Error executing stakeholder engagement:", error);
+                NotificationSystem.showNotification({
+                    type: 'error',
+                    title: 'Engagement Failed',
+                    message: 'There was a problem with this stakeholder engagement. Please try again.'
+                });
+            }
+        },
+        /**
+         * Show the victory screen when player succeeds
+         */
+        showVictory: function() {
+            // Calculate overall score based on metrics and resources
+            const fiscalScore = gameState.metrics.fiscal;
+            const environmentalScore = gameState.metrics.environmental;
+            const politicalScore = gameState.metrics.political;
+            const internationalScore = gameState.metrics.international;
+            
+            const overallScore = Math.round((fiscalScore + environmentalScore + politicalScore + internationalScore) / 4);
+            
+            // Determine victory type based on score
+            let verdict = '';
+            let educationalSummary = '';
+            
+            if (overallScore >= 80) {
+                verdict = 'Outstanding Success';
+                educationalSummary = 'You\'ve demonstrated exceptional skill in balancing financial sustainability with environmental and social considerations. Your approach to development finance prioritized multiple stakeholder interests while maintaining fiscal discipline.';
+            } else if (overallScore >= 60) {
+                verdict = 'Major Success';
+                educationalSummary = 'You\'ve successfully navigated the complexities of development finance, finding sustainable solutions that address most stakeholder concerns while maintaining adequate fiscal performance.';
+            } else if (overallScore >= 40) {
+                verdict = 'Moderate Success';
+                educationalSummary = 'You\'ve achieved a workable solution to the debt challenge, though some stakeholder needs remain unaddressed. This represents the real-world trade-offs often required in development finance.';
+            } else {
+                verdict = 'Partial Success';
+                educationalSummary = 'While avoiding complete failure, your solution reflects the difficult compromises often faced in development finance when resources are limited and stakeholder interests conflict.';
+            }
+            
+            // Set up the result modal content
+            document.getElementById('gameResultTitle').textContent = 'Mission Complete';
+            
+            const resultBody = document.getElementById('gameResultBody');
+            
+            // Get stakeholder statuses for the summary
+            const friendlyCount = gameState.stakeholders.filter(s => s.relationship === 'friendly').length;
+            const hostileCount = gameState.stakeholders.filter(s => s.relationship === 'hostile').length;
+            
+            resultBody.innerHTML = `
+                <div class="result-header">
+                    <div class="result-score">${overallScore}%</div>
+                    <div class="result-verdict">${verdict}</div>
+                </div>
+                
+                <div class="result-metrics">
+                    <div class="result-metric">
+                        <div class="result-metric-value" style="color: var(--fiscal-color)">${fiscalScore}%</div>
+                        <div class="result-metric-label">Fiscal Sustainability</div>
+                    </div>
+                    <div class="result-metric">
+                        <div class="result-metric-value" style="color: var(--environmental-color)">${environmentalScore}%</div>
+                        <div class="result-metric-label">Environmental Compliance</div>
+                    </div>
+                    <div class="result-metric">
+                        <div class="result-metric-value" style="color: var(--political-color)">${politicalScore}%</div>
+                        <div class="result-metric-label">Political Capital</div>
+                    </div>
+                    <div class="result-metric">
+                        <div class="result-metric-value" style="color: var(--international-color)">${internationalScore}%</div>
+                        <div class="result-metric-label">International Relations</div>
+                    </div>
+                </div>
+                
+                <div class="result-summary">
+                    <h4>Mission Summary</h4>
+                    <p>You've successfully navigated the port financing crisis in ${gameState.currentDay} days. You've maintained ${friendlyCount} positive stakeholder relationships and have ${gameState.resources.influence} influence points remaining. Your fiscal sustainability score of ${fiscalScore}% indicates that ${fiscalScore >= 60 ? 'you\'ve secured a sustainable financial future for the port' : 'there are still financial challenges to overcome'}.</p>
+                </div>
+                
+                <div class="educational-outcome">
+                    <h4>Educational Insights</h4>
+                    <p>${educationalSummary}</p>
+                    <p>You unlocked ${gameState.unlockedInsights.length} out of ${gameState.educationalInsights.length} development finance insights during your playthrough.</p>
+                </div>
+                
+                <div class="result-relationships">
+                    <h4>Key Stakeholder Relations</h4>
+                    ${gameState.stakeholders.map(stakeholder => {
+                        let bgColor;
+                        let textColor;
+                        
+                        switch(stakeholder.relationship) {
+                            case 'friendly':
+                                bgColor = 'rgba(50, 165, 130, 0.1)';
+                                textColor = 'var(--success)';
+                                break;
+                            case 'hostile':
+                                bgColor = 'rgba(244, 83, 102, 0.1)';
+                                textColor = 'var(--danger)';
+                                break;
+                            default: // neutral
+                                bgColor = 'rgba(110, 122, 148, 0.1)';
+                                textColor = 'var(--neutral)';
+                        }
+                        
+                        return `
+                            <div class="result-relationship">
+                                <div class="relationship-avatar" style="background-color: var(--primary)">${stakeholder.image}</div>
+                                <div class="relationship-details">
+                                    <div class="relationship-name">${stakeholder.name}</div>
+                                    <div class="relationship-status" style="background-color: ${bgColor}; color: ${textColor}">
+                                        ${stakeholder.relationship.charAt(0).toUpperCase() + stakeholder.relationship.slice(1)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            ModalManager.openModal('gameResultModal');
+            
+            console.log("Victory screen displayed");
+        },
+        
+        /**
+         * Trigger game over when player fails
+         * @param {string} reason - The reason for game over (influence, budget, time, staff, etc.)
+         */
+/**
+ * Trigger game conclusion when player reaches an end state
+ * @param {string} reason - The reason for game conclusion (influence, budget, time, staff, etc.)
+ */
+triggerGameOver: function(reason) {
+    // Calculate partial score based on metrics
+    const fiscalScore = gameState.metrics.fiscal;
+    const environmentalScore = gameState.metrics.environmental;
+    const politicalScore = gameState.metrics.political;
+    const internationalScore = gameState.metrics.international;
     
-    if (progressFill) {
-        progressFill.style.width = `${progress}%`;
-    }
+    const overallScore = Math.round((fiscalScore + environmentalScore + politicalScore + internationalScore) / 4);
     
-    if (progressPercentage) {
-        progressPercentage.textContent = `${progress}%`;
-    }
+    // Set up the result modal content
+    document.getElementById('gameResultTitle').textContent = 'Mission Conclusion';
     
-    // Update progress bar color based on completion stage
-    const progressBar = document.querySelector('.mission-progress-bar');
-    if (progressBar) {
-        progressBar.classList.remove('progress-early', 'progress-mid', 'progress-late');
-        if (progress < 30) {
-            progressBar.classList.add('progress-early');
-        } else if (progress < 70) {
-            progressBar.classList.add('progress-mid');
-        } else {
-            progressBar.classList.add('progress-late');
-        }
-    }
-}
-
-// Update day display
-function updateDayDisplay(day) {
-    const dayDisplay = document.querySelector('.mission-timer');
-    if (dayDisplay) {
-        dayDisplay.textContent = `Day ${day} of ${gameStateManager.get('totalDays')}`;
-    }
-}
-
-// Trigger daily events based on current day
-function triggerDailyEvents(day) {
-    // Add daily event logic here
-    console.log(`Day ${day} has begun`);
+    const resultBody = document.getElementById('gameResultBody');
     
-    // Check for scheduled events
-    const scheduledEvents = getScheduledEventsForDay(day);
-    for (const event of scheduledEvents) {
-        processGameEvent(event);
-    }
+    // Generate conclusion message based on reason
+    let conclusionMessage = '';
+    let educationalLesson = '';
     
-    // Random events with probability based on difficulty
-    if (Math.random() < getDifficultyRandomEventChance()) {
-        triggerRandomEvent();
-    }
-    
-    // Add notification for new day
-    addNotification({
-        type: 'info',
-        title: `Day ${day} Begins`,
-        message: `You have ${gameStateManager.get('totalDays') - day} days remaining to complete your mission.`
-    });
-    
-    // Check for game end condition
-    if (day > gameStateManager.get('totalDays')) {
-        endGame();
-    }
-}
-
-// Get difficulty-based chance for random events
-function getDifficultyRandomEventChance() {
-    const difficulty = gameStateManager.get('difficulty');
-    switch (difficulty) {
-        case 'easy': return 0.1;
-        case 'medium': return 0.2;
-        case 'hard': return 0.3;
-        default: return 0.2;
-    }
-}
-
-// Get scheduled events for a specific day
-function getScheduledEventsForDay(day) {
-    // This would typically come from a predefined event schedule
-    // For now, returning an empty array as placeholder
-    return [];
-}
-
-// Process a game event
-function processGameEvent(event) {
-    // Handle different event types
-    switch (event.type) {
-        case 'stakeholder':
-            updateStakeholderRelationship(event.stakeholderId, event.change);
+    switch(reason) {
+        case 'influence':
+            conclusionMessage = 'Your political capital has reached a critical threshold. The Prime Minister has expressed concerns about your strategic approach to the port financing situation and has requested a change in leadership for this initiative.';
+            educationalLesson = 'In development finance, maintaining political support is crucial. Technical solutions must be balanced with political viability to ensure continued mandate for implementation.';
             break;
-        case 'resource':
-            updateResource(event.resourceType, event.change);
+        case 'budget':
+            conclusionMessage = 'Your available budget has been fully allocated without reaching a sustainable solution. The Finance Ministry now needs to reassess the approach with a fresh strategic plan.';
+            educationalLesson = 'Fiscal constraints are a fundamental reality in development finance. Effective prioritization of investments is essential when resources are limited.';
             break;
-        case 'metric':
-            updateMetric(event.metricType, event.change);
+        case 'time':
+            conclusionMessage = 'The loan payment deadline has arrived without a sustainable solution in place. A new emergency committee has been formed to address the immediate financial obligations.';
+            educationalLesson = 'Timing is critical in debt management. Proactive engagement with creditors well before payment deadlines provides more options and leverage in negotiations.';
             break;
-        case 'notification':
-            addNotification(event.notification);
+        case 'staff':
+            conclusionMessage = 'Your team has reached its capacity limits. Without adequate human resources to implement new initiatives, a reorganization will be needed to continue progress on addressing the crisis.';
+            educationalLesson = 'Implementation capacity is often overlooked in development planning. Even well-designed solutions require adequate human resources for successful execution.';
             break;
-        case 'document':
-            unlockDocument(event.documentId);
+        case 'fiscal':
+            conclusionMessage = 'The port\n\s fiscal sustainability metrics have reached concerning levels. Creditors have signaled the need for an immediate intervention and possible restructuring of management.';
+            educationalLesson = 'Maintaining minimum debt service coverage ratios is essential for infrastructure projects. When revenue falls too far below debt obligations, significant restructuring may be required.';
+            break;
+        case 'environmental':
+            conclusionMessage = 'Environmental compliance has fallen below international standards. Regulatory bodies have called for a comprehensive review, and local protests have temporarily disrupted port operations.';
+            educationalLesson = 'Environmental standards have become increasingly central to infrastructure finance. Projects must address these concerns to maintain operational continuity and stakeholder support.';
+            break;
+        case 'political':
+            conclusionMessage = 'Political support for the port project has significantly diminished. The government is reassessing its approach, and a new task force will be appointed to develop alternative strategies.';
+            educationalLesson = 'Large infrastructure projects require sustained political commitment across multiple stakeholder groups. Building and maintaining broad political support is essential for project continuity.';
+            break;
+        case 'international':
+            conclusionMessage = 'International relations have become strained to a critical point. Diplomatic interventions are now required before financial discussions can productively resume.';
+            educationalLesson = 'Development finance increasingly requires navigating complex geopolitical relationships. Maintaining positive relations with diverse international partners preserves financial options.';
+            break;
+        case 'resources':
+            conclusionMessage = 'You have allocated all available resources. The port financing situation remains challenging, and leadership has decided to bring in additional expertise to explore new approaches.';
+            educationalLesson = 'Resource planning is critical in development finance. Actions should be sequenced to maximize impact while preserving options for future interventions.';
             break;
         default:
-            console.warn(`Unknown event type: ${event.type}`);
+            conclusionMessage = 'The port financing situation requires a new approach. A strategic reassessment will be conducted to identify alternative pathways forward.';
+            educationalLesson = 'Development finance challenges require balancing multiple objectives and stakeholder interests simultaneously.';
     }
     
-    // Record event in history
-    gameStateManager.state.eventHistory.push({
-        day: gameStateManager.get('currentDay'),
-        type: event.type,
-        details: event
-    });
-}
-
-// Trigger a random event
-function triggerRandomEvent() {
-    // Select a random event based on current game state
-    // This is a placeholder implementation
-    const eventTypes = ['stakeholder', 'resource', 'metric', 'document'];
-    const randomType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    
-    let event = {
-        type: randomType,
-        day: gameStateManager.get('currentDay')
-    };
-    
-    // Customize event based on type
-    switch (randomType) {
-        case 'stakeholder':
-            const stakeholderId = Math.floor(Math.random() * stakeholders.length) + 1;
-            const changeAmount = Math.floor(Math.random() * 20) - 10; // -10 to +10
-            event.stakeholderId = stakeholderId;
-            event.change = changeAmount;
-            event.notification = {
-                type: changeAmount > 0 ? 'success' : 'warning',
-                title: `Stakeholder Update: ${getStakeholderById(stakeholderId).name}`,
-                message: changeAmount > 0 
-                    ? `Relationship improved by ${changeAmount} points due to external factors.`
-                    : `Relationship deteriorated by ${Math.abs(changeAmount)} points due to external factors.`
-            };
-            break;
-            
-        case 'resource':
-            const resources = ['budget', 'influence', 'staff'];
-            const resourceType = resources[Math.floor(Math.random() * resources.length)];
-            const resourceChange = Math.floor(Math.random() * 1000000) - 500000; // Budget change
-            if (resourceType === 'influence' || resourceType === 'staff') {
-                resourceChange = Math.floor(Math.random() * 10) - 5; // Smaller change for non-budget
-            }
-            event.resourceType = resourceType;
-            event.change = resourceChange;
-            event.notification = {
-                type: resourceChange > 0 ? 'success' : 'warning',
-                title: `Resource Update: ${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)}`,
-                message: resourceChange > 0
-                    ? `Gained ${resourceType === 'budget' ? '$' + formatNumber(resourceChange) : resourceChange} due to external factors.`
-                    : `Lost ${resourceType === 'budget' ? '$' + formatNumber(Math.abs(resourceChange)) : Math.abs(resourceChange)} due to external factors.`
-            };
-            break;
-            
-        case 'metric':
-            const metrics = ['fiscalSustainability', 'environmentalCompliance', 'politicalCapital', 'internationalRelations'];
-            const metricType = metrics[Math.floor(Math.random() * metrics.length)];
-            const metricChange = Math.floor(Math.random() * 10) - 5; // -5 to +5
-            event.metricType = metricType;
-            event.change = metricChange;
-            event.notification = {
-                type: metricChange > 0 ? 'success' : 'warning',
-                title: `Metric Update: ${formatMetricName(metricType)}`,
-                message: metricChange > 0
-                    ? `Increased by ${metricChange}% due to external factors.`
-                    : `Decreased by ${Math.abs(metricChange)}% due to external factors.`
-            };
-            break;
-            
-        case 'document':
-            // Only trigger if there are documents to unlock
-            const unlockedDocs = gameStateManager.get('unlockedDocuments');
-            const availableDocs = documents.filter(doc => !unlockedDocs.includes(doc.id));
-            
-            if (availableDocs.length > 0) {
-                const randomDoc = availableDocs[Math.floor(Math.random() * availableDocs.length)];
-                event.documentId = randomDoc.id;
-                event.notification = {
-                    type: 'info',
-                    title: 'New Document Available',
-                    message: `"${randomDoc.title}" has been added to your documents.`
-                };
-            } else {
-                // Fall back to a metric change if no documents available
-                return triggerRandomEvent();
-            }
-            break;
-    }
-    
-    // Process the random event
-    processGameEvent(event);
-}
-
-// Format metric name for display
-function formatMetricName(metricType) {
-    switch (metricType) {
-        case 'fiscalSustainability': return 'Fiscal Sustainability';
-        case 'environmentalCompliance': return 'Environmental Compliance';
-        case 'politicalCapital': return 'Political Capital';
-        case 'internationalRelations': return 'International Relations';
-        default: return metricType;
-    }
-}
-
-// Update stakeholder relationship
-function updateStakeholderRelationship(stakeholderId, change) {
-    const stakeholder = getStakeholderById(stakeholderId);
-    if (stakeholder) {
-        stakeholder.trustLevel = Math.max(0, Math.min(100, stakeholder.trustLevel + change));
+    resultBody.innerHTML = `
+        <div class="result-header">
+            <div class="result-score">${overallScore}%</div>
+            <div class="result-verdict">Mission Concluded</div>
+        </div>
         
-        // Update relationship status based on trust level
-        if (stakeholder.trustLevel < 30) {
-            stakeholder.relationship = 'hostile';
-        } else if (stakeholder.trustLevel < 60) {
-            stakeholder.relationship = 'neutral';
-        } else {
-            stakeholder.relationship = 'friendly';
-        }
+        <div class="result-summary">
+            <h4>What Happened</h4>
+            <p>${conclusionMessage}</p>
+        </div>
         
-        // Update UI
-        updateStakeholderDisplay();
-    }
-}
-
-// Get stakeholder by ID
-function getStakeholderById(id) {
-    return stakeholders.find(s => s.id === id);
-}
-
-// Update resource values
-function updateResource(resourceType, change) {
-    const currentValue = gameStateManager.get(resourceType);
-    gameStateManager.set(resourceType, currentValue + change);
-}
-
-// Update metric values
-function updateMetric(metricType, change) {
-    const currentValue = gameStateManager.get(`metrics.${metricType}`);
-    gameStateManager.set(`metrics.${metricType}`, currentValue + change);
-}
-
-// Unlock a document
-function unlockDocument(documentId) {
-    const unlockedDocs = [...gameStateManager.get('unlockedDocuments')];
-    if (!unlockedDocs.includes(documentId)) {
-        unlockedDocs.push(documentId);
-        gameStateManager.set('unlockedDocuments', unlockedDocs);
-        updateDocumentsDisplay();
-    }
-}
-
-// Update available actions based on game state
-function updateAvailableActions() {
-    const actionContainer = document.querySelector('.action-cards');
-    if (!actionContainer) return;
-    
-    // Clear existing actions
-    actionContainer.innerHTML = '';
-    
-    const completedActions = gameStateManager.get('completedActions');
-    const unlockedDocuments = gameStateManager.get('unlockedDocuments');
-    const currentBudget = gameStateManager.get('budget');
-    const currentInfluence = gameStateManager.get('influence');
-    const currentStaff = gameStateManager.get('staff');
-    
-    // Filter actions that are available based on completed actions and unlocked documents
-    const availableActions = actions.filter(action => {
-        // Skip already completed actions
-        if (completedActions.includes(action.id)) return false;
+        <div class="educational-outcome">
+            <h4>Learning Insight</h4>
+            <p>${educationalLesson}</p>
+        </div>
         
-        // Check if prerequisites are met (documents unlocked)
-        const prerequisitesMet = action.unlocks ? 
-            action.unlocks.some(docId => unlockedDocuments.includes(docId)) : 
-            true;
-            
-        return prerequisitesMet;
-    });
-    
-    if (availableActions.length === 0) {
-        // Show message when no actions are available
-        actionContainer.innerHTML = `
-            <div class="no-actions-message">
-                <div class="message-icon">📋</div>
-                <p>No actions available at this time. Continue exploring documents or wait for new developments.</p>
+        <div class="result-metrics">
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--fiscal-color)">${fiscalScore}%</div>
+                <div class="result-metric-label">Fiscal Sustainability</div>
             </div>
-        `;
-        return;
-    }
-    
-    // Create action cards for available actions
-    availableActions.forEach(action => {
-        const canAfford = 
-            (action.resourceCost <= currentBudget) && 
-            (action.influenceCost <= currentInfluence) && 
-            (action.staffCost <= currentStaff);
-            
-        const actionCard = document.createElement('div');
-        actionCard.className = `action-card ${canAfford ? '' : 'action-unaffordable'}`;
-        actionCard.dataset.actionId = action.id;
-        
-        actionCard.innerHTML = `
-            <div class="action-header">
-                <h4>${action.title}</h4>
-                <div class="action-cost">${action.cost}</div>
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--environmental-color)">${environmentalScore}%</div>
+                <div class="result-metric-label">Environmental Compliance</div>
             </div>
-            <div class="action-description">${action.description}</div>
-            <div class="action-costs">
-                ${action.resourceCost > 0 ? `<span>Budget: $${formatNumber(action.resourceCost)}</span>` : ''}
-                ${action.influenceCost > 0 ? `<span>Influence: ${action.influenceCost}</span>` : ''}
-                ${action.staffCost > 0 ? `<span>Staff: ${action.staffCost}</span>` : ''}
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--political-color)">${politicalScore}%</div>
+                <div class="result-metric-label">Political Capital</div>
             </div>
-            <button class="btn btn-primary action-button">Execute</button>
-        `;
-        
-        // Add click event for action execution
-        const actionButton = actionCard.querySelector('.action-button');
-        actionButton.addEventListener('click', () => executeAction(action));
-        
-        actionContainer.appendChild(actionCard);
-        
-        // Add animation with slight delay for each card
-        setTimeout(() => {
-            actionCard.classList.add('action-card-visible');
-        }, 100 * actionContainer.children.length);
-    });
-}
-
-// Update stakeholder display
-function updateStakeholderDisplay() {
-    const stakeholderContainer = document.querySelector('.stakeholders-list');
-    if (!stakeholderContainer) return;
-    
-    // Clear existing stakeholders
-    stakeholderContainer.innerHTML = '';
-    
-    // Create stakeholder items
-    stakeholders.forEach(stakeholder => {
-        const stakeholderItem = document.createElement('div');
-        stakeholderItem.className = 'stakeholder-item';
-        stakeholderItem.dataset.stakeholderId = stakeholder.id;
-        
-        stakeholderItem.innerHTML = `
-            <div class="stakeholder-avatar">${stakeholder.avatar}</div>
-            <div class="stakeholder-info">
-                <div class="stakeholder-name">${stakeholder.name}</div>
-                <div class="stakeholder-relationship relationship-${stakeholder.relationship}">${stakeholder.relationship}</div>
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--international-color)">${internationalScore}%</div>
+                <div class="result-metric-label">International Relations</div>
             </div>
-            <div class="stakeholder-influence">
-                <div class="influence-indicator" style="width: ${stakeholder.influenceLevel}%"></div>
-                <span>Influence: ${stakeholder.influenceLevel}%</span>
-            </div>
-        `;
+        </div>
         
-        // Add click event to show stakeholder details
-        stakeholderItem.addEventListener('click', () => showStakeholderDetails(stakeholder));
-        
-        stakeholderContainer.appendChild(stakeholderItem);
-    });
-}
-
-// Show stakeholder details in a modal
-function showStakeholderDetails(stakeholder) {
-    const modal = document.getElementById('stakeholderModal');
-    const modalTitle = modal.querySelector('.modal-title');
-    const modalBody = modal.querySelector('.modal-body');
-    
-    modalTitle.textContent = stakeholder.name;
-    
-    modalBody.innerHTML = `
-        <div class="stakeholder-profile">
-            <div class="stakeholder-header">
-                <div class="stakeholder-avatar" style="width: 60px; height: 60px;">${stakeholder.avatar}</div>
-                <div class="stakeholder-header-info">
-                    <h3>${stakeholder.name}</h3>
-                    <div class="stakeholder-relationship relationship-${stakeholder.relationship}">${stakeholder.relationship}</div>
-                </div>
-            </div>
-            
-            <div class="stakeholder-actions">
-                <div class="stakeholder-influence-meter">
-                    <div class="influence-label">Influence Level: ${stakeholder.influenceLevel}%</div>
-                    <div class="influence-bar">
-                        <div class="influence-fill" style="width: ${stakeholder.influenceLevel}%"></div>
-                    </div>
-                </div>
-                
-                <div class="stakeholder-trust-meter">
-                    <div class="trust-label">Trust Level: ${stakeholder.trustLevel}%</div>
-                    <div class="trust-bar">
-                        <div class="trust-fill" style="width: ${stakeholder.trustLevel}%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stakeholder-details">
-                <div class="stakeholder-detail-section">
-                    <h4>Role</h4>
-                    <p>${stakeholder.details.role}</p>
-                </div>
-                
-                <div class="stakeholder-detail-section">
-                    <h4>Interests</h4>
-                    <p>${stakeholder.details.interests}</p>
-                </div>
-                
-                <div class="stakeholder-detail-section">
-                    <h4>Concerns</h4>
-                    <p>${stakeholder.details.concerns}</p>
-                </div>
-                
-                <div class="stakeholder-detail-section">
-                    <h4>Background</h4>
-                    <p>${stakeholder.details.background}</p>
-                </div>
-            </div>
+        <div class="result-summary">
+            <h4>Future Considerations</h4>
+            <p>In development finance, maintaining a balance between fiscal goals, environmental concerns, political capital, and international relations is crucial. In your next attempt, consider focusing more on ${
+                overallScore < 40 ? 'building consensus before taking major actions.' :
+                fiscalScore < 40 ? 'increasing fiscal sustainability and revenue growth.' :
+                environmentalScore < 40 ? 'enhancing environmental compliance and community engagement.' :
+                politicalScore < 40 ? 'strengthening political capital with key stakeholders.' :
+                'balancing international relationships with Chinese and Western partners.'
+            }</p>
         </div>
     `;
     
-    modalManager.openModal(modal);
-}
+    ModalManager.openModal('gameResultModal');
+    
+    console.log(`Game conclusion triggered: ${reason}`);
+},
 
-// Update documents display
-function updateDocumentsDisplay() {
-    const documentsContainer = document.querySelector('.documents-list');
-    if (!documentsContainer) return;
+/**
+ * Show the victory screen when player succeeds
+ */
+showVictory: function() {
+    // Calculate overall score based on metrics and resources
+    const fiscalScore = gameState.metrics.fiscal;
+    const environmentalScore = gameState.metrics.environmental;
+    const politicalScore = gameState.metrics.political;
+    const internationalScore = gameState.metrics.international;
     
-    // Clear existing documents
-    documentsContainer.innerHTML = '';
+    const overallScore = Math.round((fiscalScore + environmentalScore + politicalScore + internationalScore) / 4);
     
-    const unlockedDocs = gameStateManager.get('unlockedDocuments');
+    // Determine victory type based on score
+    let verdict = '';
+    let educationalSummary = '';
     
-    if (unlockedDocs.length === 0) {
-        // Show placeholder when no documents are available
-        documentsContainer.innerHTML = `
-            <div class="documents-placeholder">
-                <div class="placeholder-icon">📄</div>
-                <p>No documents available yet. Complete actions to unlock documents.</p>
-            </div>
-        `;
-        return;
+    if (overallScore >= 80) {
+        verdict = 'Outstanding Success';
+        educationalSummary = 'You\'ve demonstrated exceptional skill in balancing financial sustainability with environmental and social considerations. Your approach to development finance prioritized multiple stakeholder interests while maintaining fiscal discipline.';
+    } else if (overallScore >= 60) {
+        verdict = 'Major Success';
+        educationalSummary = 'You\'ve successfully navigated the complexities of development finance, finding sustainable solutions that address most stakeholder concerns while maintaining adequate fiscal performance.';
+    } else if (overallScore >= 40) {
+        verdict = 'Moderate Success';
+        educationalSummary = 'You\'ve achieved a workable solution to the debt challenge, though some stakeholder needs remain unaddressed. This represents the real-world trade-offs often required in development finance.';
+    } else {
+        verdict = 'Partial Success';
+        educationalSummary = 'While facing significant challenges, your solution reflects the difficult compromises often encountered in development finance when resources are limited and stakeholder interests conflict.';
     }
     
-    // Create document items for unlocked documents
-    documents.filter(doc => unlockedDocs.includes(doc.id)).forEach(doc => {
-        const documentItem = document.createElement('div');
-        documentItem.className = 'document-item';
-        documentItem.dataset.documentId = doc.id;
+    // Set up the result modal content
+    document.getElementById('gameResultTitle').textContent = 'Mission Complete';
+    
+    const resultBody = document.getElementById('gameResultBody');
+    
+    // Get stakeholder statuses for the summary
+    const friendlyCount = gameState.stakeholders.filter(s => s.relationship === 'friendly').length;
+    const hostileCount = gameState.stakeholders.filter(s => s.relationship === 'hostile').length;
+    
+    resultBody.innerHTML = `
+        <div class="result-header">
+            <div class="result-score">${overallScore}%</div>
+            <div class="result-verdict">${verdict}</div>
+        </div>
         
-        documentItem.innerHTML = `
-            <div class="document-icon">${doc.icon}</div>
-            <div class="document-info">
-                <div class="document-title">${doc.title}</div>
-                <div class="document-type">${doc.type}</div>
+        <div class="result-metrics">
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--fiscal-color)">${fiscalScore}%</div>
+                <div class="result-metric-label">Fiscal Sustainability</div>
             </div>
-        `;
-        
-        // Add click event to show document content
-        documentItem.addEventListener('click', () => showDocumentContent(doc));
-        
-        documentsContainer.appendChild(documentItem);
-    });
-}
-
-// Show document content in the viewer
-function showDocumentContent(doc) {
-    const documentViewer = document.querySelector('.document-viewer');
-    if (!documentViewer) return;
-    
-    // Highlight selected document
-    const documentItems = document.querySelectorAll('.document-item');
-    documentItems.forEach(item => item.classList.remove('active'));
-    const selectedItem = document.querySelector(`.document-item[data-document-id="${doc.id}"]`);
-    if (selectedItem) {
-        selectedItem.classList.add('active');
-    }
-    
-    // Display document content
-    documentViewer.innerHTML = `
-        <div class="document-header">
-            <div class="document-header-icon">${doc.icon}</div>
-            <div class="document-header-info">
-                <h3>${doc.title}</h3>
-                <div class="document-header-type">${doc.type}</div>
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--environmental-color)">${environmentalScore}%</div>
+                <div class="result-metric-label">Environmental Compliance</div>
+            </div>
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--political-color)">${politicalScore}%</div>
+                <div class="result-metric-label">Political Capital</div>
+            </div>
+            <div class="result-metric">
+                <div class="result-metric-value" style="color: var(--international-color)">${internationalScore}%</div>
+                <div class="result-metric-label">International Relations</div>
             </div>
         </div>
-        <div class="document-content">
-            ${formatDocumentContent(doc.content)}
+        
+        <div class="result-summary">
+            <h4>Mission Summary</h4>
+            <p>You've successfully navigated the port financing crisis in ${gameState.currentDay} days. You've maintained ${friendlyCount} positive stakeholder relationships and have ${gameState.resources.influence} influence points remaining. Your fiscal sustainability score of ${fiscalScore}% indicates that ${fiscalScore >= 60 ? 'you\'ve secured a sustainable financial future for the port' : 'there are still financial challenges to address, though significant progress has been made'}.</p>
         </div>
-    `;
-}
-
-// Format document content with proper styling
-function formatDocumentContent(content) {
-    // Split content by double newlines to create paragraphs
-    const paragraphs = content.split('\n\n');
-    
-    return paragraphs.map(paragraph => {
-        // Check if paragraph is a heading (starts with #)
-        if (paragraph.startsWith('#')) {
-            const level = paragraph.match(/^#+/)[0].length;
-            const text = paragraph.replace(/^#+\s*/, '');
-            return `<h${level + 2}>${text}</h${level + 2}>`;
-        }
         
-        // Check if paragraph is a list item
-        if (paragraph.startsWith('- ')) {
-            const items = paragraph.split('\n').map(item => 
-                `<li>${item.replace(/^-\s*/, '')}</li>`
-            ).join('');
-            return `<ul>${items}</ul>`;
-        }
+        <div class="educational-outcome">
+            <h4>Educational Insights</h4>
+            <p>${educationalSummary}</p>
+            <p>You unlocked ${gameState.unlockedInsights.length} out of ${gameState.educationalInsights.length} development finance insights during your playthrough.</p>
+        </div>
         
-        // Regular paragraph
-        return `<p>${paragraph}</p>`;
-    }).join('');
-}
-
-// Execute an action
-function executeAction(action) {
-    // Check if player can afford the action
-    if (!canAffordAction(action)) {
-        addNotification({
-            type: 'error',
-            title: 'Cannot Execute Action',
-            message: 'You do not have sufficient resources to execute this action.'
-        });
-        return;
-    }
-    
-    // Show loading overlay
-    showActionLoading(`Executing: ${action.title}`, 'Processing results...');
-    
-    // Simulate processing time
-    setTimeout(() => {
-        // Deduct costs
-        gameStateManager.batchUpdate({
-            'budget': gameStateManager.get('budget') - action.resourceCost,
-            'influence': gameStateManager.get('influence') - action.influenceCost,
-            'staff': gameStateManager.get('staff') - action.staffCost
-        });
-        
-        // Apply metric changes
-        if (action.metrics) {
-            const metricUpdates = {};
-            for (const [metric, change] of Object.entries(action.metrics)) {
-                const currentValue = gameStateManager.get(`metrics.${metric}`);
-                metricUpdates[`metrics.${metric}`] = Math.max(0, Math.min(100, currentValue + change));
-            }
-            gameStateManager.batchUpdate(metricUpdates);
-        }
-        
-        // Apply stakeholder effects
-        if (action.stakeholderEffects) {
-            for (const [stakeholderId, change] of Object.entries(action.stakeholderEffects)) {
-                updateStakeholderRelationship(parseInt(stakeholderId), change);
-            }
-        }
-        
-        // Unlock documents
-        if (action.unlocks && action.unlocks.length > 0) {
-            const unlockedDocs = [...gameStateManager.get('unlockedDocuments')];
-            action.unlocks.forEach(docId => {
-                if (!unlockedDocs.includes(docId)) {
-                    unlockedDocs.push(docId);
-                    const doc = documents.find(d => d.id === docId);
-                    if (doc) {
-                        addNotification({
-                            type: 'info',
-                            title: 'New Document Available',
-                            message: `"${doc.title}" has been added to your documents.`
-                        });
-                    }
+        <div class="result-relationships">
+            <h4>Key Stakeholder Relations</h4>
+            ${gameState.stakeholders.map(stakeholder => {
+                let bgColor;
+                let textColor;
+                
+                switch(stakeholder.relationship) {
+                    case 'friendly':
+                        bgColor = 'rgba(50, 165, 130, 0.1)';
+                        textColor = 'var(--success)';
+                        break;
+                    case 'hostile':
+                        bgColor = 'rgba(244, 83, 102, 0.1)';
+                        textColor = 'var(--danger)';
+                        break;
+                    default: // neutral
+                        bgColor = 'rgba(110, 122, 148, 0.1)';
+                        textColor = 'var(--neutral)';
                 }
-            });
-            gameStateManager.set('unlockedDocuments', unlockedDocs);
-        }
-        
-        // Add to completed actions
-        const completedActions = [...gameStateManager.get('completedActions')];
-        completedActions.push(action.id);
-        gameStateManager.set('completedActions', completedActions);
-        
-        // Update mission progress
-        const currentProgress = gameStateManager.get('missionProgress');
-        const progressIncrease = Math.floor(Math.random() * 10) + 5; // Random progress between 5-15%
-        gameStateManager.set('missionProgress', Math.min(100, currentProgress + progressIncrease));
-        
-        // Hide loading overlay
-        hideActionLoading();
-        
-        // Show action result
-        showActionResult(action);
-        
-        // Update UI
-        updateAllUI();
-    }, 1500);
-}
-
-// Check if player can afford an action
-function canAffordAction(action) {
-    const currentBudget = gameStateManager.get('budget');
-    const currentInfluence = gameStateManager.get('influence');
-    const currentStaff = gameStateManager.get('staff');
-    
-    return (
-        currentBudget >= action.resourceCost &&
-        currentInfluence >= action.influenceCost &&
-        currentStaff >= action.staffCost
-    );
-}
-
-// Show action loading overlay
-function showActionLoading(title, subtitle) {
-    const loadingOverlay = document.querySelector('.action-loading-overlay');
-    if (loadingOverlay) {
-        const loadingText = loadingOverlay.querySelector('.action-loading-text');
-        const loadingSubtext = loadingOverlay.querySelector('.action-loading-subtext');
-        
-        if (loadingText) loadingText.textContent = title;
-        if (loadingSubtext) loadingSubtext.textContent = subtitle;
-        
-        loadingOverlay.style.opacity = '1';
-        loadingOverlay.style.visibility = 'visible';
-    }
-}
-
-// Hide action loading overlay
-function hideActionLoading() {
-    const loadingOverlay = document.querySelector('.action-loading-overlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.opacity = '0';
-        setTimeout(() => {
-            loadingOverlay.style.visibility = 'hidden';
-        }, 300);
-    }
-}
-
-// Show action result in a modal
-function showActionResult(action) {
-    const modal = document.getElementById('actionResultModal');
-    const modalTitle = modal.querySelector('.modal-title');
-    const modalBody = document.getElementById('actionResultBody');
-    
-    modalTitle.textContent = `Action Result: ${action.title}`;
-    
-    // Generate stakeholder reactions
-    const stakeholderReactions = [];
-    if (action.stakeholderEffects) {
-        for (const [stakeholderId, change] of Object.entries(action.stakeholderEffects)) {
-            const stakeholder = getStakeholderById(parseInt(stakeholderId));
-            if (stakeholder) {
-                const reactionType = change > 0 ? 'positive' : 'negative';
-                const reactionText = generateStakeholderReaction(stakeholder, change);
-                stakeholderReactions.push({ stakeholder, reactionType, reactionText });
-            }
-        }
-    }
-    
-    modalBody.innerHTML = `
-        <div class="result-content">
-            <div class="result-header">
-                <div class="result-icon">📊</div>
-                <div class="result-title">${action.title} Completed</div>
-            </div>
-            
-            <div class="result-description">
-                <p>${action.description}</p>
-            </div>
-            
-            <div class="result-impacts">
-                <h4>Impacts:</h4>
-                ${action.metrics ? Object.entries(action.metrics).map(([metric, change]) => `
-                    <div class="impact-item">
-                        <div>${formatMetricName(metric)}:</div>
-                        <div class="impact-change ${change > 0 ? 'impact-positive-change' : 'impact-negative-change'}">
-                            ${change > 0 ? '+' : ''}${change}%
-                        </div>
-                    </div>
-                `).join('') : ''}
                 
-                ${action.resourceCost > 0 ? `
-                    <div class="impact-item">
-                        <div>Budget:</div>
-                        <div class="impact-change impact-negative-change">-$${formatNumber(action.resourceCost)}</div>
-                    </div>
-                ` : ''}
-                
-                ${action.influenceCost > 0 ? `
-                    <div class="impact-item">
-                        <div>Influence:</div>
-                        <div class="impact-change impact-negative-change">-${action.influenceCost}</div>
-                    </div>
-                ` : ''}
-                
-                ${action.staffCost > 0 ? `
-                    <div class="impact-item">
-                        <div>Staff:</div>
-                        <div class="impact-change impact-negative-change">-${action.staffCost}</div>
-                    </div>
-                ` : ''}
-            </div>
-            
-            ${stakeholderReactions.length > 0 ? `
-                <div class="stakeholder-reactions">
-                    <h4>Stakeholder Reactions:</h4>
-                    ${stakeholderReactions.map(reaction => `
-                        <div class="reaction-item reaction-${reaction.reactionType}">
-                            <div class="reaction-avatar">${reaction.stakeholder.avatar}</div>
-                            <div class="reaction-content">
-                                <div class="reaction-name">${reaction.stakeholder.name}</div>
-                                <div class="reaction-text">${reaction.reactionText}</div>
+                return `
+                    <div class="result-relationship">
+                        <div class="relationship-avatar" style="background-color: var(--primary)">${stakeholder.image}</div>
+                        <div class="relationship-details">
+                            <div class="relationship-name">${stakeholder.name}</div>
+                            <div class="relationship-status" style="background-color: ${bgColor}; color: ${textColor}">
+                                ${stakeholder.relationship.charAt(0).toUpperCase() + stakeholder.relationship.slice(1)}
                             </div>
                         </div>
-                    `).join('')}
-                </div>
-            ` : ''}
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    ModalManager.openModal('gameResultModal');
             
-            ${action.followUpText ? `
-                <div class="follow-up-section">
-                    <h4>Next Steps</h4>
-                    <p>${action.followUpText}</p>
+            console.log(`Game over triggered: ${reason}`);
+            console.log("Victory screen displayed");
+        }
+    };
+
+    // ===== NOTIFICATION SYSTEM =====
+    /**
+     * Manages system notifications with queue to prevent duplicates and manage timing
+     */
+    const NotificationSystem = {
+        /**
+         * Notification queue to prevent duplicates and manage timing
+         * @type {Array}
+         */
+        queue: [],
+        
+        /**
+         * Set of notification IDs to track shown messages
+         * @type {Set}
+         */
+        shown: new Set(),
+        
+        /**
+         * Current active notification count
+         * @type {number}
+         */
+        activeCount: 0,
+        
+        /**
+         * Maximum allowed active notifications
+         * @type {number}
+         */
+        maxActive: 3,
+        
+        /**
+         * Initialize the notification system
+         */
+        init: function() {
+            this.container = document.getElementById('notificationContainer');
+            console.log("Notification system initialized");
+        },
+        
+        /**
+         * Generate a unique ID for a notification based on its content
+         * @param {Object} options - Notification options
+         * @returns {string} - Unique notification ID
+         */
+        generateNotificationId: function(options) {
+            return `${options.type}-${options.title.replace(/\s+/g, '-').toLowerCase()}`;
+        },
+        
+        /**
+         * Show a notification
+         * @param {Object} options - Notification options (type, title, message)
+         */
+        showNotification: function(options) {
+            try {
+                // Generate a unique ID for this notification
+                const notificationId = this.generateNotificationId(options);
+                
+                // Check if a similar notification is already shown
+                if (this.shown.has(notificationId)) {
+                    console.log(`Notification ${notificationId} already shown, not showing duplicate`);
+                    return;
+                }
+                
+                // Add to queue and process queue
+                this.queue.push({...options, id: notificationId});
+                this.processQueue();
+                
+            } catch (error) {
+                console.error("Error showing notification:", error);
+            }
+        },
+        
+        /**
+         * Process the notification queue
+         */
+        processQueue: function() {
+            // Check if we can show more notifications
+            if (this.activeCount >= this.maxActive || this.queue.length === 0) {
+                return;
+            }
+            
+            // Get the next notification from the queue
+            const notification = this.queue.shift();
+            
+            // Create the notification element
+            const notificationEl = document.createElement('div');
+            notificationEl.className = 'notification';
+            notificationEl.dataset.id = notification.id;
+            
+            // Notification HTML structure
+            notificationEl.innerHTML = `
+                <div class="notification-icon notification-${notification.type}">
+                    ${this.getIconForType(notification.type)}
                 </div>
-            ` : ''}
-        </div>
-    `;
-    
-    modalManager.openModal(modal);
-}
-
-// Generate stakeholder reaction text based on relationship change
-function generateStakeholderReaction(stakeholder, change) {
-    if (change > 20) {
-        return `Extremely pleased with your decision. This aligns perfectly with our interests and strengthens our partnership.`;
-    } else if (change > 10) {
-        return `Appreciates your approach and sees this as a positive step forward in our relationship.`;
-    } else if (change > 0) {
-        return `Shows mild approval of your decision, though expects more substantial actions in the future.`;
-    } else if (change > -10) {
-        return `Expresses slight disappointment but is willing to continue working with you.`;
-    } else if (change > -20) {
-        return `Voices significant concerns about your approach and questions your commitment to their interests.`;
-    } else {
-        return `Strongly opposes your decision and warns of potential consequences to your relationship.`;
-    }
-}
-
-// Add a notification
-function addNotification(notification) {
-    const container = document.querySelector('.notification-container');
-    if (!container) return;
-    
-    const notificationElement = document.createElement('div');
-    notificationElement.className = 'notification';
-    
-    notificationElement.innerHTML = `
-        <div class="notification-icon notification-${notification.type}">
-            ${getNotificationIcon(notification.type)}
-        </div>
-        <div class="notification-content">
-            <div class="notification-title">${notification.title}</div>
-            <div class="notification-message">${notification.message}</div>
-        </div>
-        <div class="notification-close">×</div>
-    `;
-    
-    // Add close button functionality
-    const closeButton = notificationElement.querySelector('.notification-close');
-    closeButton.addEventListener('click', () => {
-        notificationElement.classList.remove('active');
-        setTimeout(() => {
-            notificationElement.remove();
-        }, 300);
-    });
-    
-    container.appendChild(notificationElement);
-    
-    // Animate in
-    setTimeout(() => {
-        notificationElement.classList.add('active');
-    }, 10);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notificationElement.parentNode) {
-            notificationElement.classList.remove('active');
+                <div class="notification-content">
+                    <div class="notification-title">${notification.title}</div>
+                    <div class="notification-message">${notification.message}</div>
+                </div>
+                <button class="notification-close" aria-label="Close notification">×</button>
+            `;
+            
+            // Add to container
+            this.container.appendChild(notificationEl);
+            this.activeCount++;
+            this.shown.add(notification.id);
+            
+            // Add close button event
+            notificationEl.querySelector('.notification-close').addEventListener('click', () => {
+                this.closeNotification(notificationEl);
+            });
+            
+            // Add auto-close timer
             setTimeout(() => {
-                if (notificationElement.parentNode) {
-                    notificationElement.remove();
+                if (document.body.contains(notificationEl)) {
+                    this.closeNotification(notificationEl);
+                }
+            }, 8000);
+            
+            // Trigger animation after a small delay
+            setTimeout(() => {
+                notificationEl.classList.add('active');
+            }, 10);
+            
+            // Process next notification if any
+            if (this.queue.length > 0 && this.activeCount < this.maxActive) {
+                setTimeout(() => {
+                    this.processQueue();
+                }, 300);
+            }
+        },
+        
+        /**
+         * Close a notification
+         * @param {HTMLElement} notificationEl - The notification element to close
+         */
+        closeNotification: function(notificationEl) {
+            const notificationId = notificationEl.dataset.id;
+            
+            // Animate out
+            notificationEl.classList.remove('active');
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                if (document.body.contains(notificationEl)) {
+                    notificationEl.remove();
+                    this.activeCount--;
+                    this.shown.delete(notificationId);
+                    
+                    // Process next notification if any
+                    this.processQueue();
                 }
             }, 300);
-        }
-    }, 5000);
-}
-
-// Get icon for notification type
-function getNotificationIcon(type) {
-    switch (type) {
-        case 'success': return '✓';
-        case 'error': return '✗';
-        case 'warning': return '⚠';
-        case 'info': default: return 'ℹ';
-    }
-}
-
-// End the game and show results
-function endGame() {
-    const modal = document.getElementById('endGameModal');
-    const modalBody = modal.querySelector('.modal-body');
-    
-    // Calculate final score based on metrics
-    const fiscalScore = gameStateManager.get('metrics.fiscalSustainability');
-    const environmentalScore = gameStateManager.get('metrics.environmentalCompliance');
-    const politicalScore = gameStateManager.get('metrics.politicalCapital');
-    const internationalScore = gameStateManager.get('metrics.internationalRelations');
-    
-    const totalScore = (fiscalScore + environmentalScore + politicalScore + internationalScore) / 4;
-    
-    // Determine outcome based on score and mission progress
-    const missionProgress = gameStateManager.get('missionProgress');
-    let outcome, grade;
-    
-    if (totalScore >= 80 && missionProgress >= 90) {
-        outcome = 'outstanding';
-        grade = 'Outstanding';
-    } else if (totalScore >= 70 && missionProgress >= 75) {
-        outcome = 'excellent';
-        grade = 'Excellent';
-    } else if (totalScore >= 60 && missionProgress >= 60) {
-        outcome = 'satisfactory';
-        grade = 'Satisfactory';
-    } else if (totalScore >= 40 && missionProgress >= 40) {
-        outcome = 'needs-improvement';
-        grade = 'Needs Improvement';
-    } else {
-        outcome = 'critical';
-        grade = 'Critical Failure';
-    }
-    
-    // Generate key achievements
-    const completedActions = gameStateManager.get('completedActions');
-    const achievements = [];
-    
-    if (fiscalScore >= 70) {
-        achievements.push('Secured long-term fiscal sustainability for the port project');
-    }
-    
-    if (environmentalScore >= 70) {
-        achievements.push('Implemented effective environmental remediation programs');
-    }
-    
-    if (politicalScore >= 70) {
-        achievements.push('Built strong domestic political support for your approach');
-    }
-    
-    if (internationalScore >= 70) {
-        achievements.push('Established balanced international relationships');
-    }
-    
-    if (completedActions.length >= 5) {
-        achievements.push(`Completed ${completedActions.length} strategic actions to address the crisis`);
-    }
-    
-    if (achievements.length === 0) {
-        achievements.push('Maintained operations during a challenging period');
-    }
-    
-    // Display end game results
-    modalBody.innerHTML = `
-        <div class="end-game-summary">
-            <h3>Mission Complete: Port Financing Crisis</h3>
-            <p>After ${gameStateManager.get('currentDay')} days as the Special Envoy, your management of Azuria's port financing crisis has resulted in a <span class="performance-grade grade-${outcome}">${grade}</span> outcome.</p>
+        },
+        
+        /**
+         * Get icon for notification type
+         * @param {string} type - Notification type (success, error, warning, info)
+         * @returns {string} - HTML for the icon
+         */
+        getIconForType: function(type) {
+            switch (type) {
+                case 'success':
+                    return '✓';
+                case 'error':
+                    return '!';
+                case 'warning':
+                    return '⚠';
+                case 'info':
+                    return 'i';
+                default:
+                    return 'i';
+            }
+        },
+        
+        /**
+         * Clear all notifications
+         */
+        clearAll: function() {
+            const notifications = this.container.querySelectorAll('.notification');
+            notifications.forEach(notification => {
+                this.closeNotification(notification);
+            });
             
-            <div class="summary-metrics">
-                <div class="summary-metric">
-                    <div class="summary-metric-label">Fiscal Sustainability</div>
-                    <div class="summary-metric-bar">
-                        <div class="summary-metric-fill" style="width: ${fiscalScore}%; background-color: var(--primary);"></div>
-                    </div>
-                    <div class="summary-metric-value">${fiscalScore}%</div>
-                </div>
-                
-                <div class="summary-metric">
-                    <div class="summary-metric-label">Environmental Compliance</div>
-                    <div class="summary-metric-bar">
-                        <div class="summary-metric-fill" style="width: ${environmentalScore}%; background-color: var(--success);"></div>
-                    </div>
-                    <div class="summary-metric-value">${environmentalScore}%</div>
-                </div>
-                
-                <div class="summary-metric">
-                    <div class="summary-metric-label">Political Capital</div>
-                    <div class="summary-metric-bar">
-                        <div class="summary-metric-fill" style="width: ${politicalScore}%; background-color: var(--accent);"></div>
-                    </div>
-                    <div class="summary-metric-value">${politicalScore}%</div>
-                </div>
-                
-                <div class="summary-metric">
-                    <div class="summary-metric-label">International Relations</div>
-                    <div class="summary-metric-bar">
-                        <div class="summary-metric-fill" style="width: ${internationalScore}%; background-color: var(--secondary);"></div>
-                    </div>
-                    <div class="summary-metric-value">${internationalScore}%</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="final-assessment">
-            <h4>Final Assessment</h4>
-            <p>${generateFinalAssessment(outcome, totalScore, missionProgress)}</p>
-        </div>
-        
-        <div class="key-achievements">
-            <h4>Key Achievements</h4>
-            <ul>
-                ${achievements.map(achievement => `<li>${achievement}</li>`).join('')}
-            </ul>
-        </div>
-    `;
-    
-    modalManager.openModal(modal);
-}
-
-// Generate final assessment text based on outcome
-function generateFinalAssessment(outcome, score, progress) {
-    switch (outcome) {
-        case 'outstanding':
-            return `Your exceptional management of the port financing crisis has positioned Azuria for long-term success. You balanced fiscal responsibility with environmental stewardship while maintaining strong relationships with all stakeholders. The Prime Minister has expressed interest in appointing you to a permanent cabinet position.`;
-        case 'excellent':
-            return `Your skillful handling of the port financing crisis has significantly improved Azuria's position. The restructured agreements provide a sustainable path forward, though some challenges remain. Your work has been recognized as a model for effective crisis management.`;
-        case 'satisfactory':
-            return `You've made meaningful progress in addressing the port financing crisis, creating a more stable foundation for future development. While some stakeholders remain concerned about specific aspects of your approach, the overall trajectory is positive.`;
-        case 'needs-improvement':
-            return `Your efforts have prevented immediate disaster, but the port's long-term viability remains uncertain. Several key stakeholders are dissatisfied with your approach, and additional work will be needed to secure a truly sustainable solution.`;
-        case 'critical':
-            return `The port financing crisis has worsened under your management, with increasing fiscal strain and deteriorating stakeholder relationships. The Prime Minister is considering alternative leadership to salvage the situation before it becomes a national emergency.`;
-        default:
-            return `Your management of the port financing crisis has concluded with mixed results. While some progress was made, significant challenges remain for Azuria's port development.`;
-    }
-}
-
-// Clean up event listeners when game ends or resets
-function cleanupEventListeners() {
-    handlers.forEach(({ element, type, handler }) => {
-        if (element) {
-            element.removeEventListener(type, handler);
+            // Clear queue
+            this.queue = [];
         }
-    });
-    handlers = [];
-}
-
-// Handle window resize for responsive adjustments
-function handleResize(elements) {
-    // Adjust UI elements based on window size
-    const width = window.innerWidth;
-    
-    if (width < 768) {
-        // Mobile adjustments
-        if (elements.actionCards) {
-            elements.actionCards.classList.remove('enhanced');
-        }
-        
-        if (elements.resourcesList) {
-            elements.resourcesList.classList.remove('enhanced');
-        }
-    } else {
-        // Desktop adjustments
-        if (elements.actionCards) {
-            elements.actionCards.classList.add('enhanced');
-        }
-        
-        if (elements.resourcesList) {
-            elements.resourcesList.classList.add('enhanced');
-        }
-    }
-    
-    // Reposition any open modals to center
-    document.querySelectorAll('.modal.active').forEach(modal => {
-        const content = modal.querySelector('.modal-content');
-        if (content) {
-            // Reset transform to ensure proper centering
-            content.style.transform = 'scale(1)';
-        }
-    });
-}
-
-function handleResize(elements) {
-    if (elements.mainContainer) {
-      if (window.innerWidth < BREAKPOINTS.MOBILE) {
-        elements.mainContainer.classList.add('mobile-layout');
-      } else {
-        elements.mainContainer.classList.remove('mobile-layout');
-      }
-    }
-  }
-  
-
-// Initialize the game
-document.addEventListener('DOMContentLoaded', initGame);
-function initGame() {
-    initializeGame();
-  }
-
-// Export functions for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initGame,
-        updateAllUI,
-        handleResize,
-        executeAction,
-        showDocumentContent,
-        showStakeholderDetails,
-        modalManager,
-        gameStateManager
     };
-}
+
+    // ===== ENHANCED DOCUMENT VIEWER =====
+    /**
+     * Enhanced Document Viewer Component
+     * Renders documents with proper formatting, syntax highlighting, and interactive elements
+     */
+    const DocumentViewerEnhanced = {
+        renderDocument: function(documentId) {
+            try {
+                const doc = gameState.documents.find(d => d.id === documentId);
+                if (!doc) {
+                    console.error(`Document with ID ${documentId} not found`);
+                    return;
+                }
+                
+                const viewer = document.getElementById('documentViewer');
+                if (!viewer) {
+                    console.error("Document viewer container not found");
+                    return;
+                }
+                
+            // Create document header with icon and metadata
+            const header = `
+                <div class="document-header">
+                    <div class="document-header-icon">${doc.icon}</div>
+                    <div class="document-header-info">
+                        <h3>${doc.title}</h3>
+                        <div class="document-header-type">${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Document</div>
+                    </div>
+                </div>
+            `;
+                
+            // Format document content based on type
+            let formattedContent = '';
+            switch(doc.type) {
+                case 'financial':
+                    formattedContent = this.formatFinancialDocument(doc.content);
+                    break;
+                case 'report':
+                    formattedContent = this.formatReportDocument(doc.content);
+                    break;
+                case 'legal':
+                    formattedContent = this.formatLegalDocument(doc.content);
+                    break;
+                case 'testimonial':
+                    formattedContent = this.formatTestimonialDocument(doc.content);
+                    break;
+                case 'educational':
+                    formattedContent = this.formatEducationalDocument(doc.content);
+                    break;
+                default:
+                    formattedContent = `<div class="document-content"><pre>${doc.content}</pre></div>`;
+            }
+            
+            // Add educational context if available
+            const educationalValue = doc.educationalValue ? 
+                `<div class="educational-insight">
+                    <h4>Educational Context</h4>
+                    <p>${doc.educationalValue}</p>
+                </div>` : '';
+            
+            viewer.innerHTML = header + formattedContent + educationalValue;
+            
+            console.log(`Rendered document: ${doc.title}`);
+        } catch (error) {
+            console.error("Error rendering document:", error);
+            // Fall back to basic content display
+            this.renderBasicDocument(documentId);
+        }
+    },
+        
+        /**
+         * Fallback method for simple document rendering if enhanced fails
+         * @param {number} documentId - The ID of the document to render
+         */
+        renderBasicDocument: function(documentId) {
+            try {
+                const doc = gameState.documents.find(d => d.id === documentId);
+                if (!doc) return;
+                
+                const viewer = document.getElementById('documentViewer');
+                
+                viewer.innerHTML = `
+                    <div class="document-header">
+                        <div class="document-header-icon">${doc.icon}</div>
+                        <div class="document-header-info">
+                            <h3>${doc.title}</h3>
+                            <div class="document-header-type">${doc.type}</div>
+                        </div>
+                    </div>
+                    <div class="document-content">
+                        <pre>${doc.content}</pre>
+                    </div>
+                    <div class="document-description">
+                        <p><strong>Educational Value:</strong> ${doc.educationalValue}</p>
+                        <p>${documentDescriptions[doc.id]}</p>
+                    </div>
+                `;
+                
+                console.log(`Rendered basic document: ${doc.title}`);
+            } catch (error) {
+                console.error("Error in fallback document rendering:", error);
+            }
+        },
+        
+        formatFinancialDocument: function(content) {
+            // Parse financial data and create visualizations
+            const sections = content.split('\n\n');
+            let html = '<div class="document-content">';
+            
+            // Extract and visualize any numerical data
+            const financialMetrics = this.extractFinancialMetrics(content);
+            
+            sections.forEach(section => {
+                if (section.includes(':')) {
+                    const [title, text] = section.split(':', 2);
+                    html += `<div class="document-section">
+                        <h4>${title.trim()}</h4>
+                        <p>${text.trim()}</p>
+                    </div>`;
+                } else if (section.includes('-')) {
+                    html += '<div class="document-section"><ul>';
+                    section.split('\n').forEach(line => {
+                        if (line.trim().startsWith('-')) {
+                            html += `<li>${line.substring(1).trim()}</li>`;
+                        } else {
+                            html += `<h4>${line}</h4>`;
+                        }
+                    });
+                    html += '</ul></div>';
+                } else {
+                    html += `<p>${section}</p>`;
+                }
+            });
+            
+        // Add visualizations for financial metrics if available
+        if (financialMetrics.length > 0) {
+            html += '<div class="document-section"><h4>Financial Metrics</h4>';
+            html += '<div class="port-data-visualization">';
+            
+            financialMetrics.forEach(metric => {
+                const percentage = Math.min(Math.max(metric.value * 100, 0), 100);
+                html += `
+                    <div class="data-metric">
+                        <div class="data-label">${metric.label}</div>
+                        <div class="data-bar">
+                            <div class="data-fill fill-container" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="data-value">${metric.value}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        return html;
+    },
+        
+    extractFinancialMetrics: function(content) {
+        // Extract metrics like ratios from financial documents
+        const metrics = [];
+        const ratioRegex = /([A-Za-z\s]+)\s*:\s*([\d\.]+)/g;
+        let match;
+        
+        while ((match = ratioRegex.exec(content)) !== null) {
+            const label = match[1].trim();
+            const value = parseFloat(match[2]);
+            
+            if (!isNaN(value) && label.includes('Ratio')) {
+                metrics.push({ label, value });
+            }
+        }
+        
+        return metrics;
+    },
+        
+    formatReportDocument: function(content) {
+        // Format report with sections and visualizations
+        const sections = content.split('\n\n');
+        let html = '<div class="document-content">';
+        
+        sections.forEach(section => {
+            if (section.startsWith('Key Findings:') || 
+                section.startsWith('Recommendations:') ||
+                section.startsWith('Regulatory Compliance:') ||
+                section.startsWith('Community Impact:') ||
+                section.startsWith('Key Operational Challenges:') ||
+                section.startsWith('Staffing Assessment:') ||
+                section.startsWith('Improvement Recommendations:') ||
+                section.startsWith('Financial Impact Analysis:') ||
+                section.startsWith('Regional Market Context:')) {
+                
+                const [title, text] = section.split(':', 2);
+                html += `<div class="document-section">
+                    <h4>${title.trim()}:</h4>
+                    <ul>`;
+                
+                const points = text.split('\n');
+                points.forEach(point => {
+                    if (point.trim().match(/^\d+\./)) {
+                        const numericPoint = point.trim().split('.');
+                        html += `<li><strong>${numericPoint[0]}.</strong> ${numericPoint.slice(1).join('.').trim()}</li>`;
+                    } else if (point.trim().startsWith('-')) {
+                        html += `<li>${point.substring(1).trim()}</li>`;
+                    }
+                });
+                
+                html += `</ul></div>`;
+            } else if (section.startsWith('Current Capacity Utilization:')) {
+                // Special formatting for port efficiency metrics
+                html += '<div class="document-section"><h4>Port Capacity Utilization</h4>';
+                html += '<div class="port-performance-chart">';
+                html += '<div class="capacity-chart">';
+                
+                const lines = section.split('\n');
+                lines.forEach(line => {
+                    if (line.includes('%')) {
+                        const parts = line.split(':');
+                        if (parts.length >= 2) {
+                            const label = parts[0].trim().replace('- ', '');
+                            const valueText = parts[1].trim();
+                            const value = parseInt(valueText.replace('%', ''));
+                            
+                            let utilizationClass = 'low-utilization';
+                            if (value > 60) {
+                                utilizationClass = 'good-utilization';
+                            } else if (value > 40) {
+                                utilizationClass = 'medium-utilization';
+                            }
+                            
+                            html += `
+                                <div class="capacity-item">
+                                    <div class="capacity-label">${label}</div>
+                                    <div class="capacity-bar-container">
+                                        <div class="capacity-bar ${utilizationClass}" style="width: ${value}%">
+                                            ${value}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+                
+                html += '</div></div></div>';
+            } else {
+                // Handle section headers differently from regular text
+                const lines = section.split('\n');
+                if (lines.length > 1) {
+                    const title = lines[0];
+                    html += `<div class="document-section">
+                        <h4>${title}</h4>
+                    `;
+                    
+                    lines.slice(1).forEach(line => {
+                        if (line.includes(':')) {
+                            const [label, value] = line.split(':', 2);
+                            html += `
+                                <div class="report-item">
+                                    <strong>${label.trim()}:</strong> ${value.trim()}
+                                </div>
+                            `;
+                        } else {
+                            html += `<p>${line}</p>`;
+                        }
+                    });
+                    
+                    html += '</div>';
+                } else {
+                    html += `<p>${section}</p>`;
+                }
+            }
+        });
+            
+        // Extract and visualize any numeric data from the report
+        const percentages = this.extractPercentages(content);
+        if (percentages.length > 0) {
+            html += '<div class="document-section"><h4>Impact Metrics</h4>';
+            html += '<div class="port-data-visualization">';
+            
+            percentages.forEach(percentage => {
+                const value = Math.min(Math.max(percentage.value, 0), 100);
+                html += `
+                    <div class="data-metric">
+                        <div class="data-label">${percentage.label}</div>
+                        <div class="data-bar">
+                            <div class="data-fill fill-bulk" style="width: ${value}%"></div>
+                        </div>
+                        <div class="data-value">${percentage.value}%</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        return html;
+    },
+        
+    extractPercentages: function(content) {
+        // Extract percentage values from reports
+        const percentages = [];
+        const percentRegex = /([A-Za-z\s]+)\s+by\s+approximately\s+([\d\.]+)%/gi;
+        let match;
+        
+        while ((match = percentRegex.exec(content)) !== null) {
+            const label = match[1].trim();
+            const value = parseFloat(match[2]);
+            
+            if (!isNaN(value)) {
+                percentages.push({ label, value });
+            }
+        }
+        
+        return percentages;
+    },
+        
+    formatLegalDocument: function(content) {
+        // Format legal documents with article sections and highlighted terms
+        const sections = content.split('\n\n');
+        let html = '<div class="document-content legal-document">';
+        
+        sections.forEach(section => {
+            if (section.startsWith('Article')) {
+                const lines = section.split('\n');
+                const articleTitle = lines[0];
+                
+                html += `<div class="document-section legal-article">
+                    <h4>${articleTitle}</h4>
+                    <div class="legal-clauses">`;
+                
+                lines.slice(1).forEach(line => {
+                    if (line.match(/^\d+\.\d+/)) {
+                        // This is a clause
+                        const clauseNum = line.split(' ')[0];
+                        const clauseText = line.substring(clauseNum.length).trim();
+                        
+                        // Highlight important legal terms
+                        const highlightedText = clauseText
+                            .replace(/\[REDACTED SECTION\]/g, '<span class="redacted-text">[REDACTED SECTION]</span>')
+                            .replace(/Default/g, '<span class="legal-term">Default</span>')
+                            .replace(/Borrower/g, '<span class="legal-term">Borrower</span>')
+                            .replace(/Lender/g, '<span class="legal-term">Lender</span>')
+                            .replace(/security interest/g, '<span class="legal-term">security interest</span>');
+                        
+                        html += `<div class="legal-clause">
+                            <span class="clause-number">${clauseNum}</span>
+                            <span class="clause-text">${highlightedText}</span>
+                        </div>`;
+                    }
+                });
+                
+                html += '</div></div>';
+            } else {
+                html += `<p>${section}</p>`;
+            }
+        });
+        
+        html += '</div>';
+        return html;
+    },
+        
+    formatTestimonialDocument: function(content) {
+        // Format testimonials with avatars and quotes
+        const sections = content.split('\n\n');
+        let html = '<div class="document-content testimonial-document">';
+        
+        sections.forEach((section, index) => {
+            if (section.includes(':') && !section.startsWith('CONSOLIDATED')) {
+                const [source, text] = section.split(':', 2);
+                
+                // Generate initials for avatar
+                let initials = '';
+                let name = '';
+                let role = '';
+                
+                if (text.includes('- ')) {
+                    // Extract name and role if they exist
+                    const attribution = text.split('- ')[1];
+                    if (attribution.includes(',')) {
+                        [name, role] = attribution.split(',');
+                        role = role.trim();
+                    } else {
+                        name = attribution;
+                    }
+                    
+                    // Generate initials from name
+                    initials = name.split(' ').map(n => n[0]).join('');
+                } else {
+                    initials = source.substring(0, 2);
+                    name = 'Anonymous';
+                    role = source;
+                }
+                
+                // Avatar colors for different stakeholder types
+                const avatarColors = [
+                    'var(--primary)', 'var(--secondary)', 
+                    'var(--accent)', 'var(--success)'
+                ];
+                const avatarColor = avatarColors[index % avatarColors.length];
+                
+                const quoteText = text.includes('- ') ? text.split('- ')[0].trim() : text.trim();
+                
+                html += `
+                    <div class="testimonial">
+                        <div class="testimonial-quote">${quoteText}</div>
+                        <div class="testimonial-attribution">
+                            <div class="testimonial-avatar" style="background-color: ${avatarColor}; color: white;">
+                                ${initials}
+                            </div>
+                            <div class="testimonial-info">
+                                <div class="testimonial-name">${name}</div>
+                                <div class="testimonial-role">${role}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (section.startsWith('CONSOLIDATED')) {
+                const [title, text] = section.split(':', 2);
+                html += `<div class="document-section">
+                    <h4>${title.trim()}:</h4>
+                    <ol class="request-list">`;
+                
+                const requests = text.split('\n');
+                requests.forEach(request => {
+                    if (request.trim().match(/^\d+\./)) {
+                        html += `<li class="request-item">${request.split('.')[1].trim()}</li>`;
+                    }
+                });
+                
+                html += `</ol></div>`;
+            } else {
+                html += `<h4 class="section-title">${section}</h4>`;
+            }
+        });
+        
+        html += '</div>';
+        return html;
+    },
+        
+    formatEducationalDocument: function(content) {
+        // Format educational content with educational styling
+        const sections = content.split('\n\n');
+        let html = '<div class="document-content educational-document">';
+        
+        sections.forEach(section => {
+            if (section.includes(':') && !section.includes('\n')) {
+                const [title, text] = section.split(':', 2);
+                html += `<div class="document-section">
+                    <h4>${title.trim()}</h4>
+                    <p>${text.trim()}</p>
+                </div>`;
+            } else if (section.includes(':') && section.includes('\n')) {
+                const lines = section.split('\n');
+                const title = lines[0].split(':')[0];
+                
+                html += `<div class="document-section">
+                    <h4>${title.trim()}</h4>
+                `;
+                
+                lines.slice(1).forEach(line => {
+                    if (line.includes(':')) {
+                        const [conceptName, conceptDesc] = line.split(':', 2);
+                        html += `
+                            <div class="educational-concept">
+                                <div class="concept-name">${conceptName.trim()}:</div>
+                                <div class="concept-description">${conceptDesc.trim()}</div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += '</div>';
+            } else {
+                html += `<p>${section}</p>`;
+            }
+        });
+        
+        html += '</div>';
+        return html;
+    }
+};
+    
+    /**
+     * Enhanced Educational Insights Component
+     * Creates visual educational content with icons and interactive elements
+     */
+    const EducationalInsightVisualizer = {
+        renderInsight: function(insightId) {
+            const insight = gameState.educationalInsights.find(i => i.id === insightId);
+            if (!insight) return null;
+            
+            // Generate category icon
+            const categoryIcons = {
+                'Finance': '💹',
+                'Environmental': '🌿',
+                'Diplomacy': '🌐',
+                'Operations': '⚙️',
+                'Social': '👥'
+            };
+            
+            const icon = categoryIcons[insight.category] || '📊';
+            
+            // Find related stakeholders
+            const relatedStakeholders = [];
+            if (insight.stakeholdersInvolved) {
+                insight.stakeholdersInvolved.forEach(id => {
+                    const stakeholder = gameState.stakeholders.find(s => s.id === id);
+                    if (stakeholder) {
+                        relatedStakeholders.push(stakeholder);
+                    }
+                });
+            }
+            
+            // Create HTML for the insight card
+            const insightHTML = `
+                <div class="insight-card enhanced" data-id="${insight.id}">
+                    <div class="insight-card-header">
+                        <span class="insight-icon">${icon}</span>
+                        <h4 class="insight-card-title">${insight.title}</h4>
+                        <span class="insight-category-badge">${insight.category}</span>
+                    </div>
+                    
+                    <div class="insight-card-content">
+                        <p>${insight.content}</p>
+                        
+                        ${relatedStakeholders.length > 0 ? `
+                            <div class="insight-stakeholders">
+                                <h5>Key Stakeholders</h5>
+                                <div class="stakeholder-avatars">
+                                    ${relatedStakeholders.map(stakeholder => `
+                                        <div class="small-avatar" title="${stakeholder.name}" 
+                                             style="background-color: ${
+                                               stakeholder.relationship === 'friendly' ? 'var(--success)' : 
+                                               stakeholder.relationship === 'hostile' ? 'var(--danger)' : 'var(--primary)'
+                                             }10; color: ${
+                                               stakeholder.relationship === 'friendly' ? 'var(--success)' : 
+                                               stakeholder.relationship === 'hostile' ? 'var(--danger)' : 'var(--primary)'
+                                             }">
+                                            ${stakeholder.image}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${insight.relatedConcepts ? `
+                            <div class="related-concepts">
+                                <h5>Related Concepts</h5>
+                                <div class="concept-tags">
+                                    ${insight.relatedConcepts.map(concept => `
+                                        <span class="concept-tag">${concept}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="insight-card-footer">
+                        <div class="insight-source">Source: ${insight.source}</div>
+                    </div>
+                </div>
+            `;
+            
+            return insightHTML;
+        },
+        
+        renderAllInsights: function(containerId, category = null) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            let insights = gameState.unlockedInsights.map(insight => 
+                gameState.educationalInsights.find(i => i.id === insight.id || i.id === insight)
+            ).filter(insight => insight !== undefined);
+            
+            // Filter by category if provided
+            if (category && category !== 'all') {
+                insights = insights.filter(insight => insight.category === category);
+            }
+            
+            if (insights.length === 0) {
+                container.innerHTML = `
+                    <div class="no-insights-message">
+                        <div class="message-icon">📚</div>
+                        <p>No educational insights unlocked in this category yet. Complete actions to unlock insights.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let insightsHTML = '';
+            insights.forEach(insight => {
+                insightsHTML += this.renderInsight(insight.id);
+            });
+            
+            container.innerHTML = insightsHTML;
+            
+            // Add click handler to expand cards
+            container.querySelectorAll('.insight-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                });
+            });
+        }
+    };
+    
+    /**
+     * Enhanced Stakeholder Visualization Component
+     * Creates professional avatars and relationship visualizations
+     */
+    const StakeholderVisualization = {
+        renderStakeholderProfile: function(stakeholderId) {
+            const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+            if (!stakeholder) return;
+            
+            const profileContainer = document.getElementById('stakeholderModalBody');
+            
+            // Generate relationship class
+            const relationshipClass = `relationship-${stakeholder.relationship}`;
+            
+            // Create avatar with appropriate styling based on influence and relationship
+            const avatarColors = {
+                friendly: 'var(--success)',
+                neutral: 'var(--primary)',
+                hostile: 'var(--danger)'
+            };
+            
+            const avatarColor = avatarColors[stakeholder.relationship] || 'var(--primary)';
+            
+            // Generate profile HTML
+            const profileHTML = `
+                <div class="stakeholder-header">
+                    <div class="stakeholder-avatar-large" style="background-color: ${avatarColor}">
+                        ${stakeholder.image}
+                    </div>
+                    <div class="stakeholder-header-info">
+                        <h3 class="stakeholder-title">${stakeholder.name}</h3>
+                        <div class="stakeholder-influence-large">
+                            <span>Influence: ${stakeholder.influence}</span>
+                            <span class="relationship-indicator ${relationshipClass}">
+                                ${stakeholder.relationship.charAt(0).toUpperCase() + stakeholder.relationship.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stakeholder-biography">
+                    <h4>Background</h4>
+                    <p>${stakeholder.bio}</p>
+                </div>
+                
+                <div class="stakeholder-interests">
+                    <h4>Key Interests</h4>
+                    <ul>
+                        ${stakeholder.interests.map(interest => `<li>${interest}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="stakeholder-strategy">
+                    <h4>Educational Context</h4>
+                    <p>${stakeholder.educationalContext}</p>
+                </div>
+            `;
+            
+            profileContainer.innerHTML = profileHTML;
+        },
+        
+        generateNetworkChart: function(stakeholderId) {
+            // Create a visualization of how this stakeholder relates to others
+            const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+            const allStakeholders = gameState.stakeholders;
+            
+            let chartHTML = `<div class="network-chart">`;
+            
+            // Central node for the selected stakeholder
+            chartHTML += `
+                <div class="network-node central-node" style="background-color: ${
+                    stakeholder.relationship === 'friendly' ? 'var(--success)' : 
+                    stakeholder.relationship === 'hostile' ? 'var(--danger)' : 'var(--primary)'
+                }">
+                    <span>${stakeholder.image}</span>
+                </div>
+            `;
+            
+            // Create connections to other stakeholders based on influence
+            allStakeholders.forEach(otherStakeholder => {
+                if (otherStakeholder.id !== stakeholderId) {
+                    const distance = this.calculateStakeholderDistance(stakeholder, otherStakeholder);
+                    const angle = (otherStakeholder.id * 60) % 360;
+                    const influenceWidth = otherStakeholder.influence === 'High' ? 3 : 
+                                        otherStakeholder.influence === 'Medium' ? 2 : 1;
+                    
+                    chartHTML += `
+                        <div class="network-connection" 
+                             style="transform: rotate(${angle}deg); width: ${distance}px; height: ${influenceWidth}px;
+                                    background-color: ${
+                                    otherStakeholder.relationship === 'friendly' ? 'var(--success)' : 
+                                    otherStakeholder.relationship === 'hostile' ? 'var(--danger)' : 'var(--primary)'
+                                    }">
+                        </div>
+                        <div class="network-node connected-node" 
+                             style="left: ${Math.cos(angle * Math.PI / 180) * distance}px;
+                                    top: ${Math.sin(angle * Math.PI / 180) * distance}px;
+                                    background-color: ${
+                                    otherStakeholder.relationship === 'friendly' ? 'var(--success)' : 
+                                    otherStakeholder.relationship === 'hostile' ? 'var(--danger)' : 'var(--primary)'
+                                    }">
+                            <span>${otherStakeholder.image}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            chartHTML += `</div>`;
+            return chartHTML;
+        },
+        
+        calculateStakeholderDistance: function(stakeholder1, stakeholder2) {
+            // Determine visual distance based on influence and relationship
+            const baseDistance = 80;
+            const influenceMultiplier = 
+                stakeholder2.influence === 'High' ? 0.8 : 
+                stakeholder2.influence === 'Medium' ? 1.2 : 1.5;
+            
+            const relationshipMultiplier = 
+                stakeholder2.relationship === 'friendly' ? 0.8 :
+                stakeholder2.relationship === 'hostile' ? 1.5 : 1.2;
+            
+            return baseDistance * influenceMultiplier * relationshipMultiplier;
+        }
+    };
+
+    // ===== TAB NAVIGATION =====
+    /**
+     * Manages tab navigation in the game UI
+     */
+    const TabNavigation = {
+        /**
+         * Currently active tab
+         * @type {string}
+         */
+        activeTab: 'overview',
+        
+        /**
+         * Switch to a different tab
+         * @param {string} tabId - The ID of the tab to switch to
+         */
+        switchTab: function(tabId) {
+            // Update active tab
+            this.activeTab = tabId;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            
+            // Load tab content
+            this.loadTabContent(tabId);
+            
+            console.log(`Switched to tab: ${tabId}`);
+        },
+        
+        /**
+         * Load content for a tab
+         * @param {string} tabId - The ID of the tab to load content for
+         */
+        loadTabContent: function(tabId) {
+            const contentContainer = document.querySelector('.game-panel .panel-content');
+            
+            // Clear current content
+            contentContainer.innerHTML = '';
+            
+            // Load appropriate content based on tab
+            switch (tabId) {
+                case 'overview':
+                    this.loadOverviewTab(contentContainer);
+                    break;
+                case 'activity':
+                    this.loadActivityTab(contentContainer);
+                    break;
+                case 'documents':
+                    this.loadDocumentsTab(contentContainer);
+                    break;
+                case 'insights':
+                    this.loadInsightsTab(contentContainer);
+                    break;
+                case 'updates':
+                    this.loadUpdatesTab(contentContainer);
+                    // Clear updates badge
+                    document.querySelector('.updates-badge').style.display = 'none';
+                    break;
+                default:
+                    contentContainer.innerHTML = '<p>Tab content not implemented</p>';
+            }
+        },
+        
+        /**
+         * Refresh the current tab content
+         */
+        refreshCurrentTab: function() {
+            this.loadTabContent(this.activeTab);
+        },
+        
+        /**
+         * Load content for the overview tab
+         * @param {HTMLElement} container - The container to load content into
+         */
+        loadOverviewTab: function(container) {
+            // Create narrative section
+            let html = '<div class="narrative-section">';
+            
+            html += `
+                <div class="narrative-entry">
+                    <div class="narrative-icon">📊</div>
+                    <div class="narrative-content">
+                        <h3>Current Situation</h3>
+                        <p>Azuria's port facility is operating at only 40% capacity, creating a fiscal crisis with loan repayments due. The port was financed through a commercial loan from China, but revenue projections have fallen short, and environmental concerns from local fishing communities are mounting.</p>
+                    </div>
+                </div>
+                
+                <div class="narrative-entry">
+                    <div class="narrative-icon">🎯</div>
+                    <div class="narrative-content">
+                        <h3>Your Task</h3>
+                        <p>As Finance Ministry Official, you must establish a sustainable debt repayment plan, balance environmental concerns with fiscal stability, maintain diplomatic relations with stakeholders, and preserve political influence above critical thresholds.</p>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            
+            // Create action cards
+            html += ActionManager.createActionCards();
+            
+            // Add educational insights section if any have been unlocked
+            if (gameState.unlockedInsights.length > 0) {
+                html += '<div class="educational-insights">';
+                html += '<h3>Educational Insights</h3>';
+                
+                // Add the first up to 2 insights
+                const insightsToShow = gameState.unlockedInsights.slice(0, 2);
+                insightsToShow.forEach(insight => {
+                    html += `
+                        <div class="insight">
+                            <div class="insight-title">${insight.title}</div>
+                            <p>${insight.content}</p>
+                        </div>
+                    `;
+                });
+                
+                // Add "View More" link if there are more insights
+                if (gameState.unlockedInsights.length > 2) {
+                    html += `
+                        <div class="more-insights">
+                            <button class="btn btn-outline btn-small view-all-insights">View All ${gameState.unlockedInsights.length} Insights</button>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+            
+            // Set container content
+            container.innerHTML = html;
+            
+            // Bind events
+            ActionManager.bindActionCardEvents();
+            
+            // Bind "View All Insights" button
+            const viewAllButton = container.querySelector('.view-all-insights');
+            if (viewAllButton) {
+                viewAllButton.addEventListener('click', () => {
+                    TabNavigation.switchTab('insights');
+                });
+            }
+        },
+        
+        /**
+         * Load content for the activity tab
+         * @param {HTMLElement} container - The container to load content into
+         */
+        loadActivityTab: function(container) {
+            let html = '<div class="activity-log">';
+            
+            // Sort actions by day, newest first
+            const sortedActions = [...gameState.actionsHistory].sort((a, b) => b.day - a.day);
+            
+            if (sortedActions.length === 0) {
+                html += `
+                    <div class="log-entry">
+                        <div class="log-header">
+                            <div class="log-title">No Actions Taken Yet</div>
+                            <div class="log-day">Day ${gameState.currentDay}</div>
+                        </div>
+                        <div class="log-description">You have not taken any actions so far. Your objectives require strategic decisions to address the port's financial, environmental, and diplomatic challenges.</div>
+                    </div>
+                `;
+            } else {
+                // Add each action to the log
+                sortedActions.forEach(action => {
+                    html += `
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">${action.title}</div>
+                                <div class="log-day">Day ${action.day}</div>
+                            </div>
+                            <div class="log-description">${action.description}</div>
+                            <div class="log-impacts">
+                    `;
+                    
+                    // Add impact badges
+                    if (action.impacts) {
+                        for (const [metric, value] of Object.entries(action.impacts)) {
+                            if (value === 0) continue;
+                            
+                            const impactClass = value > 0 ? 'impact-positive' : 'impact-negative';
+                            const impactSign = value > 0 ? '+' : '';
+                            
+                            html += `
+                                <span class="log-impact ${impactClass}">${metric}: ${impactSign}${value}</span>
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Add stakeholder engagements to the log
+            gameState.stakeholderEngagements.forEach(engagement => {
+                const stakeholder = gameState.stakeholders.find(s => s.id === engagement.stakeholderId);
+                
+                if (stakeholder) {
+                    html += `
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Engaged with ${stakeholder.name}: ${engagement.title}</div>
+                                <div class="log-day">Day ${engagement.day}</div>
+                            </div>
+                            <div class="log-description">${engagement.outcome}</div>
+                            <div class="log-impacts">
+                    `;
+                    
+                    // Add relationship impact
+                    const relationshipClass = 
+                        engagement.impacts.relationship === 'friendly' ? 'impact-positive' : 
+                        engagement.impacts.relationship === 'hostile' ? 'impact-negative' : 
+                        'impact-neutral';
+                    
+                    html += `
+                        <span class="log-impact ${relationshipClass}">Relationship: ${engagement.impacts.relationship}</span>
+                    `;
+                    
+                    // Add metric impacts
+                    if (engagement.impacts.metrics) {
+                        for (const [metric, value] of Object.entries(engagement.impacts.metrics)) {
+                            if (value === 0) continue;
+                            
+                            const impactClass = value > 0 ? 'impact-positive' : 'impact-negative';
+                            const impactSign = value > 0 ? '+' : '';
+                            
+                            html += `
+                                <span class="log-impact ${impactClass}">${metric}: ${impactSign}${value}</span>
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            
+            // Set container content
+            container.innerHTML = html;
+        },
+        
+        /**
+         * Load content for the documents tab
+         * @param {HTMLElement} container - The container to load content into
+         */
+        loadDocumentsTab: function(container) {
+            let html = '<div class="documents-interface">';
+            
+            // Documents sidebar
+            html += '<div class="documents-sidebar">';
+            html += '<h3>Available Documents</h3>';
+            html += '<div class="documents-list">';
+            
+            gameState.documents.forEach(doc => {
+                // Check if document is viewed
+                const isViewed = gameState.documentHistory.includes(doc.id);
+                const isActive = isViewed && gameState.documentHistory[gameState.documentHistory.length - 1] === doc.id;
+                
+                html += `
+                    <div class="document-item ${isActive ? 'active' : ''}" data-document-id="${doc.id}">
+                        <div class="document-icon">${doc.icon}</div>
+                        <div class="document-info">
+                            <div class="document-title">${doc.title}</div>
+                            <div class="document-type">${doc.type}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            html += '</div>';
+            
+            // Document viewer - Empty container for the enhanced viewer to render into
+            html += '<div class="document-viewer" id="documentViewer">';
+            
+            // Check if a document was previously viewed
+            if (gameState.documentHistory.length === 0) {
+                // Show placeholder
+                html += `
+                    <div class="document-viewer-placeholder">
+                        <div class="placeholder-icon">📄</div>
+                        <div class="placeholder-text">Select a document to view its contents</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            html += '</div>';
+            
+            // Set container content
+            container.innerHTML = html;
+            
+            // If a document is selected, render it with the enhanced viewer
+            if (gameState.documentHistory.length > 0) {
+                const lastDocId = gameState.documentHistory[gameState.documentHistory.length - 1];
+                DocumentViewerEnhanced.renderDocument(lastDocId);
+            }
+            
+            // Bind document click events
+            const documentItems = container.querySelectorAll('.document-item');
+            documentItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const docId = parseInt(this.getAttribute('data-document-id'));
+                    
+                    // Add to document history if not already present
+                    if (!gameState.documentHistory.includes(docId)) {
+                        gameState.documentHistory.push(docId);
+                    } else {
+                        // Move to end of history to mark as most recently viewed
+                        gameState.documentHistory = gameState.documentHistory.filter(id => id !== docId);
+                        gameState.documentHistory.push(docId);
+                    }
+                    
+                    // Use the enhanced document viewer to display the document
+                    DocumentViewerEnhanced.renderDocument(docId);
+                    
+                    // Update active status
+                    documentItems.forEach(d => d.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        },
+        
+        /**
+         * Load content for the insights tab
+         * @param {HTMLElement} container - The container to load content into
+         */
+        loadInsightsTab: function(container) {
+            let html = '<div class="insights-section">';
+            
+            // Add categories filter
+            const categories = [...new Set(gameState.educationalInsights.map(insight => insight.category))];
+            
+            html += '<div class="insight-categories">';
+            html += '<span class="insight-category active" data-category="all">All</span>';
+            
+            categories.forEach(category => {
+                html += `<span class="insight-category" data-category="${category}">${category}</span>`;
+            });
+            
+            html += '</div>';
+            
+            // Add container for enhanced insights
+            html += '<div class="insights-container" id="insightsContainer">';
+            
+            // Content will be added by the enhanced component
+            
+            html += '</div>';
+            html += '</div>';
+            
+            // Set container content
+            container.innerHTML = html;
+            
+            // Render insights with enhanced component
+            EducationalInsightVisualizer.renderAllInsights('insightsContainer');
+            
+            // Bind category filter events
+            const categories$ = container.querySelectorAll('.insight-category');
+            categories$.forEach(category => {
+                category.addEventListener('click', function() {
+                    // Update active category
+                    categories$.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const selectedCategory = this.getAttribute('data-category');
+                    
+                    // Use the enhanced component to filter insights
+                    EducationalInsightVisualizer.renderAllInsights('insightsContainer', selectedCategory);
+                });
+            });
+        },
+        
+        /**
+         * Load content for the updates tab
+         * @param {HTMLElement} container - The container to load content into
+         */
+        loadUpdatesTab: function(container) {
+            let html = '<div class="updates-container">';
+            
+            if (gameState.updates.length === 0) {
+                html += `
+                    <div class="update-item">
+                        <div class="update-header">
+                            <div class="update-title">No Updates Yet</div>
+                            <div class="update-day">Day ${gameState.currentDay}</div>
+                        </div>
+                        <div class="update-content">
+                            <p>There are no news updates yet. Take actions to generate new developments in your mission.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Sort updates by day, newest first
+                const sortedUpdates = [...gameState.updates].sort((a, b) => b.day - a.day);
+                
+                // Add each update
+                sortedUpdates.forEach((update, index) => {
+                    html += `
+                        <div class="update-item" data-update-id="${index}">
+                            <div class="update-header">
+                                <div class="update-title">${update.title}</div>
+                                <div class="update-day">Day ${update.day}</div>
+                            </div>
+                            <div class="update-content">
+                                <p>${update.content}</p>
+                            </div>
+                            <div class="update-details">
+                                <div class="update-detail-section">
+                                    <p><strong>Related to:</strong> ${update.relatedAction}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            
+            // Set container content
+            container.innerHTML = html;
+            
+            // Bind update item click events
+            const updateItems = container.querySelectorAll('.update-item');
+            updateItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                });
+            });
+        }
+    };
+    
+    // ===== MISSION SELECTOR =====
+    /**
+     * Manages mission selection and starting
+     */
+    const MissionSelectorManager = {
+        /**
+         * Selected mission ID
+         * @type {number}
+         */
+        selectedMission: 1,
+        
+        /**
+         * Open the mission selection screen
+         */
+        openMissionSelection: function() {
+            // Hide splash screen
+            SplashScreen.hide();
+            
+            // Show mission drawer
+            document.getElementById('missionDrawer').classList.add('active');
+            
+            // Select first mission by default
+            this.selectMission(1);
+        },
+        
+        /**
+         * Select a mission
+         * @param {number} missionId - The ID of the mission to select
+         */
+        selectMission: function(missionId) {
+            // Update selected mission
+            this.selectedMission = missionId;
+            
+            // Update UI
+            document.querySelectorAll('.mission-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`.mission-item[data-mission="${missionId}"]`).classList.add('active');
+            
+            // Update mission details (in a real implementation, this would load different content)
+            console.log(`Selected mission: ${missionId}`);
+        },
+        
+        /**
+         * Start the selected mission
+         */
+        startMission: function() {
+            // Hide mission drawer
+            document.getElementById('missionDrawer').classList.remove('active');
+            
+            // Show game UI
+            GameUI.showGameUI();
+            
+            // Initialize game elements
+            GameUI.updateResourcesDisplay();
+            MetricsManager.updateAllMetrics();
+            StakeholderManager.updateStakeholdersDisplay();
+            ObjectiveManager.updateAllObjectives();
+            
+            // Show overview tab by default
+            TabNavigation.switchTab('overview');
+            
+            // Set up NetworkVisualizer
+            NetworkVisualizer.initNetworkVisualization();
+            
+            console.log(`Starting mission: ${MissionSelectorManager.selectedMission}`);
+        }
+    };
+
+    // ===== GAME UI =====
+    /**
+     * Manages the main game UI
+     */
+    const GameUI = {
+        /**
+         * Show the main game UI
+         */
+        showGameUI: function() {
+            // Show game header
+            document.getElementById('gameHeader').style.display = 'flex';
+            
+            // Show main container
+            document.getElementById('mainContainer').style.display = 'grid';
+            
+            // Animate panels
+            const panels = document.querySelectorAll('.panel');
+            panels.forEach((panel, index) => {
+                setTimeout(() => {
+                    panel.style.opacity = '1';
+                    panel.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+            
+            // Update timer display
+            this.updateTimerDisplay();
+            
+            console.log("Game UI displayed");
+        },
+        
+        /**
+         * Hide the game UI
+         */
+        hideGameUI: function() {
+            // Hide game header
+            document.getElementById('gameHeader').style.display = 'none';
+            
+            // Hide main container
+            document.getElementById('mainContainer').style.display = 'none';
+            
+            // Reset panel animations
+            const panels = document.querySelectorAll('.panel');
+            panels.forEach(panel => {
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateY(20px)';
+            });
+            
+            console.log("Game UI hidden");
+        },
+        
+        /**
+         * Update the timer display
+         */
+        updateTimerDisplay: function() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = `${gameState.resources.timeRemaining} Days Remaining`;
+            
+            // Update time resource display
+            document.getElementById('timeResource').querySelector('.resource-value').textContent = 
+                `${gameState.resources.timeRemaining} days remaining`;
+            
+            console.log(`Timer updated: ${gameState.resources.timeRemaining} days remaining`);
+        },
+        
+        /**
+         * Update all resource displays
+         */
+        updateResourcesDisplay: function() {
+            // Update budget display
+            document.getElementById('budgetResource').querySelector('.resource-value').textContent = 
+                `$${gameState.resources.budget.toLocaleString()}`;
+            
+            // Update influence display
+            document.getElementById('influenceResource').querySelector('.resource-value').textContent = 
+                `${gameState.resources.influence} points`;
+            
+            // Update staff display
+            document.getElementById('staffResource').querySelector('.resource-value').textContent = 
+                `${gameState.resources.staff} team members`;
+            
+            // Update timer display
+            this.updateTimerDisplay();
+            
+            console.log("Resources display updated");
+        }
+    };
+
+    // ===== ACTION MANAGER =====
+    /**
+     * Manages game actions and their execution
+     */
+    const ActionManager = {
+        /**
+         * Show the action loading overlay
+         * @param {number} actionId - The ID of the action being executed
+         * @param {string} [customText] - Optional custom loading text
+         * @returns {Promise} - Resolves when animation completes
+         */
+        showActionLoading: function(actionId, customText) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('actionLoadingOverlay');
+                const loadingText = overlay.querySelector('.action-loading-text');
+                
+                // Set custom text if provided
+                if (customText) {
+                    loadingText.textContent = customText;
+                } else {
+                    // Find action name from ID
+                    const action = gameState.actions.find(a => a.id === actionId);
+                    loadingText.textContent = action ? 
+                        `Executing: ${action.title}...` : 
+                        'Processing action...';
+                }
+                
+                // Show overlay
+                overlay.style.display = 'flex';
+                
+                // Fade in
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    
+                    // Hold for a moment then hide
+                    setTimeout(() => {
+                        // Fade out
+                        overlay.style.opacity = '0';
+                        
+                        // Hide completely after animation
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            resolve();
+                        }, 500);
+                    }, 1500);
+                }, 10);
+            });
+        },
+        
+        /**
+         * Create action cards for the overview panel
+         * @returns {string} - HTML string of action cards
+         */
+        createActionCards: function() {
+            let html = '<div class="action-cards">';
+            
+            // Loop through available actions
+            for (const action of gameState.actions) {
+                // Skip actions that have already been taken
+                if (gameState.actionsHistory.some(history => history.id === action.id)) {
+                    continue;
+                }
+                
+                // Check if player has enough resources
+                const canAfford = gameState.resources.budget >= action.cost;
+                const hasTime = gameState.resources.timeRemaining >= action.timeCost;
+                const hasStaff = gameState.resources.staff >= action.staffCost;
+                const isDisabled = !canAfford || !hasTime || !hasStaff;
+                
+                // Create card
+                html += `
+                    <div class="action-card ${isDisabled ? 'disabled-action' : ''}" data-action-id="${action.id}">
+                        <div class="action-header">
+                            <h4>${action.title}</h4>
+                            <div class="action-cost ${!canAfford ? 'cost-insufficient' : ''}">
+                                <div>$${action.cost.toLocaleString()}</div>
+                                <div>${action.timeCost} day${action.timeCost !== 1 ? 's' : ''}</div>
+                                <div>${action.staffCost} staff</div>
+                            </div>
+                        </div>
+                        <div class="action-description">${action.description}</div>
+                        <div class="educational-value-tag">Learning: ${action.educationalValue}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            return html;
+        },
+        
+        /**
+         * Bind event listeners to action cards
+         */
+        bindActionCardEvents: function() {
+            document.querySelectorAll('.action-card:not(.disabled-action)').forEach(card => {
+                card.addEventListener('click', function() {
+                    const actionId = parseInt(this.getAttribute('data-action-id'));
+                    GameController.executeAction(actionId);
+                });
+            });
+        }
+    };
+
+    // ===== OBJECTIVE MANAGER =====
+    /**
+     * Manages mission objectives and progress
+     */
+    const ObjectiveManager = {
+        /**
+         * Update progress for an objective
+         * @param {number} objectiveId - The ID of the objective to update
+         * @param {number} progress - The progress to add (positive) or subtract (negative)
+         * @param {string} reason - The reason for the progress change
+         */
+        updateProgress: function(objectiveId, progress, reason) {
+            // Find the objective element
+            const objectiveElement = document.querySelector(`.objective-item[data-objective-id="${objectiveId}"]`);
+            if (!objectiveElement) {
+                console.error(`Objective element with ID ${objectiveId} not found`);
+                return;
+            }
+            
+            // Get current progress
+            const progressBar = objectiveElement.querySelector('.progress');
+            const currentProgress = parseInt(progressBar.style.height) || 0;
+            
+            // Calculate new progress (capped at 0-100%)
+            let newProgress = Math.max(0, Math.min(100, currentProgress + progress));
+            
+            // Update progress bar
+            progressBar.style.height = `${newProgress}%`;
+            
+            // Log the progress change
+            console.log(`Objective ${objectiveId} progress ${currentProgress}% -> ${newProgress}% (${reason})`);
+            
+            // Check if objective is now complete
+            if (newProgress >= 100 && !gameState.completedObjectives.includes(objectiveId)) {
+                // Mark as complete
+                gameState.completedObjectives.push(objectiveId);
+                
+                // Add completion effect
+                objectiveElement.classList.add('completed');
+                
+                // Show notification
+                NotificationSystem.showNotification({
+                    type: 'success',
+                    title: 'Objective Completed',
+                    message: `You've completed the objective: ${objectiveElement.querySelector('.objective-text').textContent}`
+                });
+                
+                console.log(`Objective ${objectiveId} completed`);
+            }
+            
+            // Update overall progress
+            this.updateOverallProgress();
+        },
+        
+        /**
+         * Update the overall mission progress
+         */
+        updateOverallProgress: function() {
+            // Calculate overall progress (percentage of completed objectives)
+            const totalObjectives = 4; // Hardcoded for simplicity
+            const completedCount = gameState.completedObjectives.length;
+            const overallProgress = Math.round((completedCount / totalObjectives) * 100);
+            
+            // Update progress bar
+            document.getElementById('overallProgressFill').style.width = `${overallProgress}%`;
+            document.getElementById('overallProgressLabel').textContent = `${overallProgress}%`;
+            
+            console.log(`Overall mission progress: ${overallProgress}%`);
+        },
+        
+        /**
+         * Update all objective progress bars
+         */
+        updateAllObjectives: function() {
+            // Calculate individual objective progress
+            // In a real implementation, this would be calculated dynamically
+            // For now, we'll just use a placeholder with manual values
+            
+            // Objective 1: Debt repayment plan
+            const progress1 = gameState.actionsHistory.reduce((sum, action) => {
+                if (action.objectiveProgress) {
+                    const obj = action.objectiveProgress.find(o => o.id === 1);
+                    return sum + (obj ? obj.progress : 0);
+                }
+                return sum;
+            }, 0);
+            
+            this.updateObjectiveDisplay(1, progress1);
+            
+            // Objective 2: Environmental concerns
+            const progress2 = gameState.actionsHistory.reduce((sum, action) => {
+                if (action.objectiveProgress) {
+                    const obj = action.objectiveProgress.find(o => o.id === 2);
+                    return sum + (obj ? obj.progress : 0);
+                }
+                return sum;
+            }, 0);
+            
+            this.updateObjectiveDisplay(2, progress2);
+            
+            // Objective 3: Diplomatic relations
+            const progress3 = gameState.actionsHistory.reduce((sum, action) => {
+                if (action.objectiveProgress) {
+                    const obj = action.objectiveProgress.find(o => o.id === 3);
+                    return sum + (obj ? obj.progress : 0);
+                }
+                return sum;
+            }, 0);
+            
+            this.updateObjectiveDisplay(3, progress3);
+            
+            // Objective 4: Political influence
+            const progress4 = gameState.actionsHistory.reduce((sum, action) => {
+                if (action.objectiveProgress) {
+                    const obj = action.objectiveProgress.find(o => o.id === 4);
+                    return sum + (obj ? obj.progress : 0);
+                }
+                return sum;
+            }, 0);
+            
+            this.updateObjectiveDisplay(4, progress4);
+            
+            // Update overall progress
+            this.updateOverallProgress();
+        },
+        
+        /**
+         * Update the display for a single objective
+         * @param {number} objectiveId - The ID of the objective to update
+         * @param {number} progress - The new progress value (0-100)
+         */
+        updateObjectiveDisplay: function(objectiveId, progress) {
+            // Find the objective element
+            const objectiveElement = document.querySelector(`.objective-item[data-objective-id="${objectiveId}"]`);
+            if (!objectiveElement) {
+                console.error(`Objective element with ID ${objectiveId} not found`);
+                return;
+            }
+            
+            // Cap progress at 0-100%
+            const cappedProgress = Math.max(0, Math.min(100, progress));
+            
+            // Update progress bar
+            const progressBar = objectiveElement.querySelector('.progress');
+            progressBar.style.height = `${cappedProgress}%`;
+            
+            // Check if objective is complete
+            if (cappedProgress >= 100 && !gameState.completedObjectives.includes(objectiveId)) {
+                gameState.completedObjectives.push(objectiveId);
+                objectiveElement.classList.add('completed');
+            }
+        },
+        
+        /**
+         * Check if all objectives are complete
+         * @returns {boolean} - True if all objectives are complete
+         */
+        checkAllObjectivesComplete: function() {
+            // Count how many objectives we expect
+            const totalObjectives = 4; // Hardcoded for simplicity
+            
+            return gameState.completedObjectives.length >= totalObjectives;
+        }
+    };
+
+// ===== METRICS MANAGER =====
+    /**
+     * Manages game metrics (fiscal, environmental, political, international)
+     */
+    const MetricsManager = {
+        /**
+         * Update a single metric display
+         * @param {string} metric - The metric to update (fiscal, environmental, political, international)
+         */
+        updateMetricDisplay: function(metric) {
+            // Find the metric element
+            const metricElement = document.getElementById(`${metric}Metric`);
+            if (!metricElement) {
+                console.error(`Metric element for ${metric} not found`);
+                return;
+            }
+            
+            // Get the current value
+            const value = gameState.metrics[metric];
+            
+            // Update the display
+            const fillElement = metricElement.querySelector(`.fill-${metric}`);
+            const valueElement = metricElement.querySelector('.metric-value');
+            
+            if (fillElement) {
+                fillElement.style.width = `${value}%`;
+            }
+            
+            if (valueElement) {
+                valueElement.textContent = `${value}%`;
+                
+                // Update value class based on metric level
+                valueElement.className = 'metric-value';
+                if (value <= 30) {
+                    valueElement.classList.add('value-low');
+                } else if (value <= 60) {
+                    valueElement.classList.add('value-medium');
+                } else {
+                    valueElement.classList.add('value-high');
+                }
+            }
+            
+            console.log(`Metric ${metric} updated to ${value}%`);
+        },
+        
+        /**
+         * Update all metric displays
+         */
+        updateAllMetrics: function() {
+            this.updateMetricDisplay('fiscal');
+            this.updateMetricDisplay('environmental');
+            this.updateMetricDisplay('political');
+            this.updateMetricDisplay('international');
+        }
+    };
+
+    // ===== STAKEHOLDER MANAGER =====
+    /**
+     * Manages stakeholders and their relationships
+     */
+    const StakeholderManager = {
+        /**
+         * Update a stakeholder's relationship
+         * @param {number} stakeholderId - The ID of the stakeholder
+         * @param {string} newRelationship - The new relationship status (friendly, neutral, hostile)
+         * @param {string} reason - The reason for the change
+         */
+        updateRelationship: function(stakeholderId, newRelationship, reason) {
+            // Find the stakeholder
+            const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+            if (!stakeholder) {
+                console.error(`Stakeholder with ID ${stakeholderId} not found`);
+                return;
+            }
+            
+            // Skip if relationship hasn't changed
+            if (stakeholder.relationship === newRelationship) {
+                console.log(`Stakeholder ${stakeholderId} relationship unchanged: ${newRelationship}`);
+                return;
+            }
+            
+            // Log the previous relationship
+            const previousRelationship = stakeholder.relationship;
+            
+            // Update relationship
+            stakeholder.relationship = newRelationship;
+            
+            // Show notification
+            NotificationSystem.showNotification({
+                type: newRelationship === 'friendly' ? 'success' : (newRelationship === 'hostile' ? 'error' : 'info'),
+                title: `Relationship Changed: ${stakeholder.name}`,
+                message: `${stakeholder.name}'s relationship with you changed from ${previousRelationship} to ${newRelationship}. Reason: ${reason}`
+            });
+            
+            // Update stakeholder display
+            this.updateStakeholdersDisplay();
+            
+            console.log(`Stakeholder ${stakeholderId} relationship changed: ${previousRelationship} -> ${newRelationship}`);
+        },
+        
+        /**
+         * Update the stakeholders display
+         */
+        updateStakeholdersDisplay: function() {
+            const container = document.querySelector('.stakeholders-list');
+            
+            if (!container) {
+                console.error('Stakeholders list container not found');
+                return;
+            }
+            
+            // Clear current content
+            container.innerHTML = '';
+            
+            // Add each stakeholder
+            gameState.stakeholders.forEach(stakeholder => {
+                const relationshipClass = 
+                    stakeholder.relationship === 'friendly' ? 'relationship-friendly' : 
+                    stakeholder.relationship === 'hostile' ? 'relationship-hostile' : 
+                    'relationship-neutral';
+                
+                const item = document.createElement('div');
+                item.className = 'stakeholder-item';
+                item.dataset.stakeholderId = stakeholder.id;
+                
+                item.innerHTML = `
+                    <div class="stakeholder-avatar">${stakeholder.image}</div>
+                    <div class="stakeholder-info">
+                        <div class="stakeholder-name">${stakeholder.name}</div>
+                        <div class="stakeholder-relationship ${relationshipClass}">
+                            ${stakeholder.relationship.charAt(0).toUpperCase() + stakeholder.relationship.slice(1)}
+                        </div>
+                        <div class="stakeholder-influence">${stakeholder.influence} Influence</div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+                
+                // Add click event to show stakeholder details
+                item.addEventListener('click', () => {
+                    this.showStakeholderDetails(stakeholder.id);
+                });
+            });
+            
+            console.log('Stakeholders display updated');
+        },
+        
+        /**
+         * Show details for a stakeholder
+         * @param {number} stakeholderId - The ID of the stakeholder
+         */
+        showStakeholderDetails: function(stakeholderId) {
+            // Find the stakeholder
+            const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+            if (!stakeholder) {
+                console.error(`Stakeholder with ID ${stakeholderId} not found`);
+                return;
+            }
+            
+            // Set modal title
+            document.getElementById('stakeholderModalTitle').textContent = stakeholder.name;
+            
+            // Use the enhanced stakeholder visualization
+            StakeholderVisualization.renderStakeholderProfile(stakeholderId);
+            
+            // Set up engagement button
+            document.getElementById('engageStakeholderBtn').setAttribute('data-stakeholder-id', stakeholderId);
+            
+            // Open the modal
+            ModalManager.openModal('stakeholderModal');
+            
+            console.log(`Showing details for stakeholder ${stakeholderId}`);
+        },
+        
+        /**
+         * Show engagement options for a stakeholder
+         */
+        showEngagementOptions: function() {
+                const stakeholderId = parseInt(document.getElementById('engageStakeholderBtn').getAttribute('data-stakeholder-id'));
+                
+                // Find the stakeholder
+                const stakeholder = gameState.stakeholders.find(s => s.id === stakeholderId);
+                if (!stakeholder) {
+                    console.error(`Stakeholder with ID ${stakeholderId} not found`);
+                    return;
+                }
+                
+                // Set modal title
+                document.getElementById('engagementModalTitle').textContent = `Engage with ${stakeholder.name}`;
+                
+                // Get engagement options
+                const engagementOptions = gameState.stakeholderEngagementOptions[stakeholderId];
+                if (!engagementOptions) {
+                    console.error(`No engagement options for stakeholder ${stakeholderId}`);
+                    return;
+                }
+                
+                // Set modal content
+                const modalBody = document.getElementById('engagementModalBody');
+                
+                let html = '<div class="engagement-options">';
+                
+                engagementOptions.forEach(option => {
+                    // Check if player has enough resources
+                    const canAfford = gameState.resources.budget >= option.cost;
+                    const hasInfluence = gameState.resources.influence >= option.influenceCost;
+                    const isDisabled = !canAfford || !hasInfluence;
+                    
+                    html += `
+                        <div class="engagement-option ${isDisabled ? 'disabled' : ''}" data-option-id="${option.id}">
+                            <div class="engagement-title">
+                                ${option.title}
+                                <span class="engagement-cost">
+                                    ${option.cost > 0 ? `$${option.cost.toLocaleString()}` : ''}
+                                    ${option.influenceCost > 0 ? `${option.influenceCost} influence` : ''}
+                                </span>
+                            </div>
+                            <div class="engagement-description">${option.description}</div>
+                            <div class="engagement-outcome">Expected outcome: ${option.outcome}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                
+                modalBody.innerHTML = html;
+                
+                // Clear any existing execution button first to prevent duplicates
+                const engagementModalFooter = document.getElementById('stakeholderEngagementModal').querySelector('.modal-footer');
+                const existingExecuteBtn = engagementModalFooter.querySelector('.execute-engagement-btn');
+                if (existingExecuteBtn) {
+                    existingExecuteBtn.remove();
+                }
+                
+                // Add click events to options
+                const options = modalBody.querySelectorAll('.engagement-option:not(.disabled)');
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        // Deselect all options
+                        options.forEach(o => o.classList.remove('selected'));
+                        
+                        // Select this option
+                        this.classList.add('selected');
+                        
+                        // Remove any existing execution button
+                        const existingBtn = engagementModalFooter.querySelector('.execute-engagement-btn');
+                        if (existingBtn) {
+                            existingBtn.remove();
+                        }
+                        
+                        // Add execute button
+                        const executeBtn = document.createElement('button');
+                        executeBtn.className = 'btn btn-primary execute-engagement-btn';
+                        executeBtn.textContent = 'Execute Engagement';
+                        executeBtn.addEventListener('click', () => {
+                            const selectedOption = document.querySelector('#engagementModalBody .engagement-option.selected');
+                            if (selectedOption) {
+                                const optionId = parseInt(selectedOption.getAttribute('data-option-id'));
+                                GameController.executeStakeholderEngagement(stakeholderId, optionId);
+                            } else {
+                                console.error('No engagement option selected');
+                                NotificationSystem.showNotification({
+                                    type: 'error',
+                                    title: 'Selection Error',
+                                    message: 'Please select an engagement option first.'
+                                });
+                            }
+                        });
+                        
+                        engagementModalFooter.appendChild(executeBtn);
+                    });
+                });
+                
+                // Close the stakeholder details modal
+                ModalManager.closeModal('stakeholderModal');
+                
+                // Open the engagement modal
+                ModalManager.openModal('stakeholderEngagementModal');
+            }
+    };
+
+    // ===== MODAL MANAGER =====
+    /**
+     * Manages all modal dialogs in the game
+     */
+    const ModalManager = {
+        /**
+         * Currently active modal
+         * @type {string|null}
+         */
+        activeModal: null,
+        
+        /**
+         * Open a modal
+         * @param {string} modalId - The ID of the modal to open
+         */
+        openModal: function(modalId) {
+            // Check if we need to close an already open modal
+            if (this.activeModal && this.activeModal !== modalId) {
+                this.closeModal(this.activeModal);
+            }
+            
+            // Set active modal
+            this.activeModal = modalId;
+            
+            // Display modal
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            
+            // Apply ripple effect if clicked
+            this.addRippleEffect(modal);
+            
+            console.log(`Opened modal: ${modalId}`);
+        },
+        
+        /**
+         * Close a modal
+         * @param {string} modalId - The ID of the modal to close
+         */
+        closeModal: function(modalId) {
+            const modal = document.getElementById(modalId);
+            
+            if (modal) {
+                modal.classList.remove('active');
+                
+                // Clear active modal reference if this is the active one
+                if (this.activeModal === modalId) {
+                    this.activeModal = null;
+                }
+                
+                console.log(`Closed modal: ${modalId}`);
+            }
+        },
+        
+        /**
+         * Add ripple effect to a modal
+         * @param {HTMLElement} modal - The modal element
+         */
+        addRippleEffect: function(modal) {
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // Create ripple effect
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            
+            // Set position in center of modal
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            
+            // Add to modal
+            modalContent.appendChild(ripple);
+            
+            // Remove ripple after animation completes
+            setTimeout(() => {
+                if (ripple && ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        }
+    };
+
+    // ===== NETWORK VISUALIZER =====
+    /**
+     * Creates visual network effects for the game
+     */
+    const NetworkVisualizer = {
+        /**
+         * Initialize network visualization on the splash screen
+         */
+        initSplashConnections: function() {
+            const container = document.getElementById('splashConnections');
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Create nodes
+            const nodeCount = 12;
+            const nodes = [];
+            
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                
+                // Calculate random position
+                const posX = 10 + Math.random() * 80; // 10-90% of width
+                const posY = 10 + Math.random() * 80; // 10-90% of height
+                
+                node.style.left = `${posX}%`;
+                node.style.top = `${posY}%`;
+                
+                container.appendChild(node);
+                nodes.push({
+                    element: node,
+                    x: posX,
+                    y: posY
+                });
+            }
+            
+            // Create connections between nodes
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    // Only connect some nodes (about 30%)
+                    if (Math.random() > 0.3) continue;
+                    
+                    const node1 = nodes[i];
+                    const node2 = nodes[j];
+                    
+                    // Calculate line position and angle
+                    const dx = node2.x - node1.x;
+                    const dy = node2.y - node1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // Create connection line
+                    const connection = document.createElement('div');
+                    connection.className = 'connection-line';
+                    
+                    // Add random class variations
+                    if (Math.random() > 0.8) {
+                        connection.classList.add('connection-strategic');
+                    } else if (Math.random() > 0.6) {
+                        connection.classList.add('connection-thin');
+                    }
+                    
+                    // Position line
+                    connection.style.left = `${node1.x}%`;
+                    connection.style.top = `${node1.y}%`;
+                    connection.style.width = `${distance}%`;
+                    connection.style.transform = `rotate(${angle}deg)`;
+                    
+                    container.appendChild(connection);
+                }
+            }
+            
+            console.log("Splash screen network visualization initialized");
+        },
+        
+        /**
+         * Initialize network visualization in the game UI
+         */
+        initNetworkVisualization: function() {
+            const container = document.getElementById('networkVisualization');
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Create nodes
+            const nodeCount = 30;
+            const nodes = [];
+            
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'network-node';
+                
+                // Calculate random position
+                const posX = Math.random() * 100; // 0-100% of width
+                const posY = Math.random() * 100; // 0-100% of height
+                
+                node.style.left = `${posX}%`;
+                node.style.top = `${posY}%`;
+                
+                container.appendChild(node);
+                nodes.push({
+                    element: node,
+                    x: posX,
+                    y: posY
+                });
+            }
+            
+            // Create connections between nodes
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    // Only connect nodes that are reasonably close (within 30% of viewport)
+                    const node1 = nodes[i];
+                    const node2 = nodes[j];
+                    
+                    const dx = node2.x - node1.x;
+                    const dy = node2.y - node1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 30) continue;
+                    
+                    // Calculate line angle
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // Create connection line
+                    const connection = document.createElement('div');
+                    connection.className = 'network-connection';
+                    
+                    // Position line
+                    connection.style.left = `${node1.x}%`;
+                    connection.style.top = `${node1.y}%`;
+                    connection.style.width = `${distance}%`;
+                    connection.style.transform = `rotate(${angle}deg)`;
+                    
+                    container.appendChild(connection);
+                }
+            }
+            
+            console.log("Game UI network visualization initialized");
+        }
+    };
+
+        // ===== SPLASH SCREEN =====
+    /**
+     * Manages the splash screen and onboarding carousel
+     */
+    const SplashScreen = {
+        /**
+         * Current slide in the onboarding carousel
+         * @type {number}
+         */
+        currentSlide: 1,
+        
+        /**
+         * Total number of slides in the carousel
+         * @type {number}
+         */
+        totalSlides: 4,
+        
+        /**
+         * Initialize the splash screen
+         */
+        init: function() {
+            // Hide loading screen and carousel initially
+            document.getElementById('loadingScreen').classList.remove('active');
+            document.getElementById('onboardingCarousel').style.display = 'none';
+            
+            // Show splash screen content immediately
+            this.show();
+            
+            console.log("Splash screen initialized");
+        },
+        
+        /**
+         * Show the loading screen
+         */
+        showLoadingScreen: function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('active');
+            
+            // Simulate loading progress
+            let progress = 0;
+            const loadingBar = document.getElementById('loadingBar');
+            
+            const loadingInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+                    
+                    // Hide loading screen after a short delay
+                    setTimeout(() => {
+                        loadingScreen.classList.remove('active');
+                        
+                        // Start the mission
+                        MissionSelector.startMission();
+                    }, 500);
+                }
+                
+                loadingBar.style.width = `${progress}%`;
+            }, 300);
+        },
+        
+        /**
+         * Show the splash screen
+         */
+        show: function() {
+            document.getElementById('splashScreen').classList.remove('hidden');
+        },
+        
+        /**
+         * Hide the splash screen
+         */
+        hide: function() {
+            document.getElementById('splashScreen').classList.add('hidden');
+        },
+        
+        /**
+         * Start the game from splash screen
+         */
+        startGame: function() {
+            // Show onboarding carousel
+            document.getElementById('onboardingCarousel').style.display = 'block';
+            
+            // Hide CTA buttons
+            document.querySelector('.cta-buttons').style.display = 'none';
+        },
+        
+        /**
+         * Go to a specific slide in the carousel
+         * @param {number} slideNumber - The slide number to go to
+         */
+        goToSlide: function(slideNumber) {
+            if (slideNumber < 1 || slideNumber > this.totalSlides) {
+                return;
+            }
+            
+            // Update current slide
+            this.currentSlide = slideNumber;
+        
+            // Hide all slides
+            document.querySelectorAll('.carousel-slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Show current slide
+            document.querySelector(`.carousel-slide[data-slide="${slideNumber}"]`).classList.add('active');
+            
+            // Update indicators
+            document.querySelectorAll('.indicator').forEach(indicator => {
+                indicator.classList.remove('active');
+            });
+            
+            document.querySelector(`.indicator[data-slide="${slideNumber}"]`).classList.add('active');
+            
+            // Update continue button
+            const continueButton = document.getElementById('continueButton');
+            continueButton.removeEventListener('click', MissionSelector.selectMission);
+            continueButton.addEventListener('click', function() {
+                // Trigger the loading screen when user clicks Select Mission
+                SplashScreen.hide();
+                SplashScreen.showLoadingScreen();
+            });
+        },
+        
+        /**
+         * Go to the next slide
+         */
+        nextSlide: function() {
+            SplashScreen.goToSlide(SplashScreen.currentSlide + 1);
+        },
+        
+        /**
+         * Go to the previous slide
+         */
+        prevSlide: function() {
+            SplashScreen.goToSlide(SplashScreen.currentSlide - 1);
+        },
+        
+        /**
+         * Skip the carousel and go to mission selection
+         */
+        skipCarousel: function() {
+            MissionSelector.openMissionSelection();
+        }
+    };
+
+    // ===== AUDIO PLAYER =====
+/**
+ * Controls the welcome audio player functionality
+ */
+const AudioPlayer = {
+    /**
+     * Audio element
+     * @type {HTMLAudioElement}
+     */
+    audio: null,
+    
+    /**
+     * Play button element
+     * @type {HTMLElement}
+     */
+    playBtn: null,
+    
+    /**
+     * Progress bar element
+     * @type {HTMLElement}
+     */
+    progressBar: null,
+    
+    /**
+     * Current time display element
+     * @type {HTMLElement}
+     */
+    currentTimeDisplay: null,
+    
+    /**
+     * Total time display element
+     * @type {HTMLElement}
+     */
+    totalTimeDisplay: null,
+    
+    /**
+     * Volume slider element
+     * @type {HTMLElement}
+     */
+    volumeSlider: null,
+    
+    /**
+     * Initialize the audio player
+     */
+    init: function() {
+        this.audio = document.getElementById('welcomeAudio');
+        this.playBtn = document.getElementById('audioPlayBtn');
+        this.progressBar = document.getElementById('audioProgress');
+        this.currentTimeDisplay = document.getElementById('currentTime');
+        this.totalTimeDisplay = document.getElementById('totalTime');
+        this.volumeSlider = document.getElementById('volumeSlider');
+        
+        if (!this.audio || !this.playBtn || !this.progressBar) {
+            console.error('Audio player elements not found');
+            return;
+        }
+        
+        this.bindEvents();
+        console.log("Audio player initialized");
+    },
+    
+    /**
+     * Bind all event listeners
+     */
+    bindEvents: function() {
+        // Play/pause button
+        this.playBtn.addEventListener('click', () => {
+            if (this.audio.paused) {
+                this.play();
+            } else {
+                this.pause();
+            }
+        });
+        
+        // Time update
+        this.audio.addEventListener('timeupdate', () => {
+            this.updateProgress();
+        });
+        
+        // Audio loaded
+        this.audio.addEventListener('loadedmetadata', () => {
+            this.updateTotalTime();
+        });
+        
+        // Progress bar click
+        const progressContainer = document.querySelector('.audio-progress-bar');
+        if (progressContainer) {
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const clickPosition = (e.clientX - rect.left) / rect.width;
+                this.audio.currentTime = clickPosition * this.audio.duration;
+            });
+        }
+        
+        // Volume control
+        if (this.volumeSlider) {
+            this.volumeSlider.addEventListener('input', () => {
+                this.audio.volume = this.volumeSlider.value / 100;
+            });
+            
+            // Set initial volume
+            this.audio.volume = this.volumeSlider.value / 100;
+        }
+        
+        // Audio ended
+        this.audio.addEventListener('ended', () => {
+            this.playBtn.classList.remove('playing');
+        });
+    },
+    
+    /**
+     * Play the audio
+     */
+    play: function() {
+        this.audio.play();
+        this.playBtn.classList.add('playing');
+    },
+    
+    /**
+     * Pause the audio
+     */
+    pause: function() {
+        this.audio.pause();
+        this.playBtn.classList.remove('playing');
+    },
+    
+    /**
+     * Update the progress bar
+     */
+    updateProgress: function() {
+        if (this.audio.duration) {
+            const progressPercent = (this.audio.currentTime / this.audio.duration) * 100;
+            this.progressBar.style.width = `${progressPercent}%`;
+            
+            // Update current time display
+            const minutes = Math.floor(this.audio.currentTime / 60);
+            const seconds = Math.floor(this.audio.currentTime % 60).toString().padStart(2, '0');
+            this.currentTimeDisplay.textContent = `${minutes}:${seconds}`;
+        }
+    },
+    
+    /**
+     * Update the total time display
+     */
+    updateTotalTime: function() {
+        if (this.audio.duration && !isNaN(this.audio.duration)) {
+            const minutes = Math.floor(this.audio.duration / 60);
+            const seconds = Math.floor(this.audio.duration % 60).toString().padStart(2, '0');
+            this.totalTimeDisplay.textContent = `${minutes}:${seconds}`;
+        } else {
+            this.totalTimeDisplay.textContent = "0:00";
+        }
+    }
+};
+
+    // ===== MISSION SELECTOR =====
+    /**
+     * Manages mission selection and starting
+     */
+    const MissionSelector = {
+        /**
+         * Selected mission ID
+         * @type {number}
+         */
+        selectedMission: 1,
+        
+        /**
+         * Open the mission selection screen
+         */
+        openMissionSelection: function() {
+            // Hide splash screen
+            SplashScreen.hide();
+            
+            // Show mission drawer
+            document.getElementById('missionDrawer').classList.add('active');
+            
+            // Select first mission by default
+            this.selectMission(1);
+        },
+        
+        /**
+         * Select a mission
+         * @param {number} missionId - The ID of the mission to select
+         */
+        selectMission: function(missionId) {
+            // Update selected mission
+            this.selectedMission = missionId;
+            
+            // Update UI
+            document.querySelectorAll('.mission-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`.mission-item[data-mission="${missionId}"]`).classList.add('active');
+            
+            // Update mission details (in a real implementation, this would load different content)
+            console.log(`Selected mission: ${missionId}`);
+        },
+
+        
+        /**
+         * Start the selected mission
+         */
+        startMission: function() {
+            // Hide mission drawer
+            document.getElementById('missionDrawer').classList.remove('active');
+            
+            // Show game UI
+            GameUI.showGameUI();
+            
+            // Initialize game elements
+            GameUI.updateResourcesDisplay();
+            MetricsManager.updateAllMetrics();
+            StakeholderManager.updateStakeholdersDisplay();
+            ObjectiveManager.updateAllObjectives();
+            
+            // Show overview tab by default
+            TabNavigation.switchTab('overview');
+            
+            // Set up NetworkVisualizer
+            NetworkVisualizer.initNetworkVisualization();
+            
+            console.log(`Starting mission: ${MissionSelector.selectedMission}`);
+        }
+    };
+/** /
+    * This function replaces the startMissionBtn click handler in the original init function
+    */
+   function updateStartMissionButtonHandler() {
+       const startMissionBtn = document.getElementById('startMissionBtn');
+       if (startMissionBtn) {
+           // Remove any existing event listeners (to avoid duplicates)
+           const newBtn = startMissionBtn.cloneNode(true);
+           startMissionBtn.parentNode.replaceChild(newBtn, startMissionBtn);
+           
+           // Add our new event listener that shows the loading screen first
+           newBtn.addEventListener('click', function() {
+               // Hide mission drawer
+               document.getElementById('missionDrawer').classList.remove('active');
+               
+               // Show loading screen before starting mission
+               SplashScreen.showLoadingScreen();
+           });
+       }
+   }
+   /** Initializes the application with our modified loading screen behavior
+   */
+  function originalInit() {
+      // This function will be called at the end of the main initialization
+      updateStartMissionButtonHandler();
+      
+      // Modify the document's existing binding to use our new behavior
+      // This needs to be done after the original DOM content loaded event
+      setTimeout(() => {
+          updateStartMissionButtonHandler();
+      }, 500);
+      
+      console.log("Modified loading screen behavior initialized");
+  }
+
+    // Initialize the game when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        GameController.init();
+        originalInit.call(this);
+        AudioPlayer.init();
+    });
+})();
