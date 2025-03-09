@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AidCraft - A simulation game where you take on the role of a Finance Ministry Official managing debt repayment, political influence, environmental concerns, and diplomatic relations.">
-    <title>AidCraft - Global Development Finance Simulation</title>
+    <title>Debt & DiplomacyDemo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xMiA0Ljc1TDE5LjI1IDlMMTIgMTMuMjVMNC43NSA5TDEyIDQuNzVaIiBzdHJva2U9IiMwYTY4NjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik05LjI1IDExLjVMNC43NSAxNEwxMiAxOC4yNUwxOS4yNSAxNEwxNC43NSAxMS41IiBzdHJva2U9IiMwYTY4NjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==">
-    <!-- External CSS -->
-    <link rel="stylesheet" href="test.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xMiA0Ljc1TDE5LjI1IDlMMTIgMTMuMjVMNC43NSA5TDEyIDQuNzVaIiBzdHJva2U9IiMwYTY4NjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik05LjI1IDExLjVMNC43NSAxNEwxMiAxOC4yNUwxOS4yNSAxNEwxNC43NSAxMS41IiBzdHJva2U9IiMwYTY4NjAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Loading Screen -->
@@ -19,8 +17,8 @@
         <div class="loading-icon">
             <div class="loading-circle"></div>
         </div>
-        <div class="loading-text">Loading mission data...</div>
-        <div class="loading-subtext">Preparing financial tools and diplomatic profiles</div>
+        <div class="loading-text">Loading Debt & Diplomacy...</div>
+        <div class="loading-subtext">Preparing your learning experience</div>
         <div class="loading-progress">
             <div class="loading-bar" id="loadingBar"></div>
         </div>
@@ -33,267 +31,439 @@
     
         <div class="splash-content">
             <div class="content-wrapper">
-                <h1 class="game-title">AidCraft</h1>
-            </div>
+                <div class="game-logo fade-in">
+                    <h1 class="game-title">Debt & Diplomacy</h1>
+                </div>
                 
-            <h2 class="game-subtitle fade-in delay-1">Global Development Finance Simulation</h2>
+                <h2 class="game-subtitle fade-in delay-1">Global Development Finance Game</h2>
                 
-            <p class="game-description fade-in delay-2">Take on the role of a Finance Ministry Official managing critical infrastructure investments while balancing budget constraints, diplomatic relations, and political pressures.
-            </p>
+                <p class="game-description fade-in delay-2">
+                    Learn about development finance challenges in the real world by managing critical infrastructure 
+                    investments while balancing budget constraints, diplomatic relations, and political pressures.
+                </p>
                 
-            <div class="cta-buttons fade-in delay-3">
-                <button class="btn btn-primary btn-lg" id="playButton">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 12L10 16.5V7.5L16 12Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
-                        <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5"/>
-                    </svg>
-                    Start Mission
-                </button>
-            </div>
+                <div class="cta-buttons fade-in delay-3">
+                    <button class="btn btn-primary btn-lg" id="playButton">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 12L10 16.5V7.5L16 12Z" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                        Start Game
+                    </button>
+                    
+                    <button class="btn btn-outline" id="aboutButton">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5"/>
+                            <path d="M12 17V11" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="12" cy="8" r="1" fill="white"/>
+                        </svg>
+                        About
+                    </button>
+                </div>
                 
-            <div class="educational-note fade-in delay-4">
-                <div class="note-badge">EDUCATIONAL NOTE</div>
-                <p>This simulation explores real-world dynamics of infrastructure financing, highlighting the complex interplay between economic development, environmental sustainability, and international relations.</p>
+                <!-- Onboarding Carousel (Enhanced) -->
+                <div class="onboarding-carousel" id="onboardingCarousel">
+                    <div class="carousel-slides">
+                        <div class="carousel-slide active" data-slide="1">
+                            <div class="slide-content">
+                                <h3>Welcome to Debt & Diplomacy</h3>
+                                <div class="video-container">
+                                    <video id="welcomeVideo" controls width="100%">
+                                        <source src="welcome.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-slide="2">
+                            <div class="slide-content">
+                                <h3>The Challenge</h3>
+                                <p>
+                                    Azuria's port facility is operating at only 40% capacity, creating a fiscal 
+                                    crisis with loan repayments due. The port was financed through a commercial loan 
+                                    from China, but revenue projections have fallen short, and environmental concerns 
+                                    from local fishing communities are mounting.
+                                </p>
+                                <div class="challenge-metrics">
+                                    <div class="metric">
+                                        <span class="metric-label-carousel">Capacity</span>
+                                        <div class="metric-bar"><div style="width:40%"></div></div>
+                                        <span class="metric-value">40%</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label-carousel">Revenue</span>
+                                        <div class="metric-bar"><div style="width:35%"></div></div>
+                                        <span class="metric-value">$26M vs $65M</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label-carousel">Debt Service</span>
+                                        <div class="metric-bar"><div style="width:75%"></div></div>
+                                        <span class="metric-value">$42M annually</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-slide="3">
+                            <div class="slide-content">
+                                <h3>Your Mission</h3>
+                                <ul class="mission-list">
+                                    <li>Establish a sustainable debt repayment plan</li>
+                                    <li>Balance environmental concerns with fiscal stability</li>
+                                    <li>Maintain diplomatic relations with stakeholders</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="carousel-slide" data-slide="4">
+                            <div class="slide-content">
+                                <h3>Game Mechanics</h3>
+                                <div class="mechanics-grid">
+                                    <div class="mechanic-item">
+                                        <div class="mechanic-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" stroke="currentColor" stroke-width="1.5"/>
+                                                <path d="M15 8.5C14.315 7.81501 13.1087 7.33331 12 7.33331C9.69881 7.33331 7.83331 9.19881 7.83331 11.5C7.83331 13.8011 9.69881 15.6666 12 15.6666C13.1087 15.6666 14.315 15.185 15 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="mechanic-name">Resources</div>
+                                        <div class="mechanic-desc">Manage budget, staff, and political influence</div>
+                                    </div>
+                                    <div class="mechanic-item">
+                                        <div class="mechanic-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M14.4 9.60001H9.60004" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M12 7.20001V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M16.8 2H7.20004C4.00004 2 2 4.00001 2 7.20001V16.8C2 20 4.00004 22 7.20004 22H16.8C20 22 22 20 22 16.8V7.20001C22 4.00001 20 2 16.8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="mechanic-name">Actions</div>
+                                        <div class="mechanic-desc">Take strategic financial and diplomatic actions</div>
+                                    </div>
+                                    <div class="mechanic-item">
+                                        <div class="mechanic-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="1.5"/>
+                                                <path d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z" stroke="currentColor" stroke-width="1.5"/>
+                                            </svg>
+                                        </div>
+                                        <div class="mechanic-name">Stakeholders</div>
+                                        <div class="mechanic-desc">Manage relationships with key partners</div>
+                                    </div>
+                                    <div class="mechanic-item">
+                                        <div class="mechanic-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M22 10V15C22 20 20 22 15 22H9C4 22 2 20 2 15V9C2 4 4 2 9 2H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M22 10H18C15 10 14 9 14 6V2L22 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="mechanic-name">Documents</div>
+                                        <div class="mechanic-desc">Review financial and legal documents</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-indicators">
+                        <span class="indicator active" data-slide="1"></span>
+                        <span class="indicator" data-slide="2"></span>
+                        <span class="indicator" data-slide="3"></span>
+                        <span class="indicator" data-slide="4"></span>
+                    </div>
+                    <div class="carousel-controls">
+                        <button class="carousel-prev" id="carouselPrev">←</button>
+                        <button class="carousel-next" id="carouselNext">→</button>
+                    </div>
+                    <div class="carousel-footer">
+                        <button class="btn btn-outline skip-carousel" id="skipCarousel">Skip Tutorial</button>
+                        <button class="btn btn-primary continue-button" id="continueButton">Select Mission</button>
+                    </div>
+                </div>
             </div>
         </div>
     
         <div class="floating-badge">
-            <div class="badge-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 5H4V21H20V5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M4 9H20" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8 5V3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16 5V3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-            Finance Ministry
+            Demo
         </div>
         
-        <div class="version-badge">v1.0 developed by Sethu Nguna (2025)</div>
+        <div class="version-badge">v1.1 - by Sethu (2025)</div>
     </section>
 
+    <!-- About Modal -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 class="modal-title">About Debt & Diplomacy</h3>
+                <button class="modal-close" id="closeAboutModal" aria-label="Close about modal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body">
+                <h4>Educational Purpose</h4>
+                <p>Debt & Diplomacy is an educational simulation designed as a learning experience design project to help users understand the complex dynamics of development finance in emerging economies. The scenarios presented are based on real-world situations faced by many nations.</p>
+                
+                <h4>Key Learning Objectives</h4>
+                <ul>
+                    <li>Understand debt sustainability challenges in infrastructure financing</li>
+                    <li>Navigate complex stakeholder relationships including domestic and international actors</li>
+                    <li>Balance economic development with environmental and social considerations</li>
+                    <li>Experience the trade-offs involved in fiscal policy decision-making</li>
+                </ul>
+                
+                <div class="about-disclaimer">
+                    <p>This simulation is designed for educational purposes and simplifies complex economic and political realities. It should be viewed as an introduction to these concepts rather than a comprehensive representation.</p>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-primary" id="closeAboutBtn">Continue to Game</button>
+            </footer>
+        </div>
+    </div>
+    
     <!-- Mission Selection Drawer -->
     <section class="mission-drawer" id="missionDrawer">
         <div class="mission-panel">
-            <div class="mission-list">
+            <aside class="mission-list">
                 <h2 class="mission-list-header">Select a Mission</h2>
                 
                 <div class="mission-item active" data-mission="1">
-                    <div class="mission-item-title">Hidden Debt Challenge</div>
+                    <div class="mission-item-title">The Hidden Debt Challenge</div>
                     <div class="mission-item-desc">Manage port financing while navigating fiscal pressures and diplomatic interests</div>
                 </div>
                 
-                <div class="mission-item" data-mission="2">
-                    <div class="mission-item-title">Sustainable Energy Transition</div>
-                    <div class="mission-item-desc">Balance renewable energy investments with economic stability and international commitments</div>
+                <div class="mission-item disabled" data-mission="2">
+                    <div class="mission-item-title">Climate Finance Initiative</div>
+                    <div class="mission-item-desc">Coming soon - Negotiate climate adaptation funding</div>
                 </div>
                 
-                <div class="mission-item" data-mission="3">
-                    <div class="mission-item-title">Healthcare Infrastructure Crisis</div>
-                    <div class="mission-item-desc">Secure financing for critical healthcare facilities amid competing national priorities</div>
+                <div class="mission-item disabled" data-mission="3">
+                    <div class="mission-item-title">Infrastructure Dilemma</div>
+                    <div class="mission-item-desc">Coming soon - Balance public-private partnerships</div>
                 </div>
-            </div>
+                
+                <div class="mission-help">
+                    <h3>Development Finance Concepts</h3>
+                    <p>Each mission explores different aspects of development finance including debt sustainability, blended finance mechanisms, and stakeholder management.</p>
+                    <button class="btn btn-outline btn-small" id="showGuideBtn">View Game Guide</button>
+                </div>
+            </aside>
             
-            <div class="mission-details">
-                <div class="mission-header">
+            <main class="mission-details">
+                <header class="mission-header">
                     <h2>Hidden Debt Challenge</h2>
-                </div>
+                </header>
                 
                 <div class="mission-content">
                     <div class="mission-image">
-                        <div class="port-image"></div>
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwYTY4NjAiIG9wYWNpdHk9IjAuMSIvPgogIDxyZWN0IHg9IjEwMCIgeT0iMTIwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjMGE2ODYwIiBvcGFjaXR5PSIwLjMiLz4KICA8cmVjdCB4PSIxNTAiIHk9IjkwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIGZpbGw9IiMwYTY4NjAiIG9wYWNpdHk9IjAuMyIvPgogIDxyZWN0IHg9IjIwMCIgeT0iOTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIzMCIgZmlsbD0iIzBhNjg2MCIgb3BhY2l0eT0iMC4zIi8+CiAgPHJlY3QgeD0iMTAwIiB5PSI5MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjMGE2ODYwIiBvcGFjaXR5PSIwLjMiLz4KICA8cmVjdCB4PSIyNTAiIHk9IjkwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIGZpbGw9IiMwYTY4NjAiIG9wYWNpdHk9IjAuMyIvPgogIDxwYXRoIGQ9Ik0xMCAxMzBDMTAwIDEzMCAxMDAgMTUwIDE2MCAxNTBDMjIwIDE1MCAyNTAgMTMwIDM5MCAxMzBMNDAwIDE1MEw0MDAgMjAwTDAgMjAwTDAgMTUwTDEwIDEzMFoiIGZpbGw9IiMwYTY4NjAiIG9wYWNpdHk9IjAuMiIvPgogIDxyZWN0IHg9IjEyMCIgeT0iNzAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzBhNjg2MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHJlY3QgeD0iMTUwIiB5PSI3MCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMGE2ODYwIiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIyMDAiIHk9IjcwIiB3aWR0aD0iMTAiIGhlaWdodD0iMjAiIGZpbGw9IiMwYTY4NjAiIG9wYWNpdHk9IjAuNSIvPgogIDxyZWN0IHg9IjI1MCIgeT0iNzAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzBhNjg2MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHJlY3QgeD0iMjgwIiB5PSI3MCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMGE2ODYwIiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNNTAgNDVMNzAgNDVMNzAgNTVMOTAgNTVMOTAgNjVMMTAwIDY1TDEwMCA3NUwzMDAgNzVMMzAwIDY1TDMxMCA2NUwzMTAgNTVMMzMwIDU1TDMzMCA0NUwzNTAgNDVMNDAwIDQ1TDQwMCA2NUwwIDY1TDAgNDVMNTAgNDVaIiBmaWxsPSIjMGE2ODYwIiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSI0MCIgY3k9IjI1IiByPSIxMCIgZmlsbD0iI2ZmYjYzYyIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTEyMCAxNTAgTDEyMCAxMzBMIDE3MCAxMzAgTCAxNzAgMTUwIiBzdHJva2U9IiMwYTY4NjAiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxwYXRoIGQ9Ik0yMzAgMTUwIEwyMzAgMTMwTCAyODAgMTMwIEwgMjgwIDE1MCIgc3Ryb2tlPSIjMGE2ODYwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSIxNDUiIHk9IjE4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMGE2ODYwIj5Qb3J0IEZhY2lsaXR5PC90ZXh0Pgo8L3N2Zz4=" alt="Port Facility Illustration">
                     </div>
-
                     <div class="mission-text">
-                        <p>The coastal nation of Azuria has secured a commercial loan from China to build a major port facility, promising increased trade and economic growth. As repayment deadlines approach, the port is operating at only 40% capacity, falling far short of revenue projections. The Prime Minister has tasked you with finding a solution that preserves Azuria's fiscal stability without compromising diplomatic relationships.</p>
+                        <div class="situation-summary">
+                            <p>
+                                Your coastal nation of Azuria secured a commercial loan from China to build a major port 
+                                facility, promising increased trade and economic growth. As repayment deadlines approach, 
+                                the port is operating at only 40% capacity, falling far short of revenue projections. 
+                                Initial analysis suggests the loan agreement contains concerning collateral clauses that 
+                                could transfer control to the lender in case of default, while local fishing communities 
+                                report significant environmental damage from port dredging operations.
+                            </p>
+                        </div>
+                    
+                        <div class="mission-metrics">
+                            <div class="mission-metric">
+                                <div class="mission-metric-label">Difficulty</div>
+                                <div class="mission-metric-value difficulty-value">Medium</div>
+                            </div>
+                            <div class="mission-metric">
+                                <div class="mission-metric-label">Duration</div>
+                                <div class="mission-metric-value duration-value">10 Days</div>
+                            </div>
+                            <div class="mission-metric">
+                                <div class="mission-metric-label">Initial Budget</div>
+                                <div class="mission-metric-value reward-value">$15,000,000</div>
+                            </div>
+                        </div>
                         
-                        <p>Your initial analysis suggests the loan agreement contains concerning collateral clauses that could transfer control of this strategic asset to the lender in case of default. Meanwhile, local fishing communities report significant environmental damage from port dredging operations, adding political pressure.</p>
+                        <div class="education-insight">
+                            <h4>Development Finance Context</h4>
+                            <p>This scenario reflects issues faced by many countries engaging in large infrastructure projects with foreign financing. The "hidden debt" challenge refers to loan terms that may not be fully transparent, potentially including asset-based collateral or management control provisions in case of default.</p>
+                        </div>
+                    
+                        <div class="mission-challenges">
+                            <h3>Key Challenges</h3>
+                            <ul class="challenges-list">
+                                <li>Find refinancing options for a port that is generating insufficient revenue to meet the upcoming loan payment</li>
+                                <li>Civil society organizations are demanding full loan term disclosure, threatening political stability</li>
+                                <li>Fishing communities are threatening protests due to environmental impacts</li>
+                                <li>Balancing diplomatic relations with various local and international stakeholders</li>
+                            </ul>
+                        </div>
                         
-                        <p>As Finance Ministry Official, you must navigate complex stakeholder dynamics, evaluate refinancing options from both Chinese and Western institutions, and find a solution that protects your nation's financial stability, strategic assets, and political standing.</p>
+                        <div class="mission-success">
+                            <h3>Success Criteria</h3>
+                            <ul class="criteria-list">
+                                <li>Establish a sustainable debt repayment plan</li>
+                                <li>Mitigate environmental concerns without compromising fiscal stability</li>
+                                <li>Maintain diplomatic relations with all stakeholders</li>
+                                <li>Keep political influence above the critical threshold</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="mission-metrics">
-                    <div class="mission-metric">
-                        <div class="mission-metric-label">Difficulty</div>
-                        <div class="mission-metric-value difficulty-value">Medium</div>
-                    </div>
-                    <div class="mission-metric">
-                        <div class="mission-metric-label">Duration</div>
-                        <div class="mission-metric-value duration-value">10 Days</div>
-                    </div>
-                    <div class="mission-metric">
-                        <div class="mission-metric-label">Initial Budget</div>
-                        <div class="mission-metric-value reward-value">$15,000,000</div>
-                    </div>
-                </div>
-                
-                <h3>Key Challenges</h3>
-                <ul class="challenges-list">
-                    <li>The port is generating insufficient revenue to meet the upcoming loan payment</li>
-                    <li>Civil society organizations are demanding full loan term disclosure, threatening political stability</li>
-                    <li>Fishing communities are threatening protests due to environmental impacts</li>
-                    <li>Western development banks are offering refinancing options with governance conditions</li>
-                </ul>
-                
-                <h3>Success Criteria</h3>
-                <ul class="criteria-list">
-                    <li>Establish a sustainable debt repayment plan</li>
-                    <li>Maintain your political influence above critical threshold</li>
-                    <li>Mitigate environmental concerns without compromising fiscal stability</li>
-                    <li>Maintain diplomatic relations with both Chinese and Western stakeholders</li>
-                </ul>
-                
-                <button class="btn btn-primary mission-start-btn" id="startMissionBtn">Start Mission</button>
-            </div>
+                <button class="mission-start-btn" id="startMissionBtn">Start Mission</button>
+            </main>
         </div>
     </section>
     
     <!-- Guide Modal -->
     <div class="modal" id="guideModal">
-        <div class="modal-content guide-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Game Guide: Finance Ministry Official</h3>
-                <div class="modal-close" id="closeGuideModal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 class="modal-title">Game Guide</h3>
+                <button class="modal-close" id="closeGuideModal" aria-label="Close guide">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                </div>
-            </div>
+                </button>
+            </header>
             <div class="modal-body">
-                <div class="guide-section">
-                    <div class="guide-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 5H4V21H20V5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M16 2V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M4 9H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <div class="guide-content">
-                        <h4>Your Mission</h4>
-                        <p>Balance fiscal responsibility, diplomatic relationships, and political priorities to safeguard your nation's financial stability while managing complex development finance projects.</p>
-                    </div>
-                </div>
+                <h4>Your Mission</h4>
+                <p>Balance fiscal responsibility, diplomatic relationships, and political priorities to safeguard your nation's financial stability while managing complex development finance projects.</p>
                 
-                <div class="guide-section">
-                    <div class="guide-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 12.8799V11.1199C2 10.0799 2.85 9.21994 3.9 9.21994C5.71 9.21994 6.45 7.93994 5.54 6.36994C5.02 5.46994 5.33 4.29994 6.24 3.77994L7.97 2.78994C8.76 2.31994 9.78 2.59994 10.25 3.38994L10.36 3.57994C11.26 5.14994 12.74 5.14994 13.65 3.57994L13.76 3.38994C14.23 2.59994 15.25 2.31994 16.04 2.78994L17.77 3.77994C18.68 4.29994 18.99 5.46994 18.47 6.36994C17.56 7.93994 18.3 9.21994 20.11 9.21994C21.15 9.21994 22.01 10.0699 22.01 11.1199V12.8799C22.01 13.9199 21.16 14.7799 20.11 14.7799C18.3 14.7799 17.56 16.0599 18.47 17.6299C18.99 18.5399 18.68 19.6999 17.77 20.2199L16.04 21.2099C15.25 21.6799 14.23 21.3999 13.76 20.6099L13.65 20.4199C12.75 18.8499 11.27 18.8499 10.36 20.4199L10.25 20.6099C9.78 21.3999 8.76 21.6799 7.97 21.2099L6.24 20.2199C5.33 19.6999 5.02 18.5299 5.54 17.6299C6.45 16.0599 5.71 14.7799 3.9 14.7799C2.85 14.7799 2 13.9199 2 12.8799Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                <h4>Key Metrics</h4>
+                <div class="guide-metrics">
+                    <div class="guide-metric">
+                        <div class="metric-icon fiscal-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M15 8.5C14.315 7.81501 13.1087 7.33331 12 7.33331C9.69881 7.33331 7.83331 9.19881 7.83331 11.5C7.83331 13.8011 9.69881 15.6666 12 15.6666C13.1087 15.6666 14.315 15.185 15 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <h5>Fiscal Sustainability</h5>
+                            <p>Measures your ability to maintain financial health by balancing revenue generation, debt service, and operational expenses. Low fiscal sustainability increases default risk and may trigger loan collateral clauses.</p>
+                        </div>
                     </div>
-                    <div class="guide-content">
-                        <h4>Game Controls</h4>
-                        <ul class="guide-list">
-                            <li><strong>Policy Decisions</strong> - Make critical financial and diplomatic choices that impact your nation's economy and relationships.</li>
-                            <li><strong>Action Cards</strong> - Strategic tools to negotiate, restructure debt, analyze markets, and manage stakeholders.</li>
-                            <li><strong>Stakeholder Management</strong> - Build relationships with key financial institutions, government officials and international partners.</li>
-                        </ul>
+                    
+                    <div class="guide-metric">
+                        <div class="metric-icon environmental-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 21C4.79086 21 3 19.2091 3 17C3 15.8053 3.37412 14.7038 4 13.7885M17 21C19.2091 21 21 19.2091 21 17C21 14.7909 19.2091 13 17 13C17 9.13401 13.866 6 10 6C6.60948 6 3.82321 8.28945 3.1469 11.4209" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 11L14 14H10L12 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <h5>Environmental Compliance</h5>
+                            <p>Reflects how well you're addressing ecological impacts from infrastructure projects. Higher compliance improves community relations and access to certain financing options, while low compliance risks protests and operational disruption.</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="guide-section">
-                    <div class="guide-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M15.5 9.5C16.3284 9.5 17 8.82843 17 8C17 7.17157 16.3284 6.5 15.5 6.5C14.6716 6.5 14 7.17157 14 8C14 8.82843 14.6716 9.5 15.5 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8.5 9.5C9.32843 9.5 10 8.82843 10 8C10 7.17157 9.32843 6.5 8.5 6.5C7.67157 6.5 7 7.17157 7 8C7 8.82843 7.67157 9.5 8.5 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8.4 13.3H15.6C16.1 13.3 16.5 13.7 16.5 14.2C16.5 16.69 14.49 18.7 12 18.7C9.51 18.7 7.5 16.69 7.5 14.2C7.5 13.7 7.9 13.3 8.4 13.3Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"/>
-                        </svg>
+                    
+                    <div class="guide-metric">
+                        <div class="metric-icon political-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <h5>Political Capital</h5>
+                            <p>Your influence with domestic stakeholders and government officials. Critical for implementing difficult reforms and maintaining your position. If this drops too low, you may be removed from office, ending the game.</p>
+                        </div>
                     </div>
-                    <div class="guide-content">
-                        <h4>Success Metrics</h4>
-                        <p>Your performance is measured across four key areas:</p>
-                        <div class="metrics-preview">
-                            <div class="metric-preview">
-                                <div class="metric-preview-label">Fiscal Sustainability</div>
-                                <div class="metric-preview-bar">
-                                    <div class="metric-preview-fill fiscal-fill"></div>
-                                </div>
-                            </div>
-                            <div class="metric-preview">
-                                <div class="metric-preview-label">Political Capital</div>
-                                <div class="metric-preview-bar">
-                                    <div class="metric-preview-fill political-fill"></div>
-                                </div>
-                            </div>
-                            <div class="metric-preview">
-                                <div class="metric-preview-label">Environmental Compliance</div>
-                                <div class="metric-preview-bar">
-                                    <div class="metric-preview-fill environmental-fill"></div>
-                                </div>
-                            </div>
-                            <div class="metric-preview">
-                                <div class="metric-preview-label">International Relations</div>
-                                <div class="metric-preview-bar">
-                                    <div class="metric-preview-fill international-fill"></div>
-                                </div>
-                            </div>
+                    
+                    <div class="guide-metric">
+                        <div class="metric-icon international-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M2 12H22" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <h5>International Relations</h5>
+                            <p>Your diplomatic standing with global financial institutions and bilateral partners. Balancing relations with different international stakeholders opens more financing options and prevents geopolitical complications.</p>
                         </div>
                     </div>
                 </div>
+                
+                <h4>Stakeholder Management</h4>
+                <p>Each stakeholder has their own interests, influence level, and relationship status with you. Building and maintaining positive relationships opens new opportunities and improves metrics, while hostile relationships can create significant challenges.</p>
+                
+                <div class="stakeholder-strategies">
+                    <h5>Relationship Status Effects:</h5>
+                    <ul>
+                        <li><strong>Friendly:</strong> Provides bonuses to related metrics, may unlock special options, and increases chances of successful negotiations</li>
+                        <li><strong>Neutral:</strong> Standard interactions with no special bonuses or penalties</li>
+                        <li><strong>Hostile:</strong> Significantly reduces related metrics, blocks certain options, and may trigger negative events</li>
+                    </ul>
+                    
+                    <h5>Engagement Tips:</h5>
+                    <ul>
+                        <li>Carefully consider each stakeholder's key interests before taking actions that affect them</li>
+                        <li>Additional interactions with stakeholders can improve relationships but may consume resources</li>
+                        <li>Prioritize relationships based on stakeholder influence and alignment with your objectives</li>
+                        <li>Remember that it's impossible to keep all stakeholders happy simultaneously - strategic trade-offs are essential</li>
+                    </ul>
+                </div>
+                
+                <h4>Resource Management</h4>
+                <p>You have limited resources to manage throughout the game:</p>
+                
+                <div class="resource-explanation">
+                    <h5>Budget</h5>
+                    <p>Financial resources for implementing actions. Different actions have different costs, and when your budget is depleted, your options become severely limited.</p>
+                    
+                    <h5>Staff</h5>
+                    <p>Your team members who implement actions. Each action may require staff commitment, temporarily reducing available staff until the action is completed.</p>
+                    
+                    <h5>Political Influence</h5>
+                    <p>Your personal political capital that can be spent on difficult decisions. This resource is particularly hard to replenish and must be managed carefully.</p>
+                    
+                    <h5>Time</h5>
+                    <p>Each action consumes days, and you have a limited timeframe to resolve the crisis before loan repayments are due.</p>
+                </div>
+                
+                <h4>Strategic Advice</h4>
+                <ul>
+                    <li>Begin by thoroughly reviewing all available documents to understand the full context</li>
+                    <li>Balance short-term gains against long-term sustainability</li>
+                    <li>Monitor all four key metrics carefully - if any drop too low, you may face game-ending consequences</li>
+                    <li>Diversify your approaches rather than focusing exclusively on one aspect of the challenge</li>
+                    <li>When stakeholder interests conflict, try to find compromise solutions that address core concerns</li>
+                    <li>Remember that transparency with stakeholders typically yields better outcomes than concealment</li>
+                </ul>
             </div>
-            <div class="modal-footer">
+            <footer class="modal-footer">
                 <button class="btn btn-outline" id="closeGuideBtn">Close</button>
-                <button class="btn btn-primary" id="startTutorialBtn">Start Tutorial</button>
-            </div>
+                <button class="btn btn-primary" id="startTutorialBtn"></button>
+            </footer>
         </div>
     </div>
-    
+
     <!-- Menu Modal -->
     <div class="modal" id="menuModal">
         <div class="modal-content">
-            <div class="modal-header">
+            <header class="modal-header">
                 <h3 class="modal-title">Game Menu</h3>
-                <div class="modal-close" id="closeMenuModal">
+                <button class="modal-close" id="closeMenuModal" aria-label="Close menu">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                </div>
-            </div>
+                </button>
+            </header>
             <div class="modal-body">
                 <div class="menu-items">
-                    <button class="menu-item" id="menuSaveGame">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 17H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M12 6V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Save Game
-                    </button>
-                    <button class="menu-item" id="menuLoadGame">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 17H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M12 6V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Load Game
-                    </button>
-                    <button class="menu-item" id="menuOptions">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2 12.8799V11.1199C2 10.0799 2.85 9.21994 3.9 9.21994C5.71 9.21994 6.45 7.93994 5.54 6.36994C5.02 5.46994 5.33 4.29994 6.24 3.77994L7.97 2.78994C8.76 2.31994 9.78 2.59994 10.25 3.38994L10.36 3.57994C11.26 5.14994 12.74 5.14994 13.65 3.57994L13.76 3.38994C14.23 2.59994 15.25 2.31994 16.04 2.78994L17.77 3.77994C18.68 4.29994 18.99 5.46994 18.47 6.36994C17.56 7.93994 18.3 9.21994 20.11 9.21994C21.15 9.21994 22.01 10.0699 22.01 11.1199V12.8799C22.01 13.9199 21.16 14.7799 20.11 14.7799C18.3 14.7799 17.56 16.0599 18.47 17.6299C18.99 18.5399 18.68 19.6999 17.77 20.2199L16.04 21.2099C15.25 21.6799 14.23 21.3999 13.76 20.6099L13.65 20.4199C12.75 18.8499 11.27 18.8499 10.36 20.4199L10.25 20.6099C9.78 21.3999 8.76 21.6799 7.97 21.2099L6.24 20.2199C5.33 19.6999 5.02 18.5299 5.54 17.6299C6.45 16.0599 5.71 14.7799 3.9 14.7799C2.85 14.7799 2 13.9199 2 12.8799Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Options
-                    </button>
-                    <button class="menu-item" id="menuReturnMain">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9.57 5.92993L3.5 11.9999L9.57 18.0699" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M20.5 12H3.67" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Home
-                    </button>
-                    <button class="menu-item danger-item" id="menuExit">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8.90002 7.55999C9.21002 3.95999 11.06 2.48999 15.11 2.48999H15.24C19.71 2.48999 21.5 4.27999 21.5 8.74999V15.27C21.5 19.74 19.71 21.53 15.24 21.53H15.11C11.09 21.53 9.24002 20.08 8.91002 16.54" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M15 12H3.62" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Exit
-                    </button>
+                    <button class="menu-item" id="menuSaveGame">Save Game</button>
+                    <button class="menu-item" id="menuLoadGame">Load Game</button>
+                    <button class="menu-item" id="menuOptions">Options</button>
+                    <button class="menu-item" id="menuGuide">Guide</button>
+                    <button class="menu-item" id="menuStats">Statistics</button>
+                    <button class="menu-item" id="menuReturnMain">Main Menu</button>
+                    <button class="menu-item danger-item" id="menuExit">Exit Game</button>
                 </div>
             </div>
         </div>
@@ -301,103 +471,46 @@
     
     <!-- Stakeholder Detail Modal -->
     <div class="modal" id="stakeholderModal">
-        <div class="modal-content stakeholder-modal-content">
-            <div class="modal-header">
+        <div class="modal-content">
+            <header class="modal-header">
                 <h3 class="modal-title" id="stakeholderModalTitle">Stakeholder Details</h3>
-                <div class="modal-close" id="closeStakeholderModal">
+                <button class="modal-close" id="closeStakeholderModal" aria-label="Close stakeholder details">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                </div>
-            </div>
+                </button>
+            </header>
             <div class="modal-body" id="stakeholderModalBody">
                 <!-- Content will be dynamically inserted here -->
             </div>
-            <div class="stakeholder-actions">
-                <div class="stakeholder-influence-meter">
-                    <div class="influence-label">Your Influence</div>
-                    <div class="influence-bar">
-                        <div class="influence-fill" id="stakeholderInfluence"></div>
-                    </div>
-                </div>
-                <div class="stakeholder-trust-meter">
-                    <div class="trust-label">Trust Level</div>
-                    <div class="trust-bar">
-                        <div class="trust-fill" id="stakeholderTrust"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
+            <footer class="modal-footer">
                 <button class="btn btn-outline" id="closeStakeholderBtn">Close</button>
-                <button class="btn btn-primary" id="engageStakeholderBtn">Engage Stakeholder</button>
-            </div>
+                <div class="stakeholder-interaction-container" id="stakeholderInteractionContainer">
+                    <button class="btn btn-primary" id="engageStakeholderBtn">Engage Further</button>
+                </div>
+            </footer>
         </div>
     </div>
     
-    <!-- Action Result Modal -->
-    <div class="modal" id="actionResultModal">
-        <div class="modal-content result-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="actionResultTitle">Action Result</h3>
-                <div class="modal-close" id="closeActionResultModal">
+    <!-- Stakeholder Engagement Modal -->
+    <div class="modal" id="stakeholderEngagementModal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 class="modal-title" id="engagementModalTitle">Engage with Stakeholder</h3>
+                <button class="modal-close" id="closeEngagementModal" aria-label="Close engagement modal">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                </div>
+                </button>
+            </header>
+            <div class="modal-body" id="engagementModalBody">
+                <!-- Engagement options will be inserted here -->
             </div>
-            <div class="modal-body" id="actionResultBody">
-                <!-- Content will be dynamically inserted here -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="acknowledgeResultBtn">Continue</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- End Game Modal -->
-    <div class="modal" id="endGameModal">
-        <div class="modal-content end-game-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="endGameTitle">Mission Complete</h3>
-                <div class="modal-close" id="closeEndGameModal">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M6 6L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="modal-body" id="endGameBody">
-                <!-- Content will be dynamically inserted here -->
-            </div>
-            <div class="modal-footer end-game-footer">
-                <div class="final-decision-container">
-                    <h4>Make Your Final Recommendation:</h4>
-                    <div class="final-decision-options">
-                        <button class="btn btn-outline final-decision-btn" data-decision="restructure">Restructure Debt</button>
-                        <button class="btn btn-outline final-decision-btn" data-decision="refinance">Seek Western Refinancing</button>
-                        <button class="btn btn-outline final-decision-btn" data-decision="privatize">Partial Privatization</button>
-                        <button class="btn btn-outline final-decision-btn" data-decision="strategic">Strategic Default</button>
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="submitRecommendationBtn">Submit Recommendation</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Prime Minister's Verdict Modal -->
-    <div class="modal" id="verdictModal">
-        <div class="modal-content verdict-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Prime Minister's Verdict</h3>
-            </div>
-            <div class="modal-body" id="verdictBody">
-                <!-- Content will be dynamically inserted here -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="completeGameBtn">Complete Mission</button>
-            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-outline" id="cancelEngagementBtn">Cancel</button>
+            </footer>
         </div>
     </div>
     
@@ -411,6 +524,22 @@
     <!-- Notification Container -->
     <div class="notification-container" id="notificationContainer"></div>
     
+    <!-- Game Result Modal -->
+    <div class="modal" id="gameResultModal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 class="modal-title" id="gameResultTitle">Mission Complete</h3>
+            </header>
+            <div class="modal-body" id="gameResultBody">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-outline" id="returnToMenuBtn">Return to Menu</button>
+                <button class="btn btn-primary" id="newGameBtn">New Game</button>
+            </footer>
+        </div>
+    </div>
+
     <!-- Main Game UI -->
     <header class="game-header" id="gameHeader">
         <div class="game-logo">
@@ -441,162 +570,121 @@
     <main class="main-container" id="mainContainer">
         <!-- Network Visualization Background -->
         <div class="network-visualization" id="networkVisualization"></div>
-
-        <!-- Mini Welcome Splash Screen Carousel -->
-<div class="carousel-container" id="welcomeCarousel">
-    <div class="carousel-slide active">
-      <h2>Welcome to the Hidden Debt Challenge</h2>
-      <img src="video-placeholder.jpg" alt="Introductory Video Placeholder" style="width:100%; border-radius:8px;">
-      <p>Watch this short introductory video to understand your mission.</p>
-    </div>
-    <div class="carousel-slide">
-      <h2>How to Play</h2>
-      <p>Your goal is to manage Azuria's port financial crisis effectively. Balance fiscal stability, environmental remediation, and diplomatic relations. Take strategic actions, monitor resources, and engage stakeholders wisely.</p>
-    </div>
-    <div class="carousel-controls">
-      <button class="carousel-btn carousel-prev">Previous</button>
-      <button class="carousel-btn carousel-next">Next</button>
-      <button class="carousel-btn carousel-close">Start Game</button>
-    </div>
-  </div>
     
         <!-- Left Panel: Mission Information & Progress -->
         <section class="panel mission-panel">
+            <header class="panel-header">
+                <h2>Mission Objectives</h2>
+            </header>
             
             <div class="panel-content">
+                <div class="overall-progress">
+                    <h3>Overall Mission Progress</h3>
+                    <div class="overall-progress-bar">
+                        <div class="overall-progress-fill" id="overallProgressFill"></div>
+                        <div class="overall-progress-label" id="overallProgressLabel">0%</div>
+                    </div>
+                </div>
+                
                 <div class="mission-objectives">
-                    <h3>Mission Objectives</h3>
+                    <h3>Current Objectives</h3>
                     <div class="objective-list">
                         <div class="objective-item" data-objective-id="1">
+                            <div class="progress-bar">
+                                <div class="progress" style="height: 0%"></div>
+                            </div>
                             <div class="objective-text">Establish a sustainable debt repayment plan</div>
                         </div>
                         <div class="objective-item" data-objective-id="2">
+                            <div class="progress-bar">
+                                <div class="progress" style="height: 0%"></div>
+                            </div>
                             <div class="objective-text">Mitigate environmental concerns without compromising fiscal stability</div>
                         </div>
                         <div class="objective-item" data-objective-id="3">
-                            <div class="objective-text">Maintain diplomatic relations with various stakeholders</div>
+                            <div class="progress-bar">
+                                <div class="progress" style="height: 0%"></div>
+                            </div>
+                            <div class="objective-text">Maintain diplomatic relations with both Chinese and Western stakeholders</div>
                         </div>
                         <div class="objective-item" data-objective-id="4">
+                            <div class="progress-bar">
+                                <div class="progress" style="height: 0%"></div>
+                            </div>
                             <div class="objective-text">Keep political influence above the critical threshold</div>
                         </div>
                     </div>
                 </div>
-                <br>
+                
                 <div class="mission-progress">
                     <h3>Key Metrics</h3>
                     <div class="metrics-container">
-                        <div class="metric" id="transparencyMetric">
-                            <div class="metric-label">
-                                <span>Fiscal Sustainability</span>
-                                <div class="metric-info" data-tooltip="Measures financial health and debt manageability">ⓘ</div>
-                            </div>
+                        <div class="metric" id="fiscalMetric">
+                            <div class="metric-label">Fiscal Sustainability</div>
                             <div class="metric-bar">
-                                <div class="fill fill-transparency" style="width: 35%"></div>
+                                <div class="fill fill-fiscal" style="width: 35%"></div>
                             </div>
-                            <div class="metric-value value-low">35%</</div>
+                            <div class="metric-value value-low">35%</div>
                         </div>
                         
-                        <div class="metric" id="communityMetric">
-                            <div class="metric-label">
-                                <span>Environmental Compliance</span>
-                                <div class="metric-info" data-tooltip="Measures management of environmental impacts">ⓘ</div>
-                            </div>
+                        <div class="metric" id="environmentalMetric">
+                            <div class="metric-label">Environmental Compliance</div>
                             <div class="metric-bar">
-                                <div class="fill fill-community" style="width: 40%"></div>
+                                <div class="fill fill-environmental" style="width: 40%"></div>
                             </div>
-                            <div class="metric-value value-medium">40%</</div>
+                            <div class="metric-value value-medium">40%</div>
                         </div>
                         
-                        <div class="metric" id="esgMetric">
-                            <div class="metric-label">
-                                <span>Political Capital</span>
-                                <div class="metric-info" data-tooltip="Measures influence with domestic stakeholders">ⓘ</div>
-                            </div>
+                        <div class="metric" id="politicalMetric">
+                            <div class="metric-label">Political Capital</div>
                             <div class="metric-bar">
-                                <div class="fill fill-esg" style="width: 60%"></div>
+                                <div class="fill fill-political" style="width: 60%"></div>
                             </div>
-                            <div class="metric-value value-medium">60%</</div>
+                            <div class="metric-value value-medium">60%</div>
                         </div>
                         
-                        <div class="metric" id="accountabilityMetric">
-                            <div class="metric-label">
-                                <span>International Relations</span>
-                                <div class="metric-info" data-tooltip="Measures diplomatic standing globally">ⓘ</div>
-                            </div>
+                        <div class="metric" id="internationalMetric">
+                            <div class="metric-label">International Relations</div>
                             <div class="metric-bar">
-                                <div class="fill fill-accountability" style="width: 30%"></div>
+                                <div class="fill fill-international" style="width: 30%"></div>
                             </div>
-                            <div class="metric-value value-low">30%</</div>
+                            <div class="metric-value value-low">30%</div>
                         </div>
-                    </div>
-                </div>
-                <br>
-                <div class="educational-insights">
-                    <h3>Finance Ministry Insights</h3>
-                    <div class="insight">
-                        <div class="insight-title">Debt Sustainability Analysis</div>
-                        <p>Analyzing a project's ability to generate sufficient revenue to cover debt service is crucial for financial stability. Current port capacity utilization at 40% is significantly below projections, creating fiscal risks.</p>
-                    </div>
-                    
-                    <div class="insight-progress-bar">
-                        <div class="progress-fill" style="width: 10%"></div>
                     </div>
                 </div>
             </div>
         </section>
-        
+    
         <!-- Middle Panel: Game Actions -->
         <section class="panel game-panel">
-            <div class="panel-header">
-                <h3>Actions</h3>
-                <div class="tab-navigation">
-                    <div class="tab active" data-tab="overview">Overview</div>
-                    <div class="tab" data-tab="documents">Documents</div>
+            <header class="panel-header">
+                <h2>Actions</h2>
+                <nav class="tab-navigation">
+                    <button class="tab active" data-tab="overview">Overview</button>
+                    <button class="tab" data-tab="documents">Documents</button>
+                    <button class="tab" data-tab="activity">Activity Log</button>
+                    <button class="tab" data-tab="insights">Educational Insights</button>
                     <div class="tab-with-notification">
-                        <div class="tab" data-tab="updates">Updates</div>
-                        <div class="updates-badge">2</div>
+                        <button class="tab" data-tab="updates">Updates</button>
+                        <div class="updates-badge">0</div>
                     </div>
-                </div>
-            </div>
+                </nav>
+            </header>
             
             <div class="panel-content">
-                <!-- Overview tab (default view) -->
-                <div class="tab-content overview-content active">
-                    <!-- Port Facility Financial Analysis image at the top -->
-                    <div class="narrative-feature-image enhanced"></div>
-                    
-                    <!-- Combined Current Situation paragraph -->
-                    <div class="current-situation">
-                        <h3>Current Situation</h3>
-                        <p>Azuria's port facility is facing a critical financial crisis as it operates at only 40% capacity with repayment deadlines approaching. The $42 million annual debt service far exceeds the current $8 million net income, creating an unsustainable shortfall. Initial analysis has revealed concerning collateral clauses that could transfer operational control to Chinese lenders upon default, threatening Azuria's sovereignty over this strategic asset. Meanwhile, environmental damage from port dredging has ignited protests from local fishing communities, adding political complexity to your financial decisions. You must devise a solution that balances fiscal stability, environmental remediation, and diplomatic relationships before time runs out.</p>
-                    </div>
-                    
-                    <!-- Action cards -->
-                    <h3>Available Actions</h3>
-                    <div class="action-cards enhanced">
-                        <!-- Action cards will be dynamically inserted here by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Documents tab (hidden by default) -->
-                <div class="tab-content documents-content">
-                    <!-- Content will be dynamically inserted here by JavaScript -->
-                </div>
-                
-                <!-- Updates tab (hidden by default) -->
-                <div class="tab-content updates-content">
-                    <!-- Content will be dynamically inserted here by JavaScript -->
-                </div>
+                <!-- Content will be dynamically inserted here by tab functions -->
             </div>
         </section>
     
         <!-- Right Panel: Resources & Stakeholders -->
         <section class="panel resources-panel">
-
+            <header class="panel-header">
+                <h2>Resources & Stakeholders</h2>
+            </header>
             <div class="panel-content">
                 <div class="resources-section">
-                    <h3>Resources</h3>
-                    <div class="resources-list enhanced">
+                    <h3>Your Resources</h3>
+                    <div class="resources-list">
                         <div class="resource-item" id="budgetResource">
                             <div class="resource-name">Budget</div>
                             <div class="resource-value">
@@ -633,54 +721,51 @@
                 
                 <div class="stakeholders-section">
                     <h3>Key Stakeholders</h3>
-                    <div class="stakeholders-list enhanced">
-                        <!-- Stakeholders will be dynamically inserted here by JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="news-updates">
-                    <h3>News Updates</h3>
-                    <div class="news-item enhanced">
-                        <div class="news-date">Day 1</div>
-                        <div class="news-title">Port Revenue Falls Short of Projections</div>
-                        <p class="news-summary">Quarterly report shows Azuria's new port facility operating at 40% capacity, raising concerns about loan repayment.</p>
+                    <div class="stakeholders-list">
+                        <!-- Stakeholders will be dynamically inserted here -->
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- Mission Progress Bar (bottom of screen) -->
-        <div class="mission-progress-container" id="missionProgressContainer">
-            <div class="mission-progress-label">Mission Progress:</div>
-            <div class="mission-progress-bar">
-                <div class="mission-progress-fill" id="missionProgressFill"></div>
-                <div class="mission-progress-percentage" id="missionProgressPercentage">10%</div>
-            </div>
-        </div>
     </main>
-
-    <!-- External JavaScript -->
-    <script src="test.js"></script>
-    <script>
-        document.getElementById('playButton').addEventListener('click', function() {
-            document.getElementById('splashScreen').style.display = 'none';
-            document.getElementById('missionDrawer').style.transform = 'translateY(0)';
-        });
-
-        document.getElementById('startMissionBtn').addEventListener('click', function() {
-            document.getElementById('missionDrawer').style.transform = 'translateY(100%)';
-            document.getElementById('mainContainer').style.display = 'grid';
-            document.getElementById('gameHeader').style.display = 'flex';
-        });
-
-        document.getElementById('submitRecommendationBtn').addEventListener('click', function() {
-            document.getElementById('endGameModal').style.display = 'none';
-            document.getElementById('verdictModal').classList.add('active');
-        });
-
-        document.getElementById('completeGameBtn').addEventListener('click', function() {
-            alert('Congratulations! You have completed the mission.');
-        });
-    </script>
+    <script src="app.js"></script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
 </body>
 </html>
