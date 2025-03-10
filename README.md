@@ -33,6 +33,22 @@ In AidCraft, you will navigate complex financial and political scenarios to achi
 - **Game State Management**: JavaScript logic to manage game state, modals, actions, stakeholders, and events.
 - **Responsive Design**: CSS styles for various game elements, including loading screen, splash screen, mission selection, buttons, modals, animations, and more.
 
+## Enhanced Loading Functionality
+
+### Loading Screen
+
+The loading screen in AidCraft has been enhanced to provide a more dynamic and informative experience. It now includes a progress bar that updates in real-time as the game loads. This helps players understand the loading progress and provides a smoother transition into the game.
+
+### Customizing the Loading Screen
+
+You can customize the loading screen by modifying the following elements in the `index.html` file:
+
+- `loadingScreen`: The main container for the loading screen.
+- `loadingText`: The text displayed during loading.
+- `loadingBar`: The progress bar that fills up as the game loads.
+
+To update the loading progress dynamically, the `updateLoadingProgress` function in the `script.js` file is used. This function updates the width of the `loadingBar` and the text of the `loadingText` based on the current loading progress.
+
 ## Developer Notes
 
 - The `index.html` file contains the main structure and content for the AidCraft game.
