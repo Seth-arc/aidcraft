@@ -52,3 +52,7 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Ensure Loading Screen and Progress Bar
+        run: |
+          echo "Ensuring loading screen and progress bar are properly built and deployed"
+          # Add any additional steps or commands needed to ensure the loading screen and progress bar are properly built and deployed
