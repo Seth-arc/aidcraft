@@ -339,11 +339,29 @@ li {
     border-radius: var(--radius-lg);
     backdrop-filter: blur(10px);
     overflow: hidden;
-    position: relative;
-    margin-top: var(--space-lg);
-    display: none; /* Hidden initially, shown after clicking start */
+    position: fixed; /* Changed from relative */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: var(--z-modal);
+    display: none; /* Hidden initially */
     box-shadow: var(--shadow-lg);
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#getStartedButton {
+    min-width: 180px;
+    font-size: var(--font-size-md);
+    padding: var(--space-md) var(--space-xl);
+    background-color: var(--accent);
+    color: var(--text-dark);
+    transition: var(--transition-bounce);
+}
+
+#getStartedButton:hover {
+    transform: translateY(-3px) scale(1.05);
+    background-color: var(--accent-light);
+    box-shadow: var(--shadow-lg);
 }
 
 .carousel-slides {
@@ -578,7 +596,7 @@ li {
 .carousel-footer {
     padding: var(--space-md) var(--space-xl) var(--space-xl);
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Center the single button */
     align-items: center;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin-top: var(--space-md);
@@ -1228,7 +1246,7 @@ li {
 }
 
 .mission-timer {
-    background-color: rgba(10, 104, 96, 0.1);
+    background-color: (--primary-dark);
     padding: var(--space-sm) var(--space-md);
     border-radius: 20px;
     color: var(--text-light);
@@ -1254,7 +1272,7 @@ li {
     z-index: var(--z-overlay);
     overflow: hidden;
     position: relative;
-    background-color: var(--background);
+    background-color: var(--primary-dark);
 }
 
 .panel {
@@ -1309,6 +1327,7 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background-color:rgb(8, 78, 72, 0.1);
 }
 
 .panel-header h2 {
@@ -3120,6 +3139,11 @@ li {
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    transition: var(--transition-normal);
+    border-left: 3px solid var(--primary);
 }
 
 .update-item:after {
@@ -5211,32 +5235,85 @@ li {
     }
 }
 
-.video-container {
-    width: 100%;
-    margin-top: var(--space-lg);
+.staff-recruitment-section {
+    background-color: rgba(0, 0, 0, 0.02);
     border-radius: var(--radius-md);
-    overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: var(--shadow-md);
-    transition: var(--transition-normal);
-}
-
-.video-container:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-#welcomeVideo {
-    display: block;
-    width: 100%;
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
-}
-
-.video-title {
     padding: var(--space-md);
-    color: var(--text-light);
+    margin-bottom: var(--space-xl);
+    border-left: 3px solid var(--primary);
+}
+
+.recruitment-info {
+    margin-bottom: var(--space-md);
+}
+
+.recruitment-info p {
+    font-size: var(--font-size-sm);
+    color: var(--text-medium);
+    margin-bottom: var(--space-sm);
+}
+
+.recruitment-costs {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+}
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+}
+
+.cost-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-round);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+}
+
+.cost-icon.budget {
+    background-color: rgba(50, 165, 130, 0.1);
+    color: var(--success);
+}
+
+.cost-icon.influence {
+    background-color: rgba(10, 104, 96, 0.1);
+    color: var(--primary);
+}
+
+.cost-value {
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    text-align: center;
+}
+
+.recruitment-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-icon {
+    font-size: var(--font-size-md);
+}
+
+/* Additional style for cooldown indicator */
+.recruitment-cooldown {
+    font-size: var(--font-size-xs);
+    color: var(--text-medium);
+    margin-top: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background-color: rgba(251, 182, 60, 0.1);
+    border-radius: var(--radius-sm);
+    display: inline-block;
 }
   
   
