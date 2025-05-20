@@ -1,6 +1,6 @@
 # AidCraft File Structure Reference
 
-This document provides a quick reference to the AidCraft Workshop Simulation file structure with brief descriptions of each component's purpose.
+This document provides a quick reference to the AidCraft Workshop Simulation file structure with brief descriptions of each component's purpose. The project uses only vanilla HTML, CSS, and JavaScript without external frameworks or libraries.
 
 ## Root Directory
 
@@ -10,13 +10,13 @@ This document provides a quick reference to the AidCraft Workshop Simulation fil
 ## JavaScript Files
 
 ### Core Systems
-- **state-manager.js** - Global state management and persistence
+- **state-manager.js** - Global state management and persistence using vanilla JavaScript
 - **data-loader.js** - Asynchronous loading and validation of game data
 - **game-engine.js** - Core simulation logic and mechanics
 - **event-system.js** - Event handling and dynamic event generation
 - **feedback-system.js** - User feedback collection and processing
 - **analytics-system.js** - Usage tracking and decision pattern analysis
-- **firebase-auth.js** - User authentication and session management
+- **storage-manager.js** - Client-side storage and session management using browser localStorage/sessionStorage
 
 ### User Interface
 - **main.js** - Application entry point and initialization
@@ -28,7 +28,7 @@ This document provides a quick reference to the AidCraft Workshop Simulation fil
 
 ## CSS Files
 
-- **simulation.css** - Main application styles and theme
+- **simulation.css** - Main application styles and theme using vanilla CSS
 - **user-profile.css** - User interface styling for profile components
 - **phase-timer.css** - Styling for the phase timer component
 - **endgame-options.css** - Styling for the simulation conclusion screens
@@ -67,9 +67,9 @@ Project documentation:
 - **facilitator-guide.md** - Guide for workshop facilitators
 - **technical-overview.md** - Technical architecture documentation
 - **data-structure.md** - Data schema documentation
-- **api-reference.md** - API documentation for extensibility
+- **vanilla-js-guide.md** - Guide for vanilla JavaScript implementation patterns
 
 ### tests/
 Testing resources:
-- **unit/** - Unit tests for individual components
+- **unit/** - Unit tests for individual components using vanilla JavaScript testing approaches
 - **integration/** - Integration tests for system interactions

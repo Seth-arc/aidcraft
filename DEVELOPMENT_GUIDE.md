@@ -1,36 +1,30 @@
 # AidCraft Workshop Simulation - Development Guide
 
-This guide provides instructions and best practices for developers working on extending or modifying the AidCraft Workshop Simulation.
+This guide provides instructions and best practices for developers working on extending or modifying the AidCraft Workshop Simulation, which is built exclusively with vanilla HTML, CSS, and JavaScript.
 
 ## Development Environment Setup
 
 ### Prerequisites
 
-- **Node.js** (v14.x or higher)
-- **NPM** (v6.x or higher)
 - Modern web browser (Chrome, Firefox, Safari, Edge)
-- Text editor with JavaScript support (VS Code recommended)
+- Text editor with HTML/CSS/JavaScript support (VS Code recommended)
+- Basic HTTP server for local development (Live Server extension for VS Code recommended)
 
 ### Initial Setup
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-4. Access the application at `http://localhost:3000`
+1. Clone the repository or download the source files
+2. Open the project folder in your text editor
+3. Start a local HTTP server:
+   - If using VS Code with Live Server: Right-click on `index.html` and select "Open with Live Server"
+   - Alternatively, use any basic HTTP server of your choice
 
 ### Recommended VS Code Extensions
 
-- ESLint
-- Prettier
 - Live Server
-- JavaScript Debugger
 - HTML CSS Support
+- JavaScript (ES6) code snippets
+- ESLint (for vanilla JS)
+- Prettier
 
 ## Project Structure Overview
 
@@ -55,13 +49,14 @@ aidcraft-workshop-simulation/
 
 ### JavaScript
 
-- Use ES6+ features
+- Use ES6+ features supported by modern browsers
 - Follow camelCase for variables and functions
 - Follow PascalCase for classes
 - Use JSDoc comments for all functions
 - Prefix private methods with underscore (_methodName)
-- Use async/await for asynchronous operations
-- Avoid global variables, use modules instead
+- Use async/await for asynchronous operations (with proper fallbacks)
+- Avoid global variables, use module patterns instead
+- Use IIFE (Immediately Invoked Function Expression) to create module scope
 
 ### CSS
 
@@ -86,56 +81,56 @@ aidcraft-workshop-simulation/
 
 1. Create JavaScript file in appropriate directory (e.g., `js/ui/new-component.js`)
 2. Create CSS file if needed (e.g., `css/components/new-component.css`)
-3. Follow the module pattern:
+3. Follow the module pattern using IIFE:
 
 ```javascript
 /**
- * NewComponent class
+ * NewComponent module
  * Description of the component
  */
-class NewComponent {
-    constructor() {
-        this.initialized = false;
-        this.stateManager = window.aidcraft;
-        // Initialize properties
-    }
-    
-    /**
-     * Initialize the component
-     * @returns {Promise} Promise that resolves when initialization is complete
-     */
-    init() {
-        if (this.initialized) {
-            return Promise.resolve();
-        }
+(function() {
+    // Create private scope
+    const NewComponent = {
+        initialized: false,
+        stateManager: window.aidcraft,
         
-        return new Promise((resolve) => {
-            console.log('Initializing New Component...');
+        /**
+         * Initialize the component
+         * @returns {Promise} Promise that resolves when initialization is complete
+         */
+        init: function() {
+            if (this.initialized) {
+                return Promise.resolve();
+            }
             
-            // Setup event listeners
-            document.addEventListener('aidcraft:statechange', this.handleStateChange.bind(this));
-            
+            return new Promise((resolve) => {
+                console.log('Initializing New Component...');
+                
+                // Setup event listeners
+                document.addEventListener('aidcraft:statechange', this.handleStateChange.bind(this));
+                
+                // Create UI elements
+                this.createUI();
+                
+                this.initialized = true;
+                console.log('New Component initialized');
+                resolve();
+            });
+        },
+        
+        // Component methods
+        createUI: function() {
             // Create UI elements
-            this.createUI();
-            
-            this.initialized = true;
-            console.log('New Component initialized');
-            resolve();
-        });
-    }
-    
-    // Component methods
-    createUI() {
-        // Create UI elements
-    }
-    
-    handleStateChange(event) {
-        // Handle state changes
-    }
-}
+        },
+        
+        handleStateChange: function(event) {
+            // Handle state changes
+        }
+    };
 
-// Register the component
-window.newComponent = new NewComponent();
+    // Register the component
+    window.newComponent = NewComponent;
+})();
 ```
 
 4. Add component script to `index.html`:
@@ -267,76 +262,75 @@ document.addEventListener('aidcraft:showEvent', (event) => {
 
 ## Adding a New Phase
 
-1. Create phase module in `js/phases/`:
+1. Create phase module in `js/phases/` using IIFE pattern:
 
 ```javascript
 /**
- * NewPhase class
+ * NewPhase module
  * Handles the new simulation phase
  */
-class NewPhase {
-    constructor() {
-        this.initialized = false;
-        this.stateManager = window.aidcraft;
-        this.gameEngine = window.gameEngine;
-    }
-    
-    /**
-     * Initialize the new phase
-     */
-    init() {
-        if (this.initialized) return;
+(function() {
+    const NewPhase = {
+        initialized: false,
+        stateManager: window.aidcraft,
+        gameEngine: window.gameEngine,
         
-        // Register phase-specific event handlers
-        document.addEventListener('aidcraft:phaseChange', this.handlePhaseChange.bind(this));
+        /**
+         * Initialize the new phase
+         */
+        init: function() {
+            if (this.initialized) return;
+            
+            // Register phase-specific event handlers
+            document.addEventListener('aidcraft:phaseChange', this.handlePhaseChange.bind(this));
+            
+            // Setup phase-specific UI
+            this.setupPhaseUI();
+            
+            this.initialized = true;
+            console.log('New phase initialized');
+        },
         
-        // Setup phase-specific UI
-        this.setupPhaseUI();
+        /**
+         * Handle phase change event
+         */
+        handlePhaseChange: function(event) {
+            const { newPhase } = event.detail;
+            
+            if (newPhase === 'newphase') {
+                // Initialize phase-specific content
+                this.initPhaseContent();
+            }
+        },
         
-        this.initialized = true;
-        console.log('New phase initialized');
-    }
-    
-    /**
-     * Handle phase change event
-     */
-    handlePhaseChange(event) {
-        const { newPhase } = event.detail;
+        /**
+         * Setup phase-specific UI
+         */
+        setupPhaseUI: function() {
+            // Create phase-specific UI elements
+        },
         
-        if (newPhase === 'newphase') {
-            // Initialize phase-specific content
-            this.initPhaseContent();
+        /**
+         * Initialize phase content
+         */
+        initPhaseContent: function() {
+            // Load phase-specific data
+            // Set up phase-specific interactions
+        },
+        
+        /**
+         * Check if phase completion criteria are met
+         * @returns {boolean} Whether phase is complete
+         */
+        isPhaseComplete: function() {
+            // Check completion criteria
+            return true;
         }
-    }
-    
-    /**
-     * Setup phase-specific UI
-     */
-    setupPhaseUI() {
-        // Create phase-specific UI elements
-    }
-    
-    /**
-     * Initialize phase content
-     */
-    initPhaseContent() {
-        // Load phase-specific data
-        // Set up phase-specific interactions
-    }
-    
-    /**
-     * Check if phase completion criteria are met
-     * @returns {boolean} Whether phase is complete
-     */
-    isPhaseComplete() {
-        // Check completion criteria
-        return true;
-    }
-}
+    };
 
-// Register the phase
-window.newPhase = new NewPhase();
-window.newPhase.init();
+    // Register the phase
+    window.newPhase = NewPhase;
+})();
 ```
 
 2. Create phase template in `templates/phases/`:
@@ -388,46 +382,67 @@ this.phaseSequence = ['analysis', 'funding', 'negotiation', 'newphase', 'outcome
 
 ## Testing
 
-### Running Tests
+### Manual Testing
 
-```bash
-npm test
-```
+For testing vanilla JavaScript code:
 
-### Writing Tests
+1. Create test HTML pages that isolate component functionality
+2. Use console.log and console.assert for basic testing
+3. Check browser console for errors
+4. Test across different browsers
+5. Create test cases for different scenarios
 
-1. Create test file in `tests/unit/` or `tests/integration/`:
+### Simple Test Framework
+
+Create a basic test framework in vanilla JavaScript:
 
 ```javascript
-// tests/unit/new-component.test.js
-describe('NewComponent', () => {
-    beforeEach(() => {
-        // Setup test environment
-    });
+// tests/test-framework.js
+const TestFramework = {
+    tests: [],
     
-    afterEach(() => {
-        // Clean up test environment
-    });
+    addTest: function(name, testFn) {
+        this.tests.push({ name, testFn });
+    },
     
-    test('should initialize correctly', () => {
-        // Test initialization
-        expect(window.newComponent.initialized).toBe(true);
-    });
-    
-    test('should handle state changes', () => {
-        // Test state change handling
-        const event = new CustomEvent('aidcraft:statechange', {
-            detail: {
-                path: 'testPath',
-                value: 'testValue'
+    runTests: function() {
+        let passed = 0;
+        let failed = 0;
+        
+        this.tests.forEach(test => {
+            try {
+                test.testFn();
+                console.log(`✓ ${test.name}`);
+                passed++;
+            } catch (error) {
+                console.error(`✗ ${test.name}`);
+                console.error(error);
+                failed++;
             }
         });
         
-        document.dispatchEvent(event);
-        
-        // Assert expected behavior
-    });
+        console.log(`Tests: ${passed} passed, ${failed} failed`);
+    }
+};
+
+window.TestFramework = TestFramework;
+```
+
+Using the test framework:
+
+```javascript
+// tests/unit/state-manager.test.js
+TestFramework.addTest('should get and set state correctly', function() {
+    window.stateManager.setState('test.value', 123);
+    const value = window.stateManager.getState('test.value');
+    
+    if (value !== 123) {
+        throw new Error(`Expected 123, got ${value}`);
+    }
 });
+
+// Run tests
+TestFramework.runTests();
 ```
 
 ## Debugging
@@ -468,26 +483,31 @@ console.log(performance.getEntriesByName('functionDuration')[0].duration);
 
 ## Deployment
 
-### Building for Production
+### Manual Deployment
 
-```bash
-npm run build
-```
+1. Test all functionality in multiple browsers
+2. Validate HTML and CSS
+3. Optimize images and assets
+4. Copy all files to a web server or hosting service
 
-This will:
-1. Minify JavaScript and CSS
-2. Optimize assets
-3. Generate a production build in the `dist/` directory
+### Basic Optimization
+
+- Minify JavaScript and CSS files manually or using tools like:
+  - Online minifiers
+  - VS Code extensions
+- Optimize images using tools like:
+  - TinyPNG
+  - ImageOptim
+- Combine JavaScript files where appropriate (while maintaining readability in development)
 
 ### Deployment Checklist
 
-- Ensure all tests pass
+- Ensure all functionality works correctly
 - Check for console errors
 - Verify accessibility compliance
 - Test on all supported browsers
 - Validate HTML and CSS
 - Check performance metrics
-- Update version number in `package.json`
 
 ## Documentation
 
@@ -495,10 +515,7 @@ This will:
 
 1. Update relevant markdown files in the `docs/` directory
 2. For code documentation, update JSDoc comments
-3. Run documentation generator:
-   ```bash
-   npm run docs
-   ```
+3. Keep documentation relevant to vanilla JavaScript approaches
 
 ### Documentation Standards
 
@@ -650,4 +667,12 @@ showModal(
 2. Look for unoptimized loops or calculations
 3. Verify event listener cleanup
 4. Check for memory leaks using browser tools
-5. Optimize asset loading and caching
+5. Optimize asset loading with proper caching
+
+### Cross-Browser Compatibility
+
+1. Test on multiple browsers during development
+2. Use feature detection instead of browser detection
+3. Provide fallbacks for newer JavaScript features
+4. Check for CSS prefix requirements
+5. Test on both desktop and mobile browsers

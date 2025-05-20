@@ -1,15 +1,15 @@
 # AidCraft Workshop Simulation - Technical Documentation
 
-This document provides technical details about the architecture, implementation, and interaction patterns of the AidCraft Workshop Simulation.
+This document provides technical details about the architecture, implementation, and interaction patterns of the AidCraft Workshop Simulation, which is built entirely with vanilla HTML, CSS, and JavaScript.
 
 ## Application Architecture
 
 AidCraft follows a modular architecture with clear separation of concerns. The application is built on the following principles:
 
 1. **Component-Based Design**: Self-contained modules with specific responsibilities
-2. **Event-Driven Communication**: Loosely coupled components communicating via events
+2. **Event-Driven Communication**: Loosely coupled components communicating via custom events
 3. **Centralized State Management**: Single source of truth for application state
-4. **Asynchronous Operations**: Non-blocking operations for data loading and processing
+4. **Asynchronous Operations**: Non-blocking operations using native Promises and Fetch API
 5. **Progressive Enhancement**: Core functionality works with enhanced features added as available
 
 ### Architecture Diagram
@@ -148,14 +148,14 @@ The Event System manages the lifecycle of game events, including scheduled event
 
 ### Data Loader
 
-The Data Loader handles the asynchronous loading and validation of simulation data.
+The Data Loader handles the asynchronous loading and validation of simulation data using the Fetch API.
 
 #### Key Files
 - `data-loader.js`: Core implementation
 - `aidcraft_game_data.json`: Primary data file
 
 #### Core Functions
-- `loadData()`: Load and parse the game data
+- `loadData()`: Load and parse the game data using fetch()
 - `validateGameData(data)`: Ensure data structure is valid
 - `getStakeholders()`: Get all stakeholder definitions
 - `getEvents()`: Get all event definitions
@@ -186,7 +186,7 @@ The UI layer consists of multiple specialized components that handle different a
 - **Files**: `user-profile.js`, `user-profile.css`
 - **Responsibilities**: Manage user profiles and settings
 - **Key Functions**:
-  - `loadUserProfile(userId)`: Load a user's profile
+  - `loadUserProfile(userId)`: Load a user's profile from localStorage
   - `updateUserSettings(settings)`: Update user settings
   - `trackAchievement(achievementId)`: Record a user achievement
   - `getCompletionStats()`: Get statistics on user's progress
@@ -195,7 +195,7 @@ The UI layer consists of multiple specialized components that handle different a
 - **Files**: `phase-transition.js`
 - **Responsibilities**: Handle transitions between phases
 - **Key Functions**:
-  - `enhancedNavigateToPhase(phase)`: Navigate to a phase with context
+  - `navigateToPhase(phase)`: Navigate to a phase with context
   - `showPhaseTransitionDialog(fromPhase, toPhase)`: Show transition UI
   - `createPhaseHistory()`: Generate history of phase decisions
 
@@ -222,17 +222,31 @@ The application follows a specific initialization sequence to ensure dependencie
 
 ```javascript
 // Initialization sequence in main.js
-initAppState()
-    .then(() => window.gameEngine.init())
-    .then(() => window.eventSystem.init())
-    .then(() => window.feedbackSystem.init())
-    .then(() => window.analyticsSystem.init())
-    .then(() => window.phaseTransition.init())
-    .then(() => {
-        // Determine and navigate to the current phase
-        // Register global events
-        // Initialize additional systems
-    });
+(function() {
+    // Initialize core systems
+    window.stateManager.init()
+        .then(() => window.dataLoader.loadData())
+        .then(() => window.gameEngine.init())
+        .then(() => window.eventSystem.init())
+        .then(() => {
+            // Initialize UI components
+            return Promise.all([
+                window.phaseTimer.init(),
+                window.userProfile.init(),
+                window.phaseTransition.init()
+            ]);
+        })
+        .then(() => {
+            // Determine and navigate to the current phase
+            const currentPhase = window.stateManager.getState('currentPhase', 'analysis');
+            window.phaseTransition.navigateToPhase(currentPhase);
+            
+            console.log('AidCraft simulation initialized');
+        })
+        .catch(error => {
+            console.error('Initialization error:', error);
+        });
+})();
 ```
 
 ### Event-Based Communication
@@ -271,10 +285,11 @@ Phase navigation follows a specific pattern to ensure proper state transitions:
 
 ### Render Optimization
 
-- DOM manipulation is minimized and batched
+- DOM manipulation is minimized and batched where possible
 - CSS animations used instead of JavaScript where possible
-- Heavy calculations deferred to web workers when appropriate
+- Heavy calculations split into smaller chunks using setTimeout
 - Throttled event handlers for frequent events (resize, scroll)
+- Using document fragments for bulk DOM insertions
 
 ### Memory Management
 
@@ -282,13 +297,14 @@ Phase navigation follows a specific pattern to ensure proper state transitions:
 - Large data structures parsed incrementally
 - Reference cleanup to prevent memory leaks
 - Cached data expires after defined periods
+- Regular garbage collection prompting for long sessions
 
 ### Network Efficiency
 
 - Assets loaded on demand based on simulation phase
 - Data cached in localStorage where appropriate
-- Compression for network requests
-- Minimal external dependencies
+- Image and asset preloading for critical resources
+- Compression for JSON data (minified JSON files)
 
 ## Extensibility
 
@@ -313,15 +329,15 @@ Scenarios can be customized by:
 4. Creating phase-specific content and challenges
 5. Defining custom endgame outcomes
 
-### API Integration Points
+### Extension Points
 
-The simulation provides several integration points:
+The simulation provides several extension points:
 
-1. Analytics hooks for external tracking
-2. Event listeners for external systems
+1. Custom event handlers using the event system
+2. Modular component architecture for adding new UI components
 3. Import/export functionality for simulation data
-4. Custom UI injection points
-5. Localization framework for translations
+4. State management hooks for external integrations
+5. Template system for UI customization
 
 ## Accessibility Compliance
 
@@ -350,11 +366,18 @@ Mobile browsers:
 - iOS Safari
 - Chrome for Android
 
+## Storage and User Data
+
+- User progress stored in localStorage
+- Session state maintained in memory
+- Options for exporting/importing save data as JSON
+- No server-side storage requirements
+- Data purging options for privacy
+
 ## Security Considerations
 
 - Input validation for all user inputs
-- Content Security Policy implementation
-- No sensitive data in client-side storage
-- Authentication with proper token management
+- Safe handling of imported JSON data
 - XSS prevention through proper output escaping
-- Regular security updates for dependencies
+- No sensitive data stored in client-side storage
+- Content Security Policy implementation recommended for deployment

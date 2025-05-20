@@ -1,6 +1,6 @@
 # AidCraft Workshop Simulation - Project Structure
 
-This document provides a comprehensive overview of the AidCraft Workshop Simulation project structure, including detailed descriptions of each file and its associated features.
+This document provides a comprehensive overview of the AidCraft Workshop Simulation project structure, including detailed descriptions of each file and its associated features. The project is built using vanilla HTML, CSS, and JavaScript without any external frameworks or libraries.
 
 ## Project Overview
 
@@ -66,7 +66,7 @@ aidcraft-workshop-simulation/
 │   │   ├── event-system.js   # Event handling and triggered events (scheduled and random events)
 │   │   ├── feedback-system.js # User feedback collection and processing (surveys, ratings)
 │   │   ├── analytics-system.js # Analytics tracking for simulation usage and player decisions
-│   │   └── firebase-auth.js  # Firebase authentication integration (user accounts, progress tracking)
+│   │   └── storage-manager.js # Client-side storage using localStorage (user data, progress tracking)
 │   │
 │   ├── ui/                   # UI components
 │   │   ├── ui-interactions.js # Generic UI interaction handlers (clicks, tooltips, modals)
@@ -82,10 +82,10 @@ aidcraft-workshop-simulation/
 │   │   └── outcome-phase.js  # Outcome phase logic (result calculations, consequence reveals)
 │   │
 │   └── utils/                # Utility functions
-│       ├── data-visualization.js # Chart and graph rendering utilities
+│       ├── data-visualization.js # Chart and graph rendering utilities using vanilla JavaScript
 │       ├── accessibility.js  # Accessibility enhancement functions
 │       ├── performance.js    # Performance optimization utilities
-│       └── save-load.js      # Save and load game state functionality
+│       └── save-load.js      # Save and load game state functionality with localStorage
 │
 ├── templates/                # HTML templates for dynamic content
 │   ├── phases/               # Phase-specific HTML templates
@@ -109,10 +109,10 @@ aidcraft-workshop-simulation/
 │   ├── facilitator-guide.md  # Guide for workshop facilitators
 │   ├── technical-overview.md # Technical architecture and implementation details
 │   ├── data-structure.md     # Game data structure documentation
-│   └── api-reference.md      # API reference for extensibility
+│   └── vanilla-js-guide.md   # Guide for vanilla JavaScript patterns used in the project
 │
 └── tests/                    # Testing files directory
-    ├── unit/                 # Unit tests for individual components
+    ├── unit/                 # Unit tests for individual components using vanilla JavaScript
     │   ├── state-manager.test.js # Tests for state management
     │   ├── game-engine.test.js # Tests for game engine logic
     │   └── event-system.test.js # Tests for event system
@@ -162,7 +162,7 @@ aidcraft-workshop-simulation/
 
 #### Data Loader
 - **File**: `js/core/data-loader.js`
-- **Description**: Loads and validates game data from JSON files.
+- **Description**: Loads and validates game data from JSON files using the Fetch API.
 - **Features**:
   - Asynchronous data loading
   - Data structure validation
@@ -199,7 +199,7 @@ aidcraft-workshop-simulation/
 - **Files**: `js/ui/user-profile.js`, `css/components/user-profile.css`
 - **Description**: Manages user profiles, settings, and progress tracking.
 - **Features**:
-  - User authentication integration
+  - User identification using localStorage
   - Personal settings management
   - Progress tracking across sessions
   - Achievement system
@@ -293,28 +293,27 @@ aidcraft-workshop-simulation/
   - Learning outcome assessment
   - Facilitator feedback integration
 
-#### Authentication System
-- **File**: `js/core/firebase-auth.js`
-- **Description**: Manages user authentication and session persistence.
+#### Storage Manager
+- **File**: `js/core/storage-manager.js`
+- **Description**: Manages client-side data storage using localStorage.
 - **Features**:
-  - Firebase authentication integration
-  - User registration and login
+  - User data persistence
   - Session management
-  - Profile data persistence
+  - Profile data storage
   - Secure data handling
-  - Role-based access for facilitators
   - Anonymous session options
+  - Data import/export functionality
 
 ## Technical Details
 
 ### Browser Compatibility
-The simulation is designed to work on modern browsers (Chrome, Firefox, Safari, Edge) with fallbacks for older versions. The application uses standard ES6+ JavaScript features with appropriate polyfills.
+The simulation is designed to work on modern browsers (Chrome, Firefox, Safari, Edge) with fallbacks for older versions. The application uses standard ES6+ JavaScript features with appropriate polyfills for wider browser support.
 
 ### Performance Considerations
 - Lazy loading of phase-specific resources
 - Efficient state management to minimize rerendering
 - Optimized animations and transitions
-- Data compression for network efficiency
+- Efficient DOM manipulation
 - Memory management for long sessions
 
 ### Accessibility
@@ -328,7 +327,7 @@ The simulation is designed to work on modern browsers (Chrome, Firefox, Safari, 
 
 ### Security
 - Data validation for all inputs
-- Secure authentication practices
+- Secure client-side storage practices
 - Content security policy implementation
 - No sensitive data in client-side storage
 - Session timeout management
@@ -343,4 +342,4 @@ The simulation is designed with extensibility in mind:
 3. **Custom Events**: Add new events with appropriate triggers and consequences
 4. **Alternative UIs**: Create custom theme files in the `css/` directory
 5. **New Phases**: Implement additional phases by following the phase module pattern
-6. **Integration Points**: Connect with external systems via the analytics and feedback modules
+6. **Data Visualization**: Extend the visualization utilities with custom charts and graphs
