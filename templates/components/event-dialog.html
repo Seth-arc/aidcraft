@@ -1,0 +1,91 @@
+<div class="event-dialog" id="event-dialog">
+  <div class="event-dialog-content">
+    <div class="event-dialog-header">
+      <h2 class="event-title" id="event-title">Event Title</h2>
+      <button class="event-close-btn" id="event-close-btn" aria-label="Close">&times;</button>
+    </div>
+    
+    <div class="event-dialog-body">
+      <div class="event-image-container">
+        <img src="" alt="Event" id="event-image" class="event-image">
+      </div>
+      
+      <div class="event-description" id="event-description">
+        Event description will be displayed here.
+      </div>
+      
+      <div class="event-stakeholders" id="event-stakeholders">
+        <div class="event-stakeholder-label">Stakeholders Involved:</div>
+        <div class="event-stakeholder-list">
+          <!-- Stakeholders involved will be listed here -->
+        </div>
+      </div>
+      
+      <div class="event-impact" id="event-impact">
+        <div class="event-impact-label">Potential Impacts:</div>
+        <div class="event-impact-details">
+          <!-- Impact details will be displayed here -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="event-dialog-footer">
+      <div class="event-choices" id="event-choices">
+        <!-- Event choices will be dynamically generated here -->
+      </div>
+      
+      <div class="event-timer" id="event-timer">
+        <div class="event-timer-label">Time Remaining:</div>
+        <div class="event-timer-value">30s</div>
+        <div class="event-timer-bar">
+          <div class="event-timer-progress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <template id="event-choice-template">
+    <div class="event-choice" data-choice-id="">
+      <div class="event-choice-text"></div>
+      <div class="event-choice-effects">
+        <!-- Choice effects preview will be shown here -->
+      </div>
+      <button class="event-choice-btn">Select</button>
+    </div>
+  </template>
+  
+  <template id="event-stakeholder-item-template">
+    <div class="event-stakeholder-item" data-stakeholder-id="">
+      <div class="stakeholder-avatar">
+        <img src="" alt="Stakeholder">
+      </div>
+      <div class="stakeholder-name"></div>
+      <div class="stakeholder-reaction"></div>
+    </div>
+  </template>
+  
+  <template id="event-effect-template">
+    <div class="event-effect">
+      <span class="effect-icon"></span>
+      <span class="effect-description"></span>
+    </div>
+  </template>
+  
+  <template id="event-result-template">
+    <div class="event-result">
+      <div class="result-header">
+        <div class="result-title">Outcome</div>
+      </div>
+      <div class="result-description"></div>
+      <div class="result-consequences">
+        <div class="consequence-list-header">Consequences:</div>
+        <ul class="consequence-list">
+          <!-- Consequences will be listed here -->
+        </ul>
+      </div>
+      <div class="result-action">
+        <button class="btn btn-primary result-continue-btn">Continue</button>
+      </div>
+    </div>
+  </template>
+</div> 

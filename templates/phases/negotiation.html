@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<div class="phase-container phase-negotiation">
+  <div class="phase-header">
+    <h1 class="phase-title">Negotiation Phase</h1>
+    <div class="phase-description">
+      <p>In this phase, you will engage with stakeholders to build agreements and secure support for your development project, balancing competing interests and managing relationships.</p>
+    </div>
+  </div>
+
+  <div class="phase-content">
+    <div class="negotiation-grid">
+      <!-- Stakeholder Relationships Section -->
+      <section class="relationships-section">
+        <h2 class="section-title">Stakeholder Relationships</h2>
+        <div class="relationships-visualization" id="relationships-map">
+          <!-- Relationship visualization will be rendered here -->
+        </div>
+        <div class="relationship-legend">
+          <div class="legend-item legend-allied">
+            <span class="legend-color"></span>
+            <span class="legend-label">Allied</span>
+          </div>
+          <div class="legend-item legend-neutral">
+            <span class="legend-color"></span>
+            <span class="legend-label">Neutral</span>
+          </div>
+          <div class="legend-item legend-opposed">
+            <span class="legend-color"></span>
+            <span class="legend-label">Opposed</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Negotiation Section -->
+      <section class="active-negotiation-section">
+        <h2 class="section-title">Active Negotiations</h2>
+        <div class="negotiation-container">
+          <div class="stakeholder-selection">
+            <h3>Select Stakeholder</h3>
+            <div class="stakeholder-list" id="stakeholder-selection-list">
+              <!-- Stakeholder selection options will be dynamically generated here -->
+            </div>
+          </div>
+          <div class="negotiation-dialog">
+            <div class="negotiation-header">
+              <div class="negotiation-partner" id="negotiation-partner">
+                <div class="stakeholder-avatar">
+                  <img src="assets/images/stakeholders/placeholder.png" alt="Stakeholder">
+                </div>
+                <div class="stakeholder-info">
+                  <div class="stakeholder-name">Select a Stakeholder</div>
+                  <div class="stakeholder-role">to begin negotiation</div>
+                </div>
+              </div>
+              <div class="negotiation-status" id="negotiation-status">
+                <div class="relationship-type">Relationship: <span class="relationship-value">Unknown</span></div>
+                <div class="satisfaction-level">Satisfaction: <span class="satisfaction-value">0%</span></div>
+              </div>
+            </div>
+            <div class="negotiation-messages" id="negotiation-messages">
+              <!-- Message history will be dynamically generated here -->
+              <div class="message-placeholder">Select a stakeholder to begin negotiations</div>
+            </div>
+            <div class="negotiation-options" id="negotiation-options">
+              <!-- Negotiation options will be dynamically generated here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agreement Tracking Section -->
+      <section class="agreements-section">
+        <h2 class="section-title">Agreements & Concessions</h2>
+        <div class="agreements-list" id="agreements-list">
+          <!-- Agreements will be dynamically generated here -->
+        </div>
+        <div class="concessions-list" id="concessions-list">
+          <!-- Concessions will be dynamically generated here -->
+        </div>
+      </section>
+
+      <!-- Coalition Formation Section -->
+      <section class="coalition-section">
+        <h2 class="section-title">Coalition Formation</h2>
+        <div class="coalition-groups" id="coalition-groups">
+          <!-- Coalition groups will be dynamically generated here -->
+        </div>
+        <div class="coalition-actions">
+          <button id="propose-coalition" class="btn btn-secondary">Propose New Coalition</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="negotiation-templates" style="display: none;">
+    <!-- Template for a stakeholder selection item -->
+    <template id="stakeholder-selection-item-template">
+      <div class="stakeholder-item" data-stakeholder-id="">
+        <div class="stakeholder-avatar">
+          <img src="" alt="Stakeholder">
+        </div>
+        <div class="stakeholder-brief">
+          <div class="stakeholder-name"></div>
+          <div class="stakeholder-stance"></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for a negotiation message -->
+    <template id="message-template">
+      <div class="message">
+        <div class="message-avatar">
+          <img src="" alt="Speaker">
+        </div>
+        <div class="message-content">
+          <div class="message-sender"></div>
+          <div class="message-text"></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for a negotiation option -->
+    <template id="negotiation-option-template">
+      <div class="negotiation-option" data-option-id="">
+        <div class="option-text"></div>
+        <div class="option-effects">
+          <div class="effect-item" title="Impact on relationship">
+            <span class="effect-icon">🤝</span>
+            <span class="effect-value"></span>
+          </div>
+          <div class="effect-item" title="Political capital cost">
+            <span class="effect-icon">⚖️</span>
+            <span class="effect-value"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for an agreement item -->
+    <template id="agreement-item-template">
+      <div class="agreement-item" data-agreement-id="">
+        <div class="agreement-parties">
+          <div class="party-primary"></div>
+          <div class="party-secondary"></div>
+        </div>
+        <div class="agreement-content"></div>
+        <div class="agreement-effects"></div>
+      </div>
+    </template>
+
+    <!-- Template for a coalition group -->
+    <template id="coalition-group-template">
+      <div class="coalition-group" data-coalition-id="">
+        <div class="coalition-header">
+          <h3 class="coalition-name"></h3>
+          <div class="coalition-strength"></div>
+        </div>
+        <div class="coalition-members">
+          <!-- Coalition members will be dynamically generated here -->
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <div class="phase-actions">
+    <button id="stakeholder-analysis" class="btn btn-secondary">Stakeholder Analysis</button>
+    <button id="finalize-negotiations" class="btn btn-primary">Finalize Negotiations</button>
+  </div>
+</div> 

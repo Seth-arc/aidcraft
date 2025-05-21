@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<div class="phase-container phase-funding">
+  <div class="phase-header">
+    <h1 class="phase-title">Funding Phase</h1>
+    <div class="phase-description">
+      <p>In this phase, you will evaluate various funding options for your development project, assess their terms and risks, and make strategic funding decisions.</p>
+    </div>
+  </div>
+
+  <div class="phase-content">
+    <div class="funding-grid">
+      <!-- Funding Options Section -->
+      <section class="funding-options-section">
+        <h2 class="section-title">Funding Options</h2>
+        <div class="funding-options-container">
+          <!-- Funding options will be dynamically generated here -->
+        </div>
+      </section>
+
+      <!-- Budget Allocation Section -->
+      <section class="budget-allocation-section">
+        <h2 class="section-title">Budget Allocation</h2>
+        <div class="budget-summary">
+          <div class="budget-total">
+            <span class="budget-label">Total Budget:</span>
+            <span class="budget-value" id="total-budget">$1,000,000</span>
+          </div>
+          <div class="budget-allocated">
+            <span class="budget-label">Allocated:</span>
+            <span class="budget-value" id="allocated-budget">$0</span>
+          </div>
+          <div class="budget-remaining">
+            <span class="budget-label">Remaining:</span>
+            <span class="budget-value" id="remaining-budget">$1,000,000</span>
+          </div>
+        </div>
+        <div class="budget-allocation-container">
+          <!-- Budget allocation sliders will be dynamically generated here -->
+        </div>
+      </section>
+
+      <!-- Risk Assessment Section -->
+      <section class="risk-assessment-section">
+        <h2 class="section-title">Risk Assessment</h2>
+        <div class="risk-indicators">
+          <div class="risk-indicator" id="debt-sustainability-risk">
+            <div class="risk-title">Debt Sustainability</div>
+            <div class="risk-meter">
+              <div class="risk-bar" style="width: 30%;"></div>
+            </div>
+            <div class="risk-value">Low</div>
+          </div>
+          <div class="risk-indicator" id="hidden-debt-risk">
+            <div class="risk-title">Hidden Debt Potential</div>
+            <div class="risk-meter">
+              <div class="risk-bar" style="width: 45%;"></div>
+            </div>
+            <div class="risk-value">Medium</div>
+          </div>
+          <div class="risk-indicator" id="stakeholder-risk">
+            <div class="risk-title">Stakeholder Satisfaction</div>
+            <div class="risk-meter">
+              <div class="risk-bar" style="width: 60%;"></div>
+            </div>
+            <div class="risk-value">Medium</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Finance Comparison Section -->
+      <section class="finance-comparison-section">
+        <h2 class="section-title">Funding Comparison</h2>
+        <div class="comparison-table-container">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Funding Source</th>
+                <th>Amount</th>
+                <th>Interest Rate</th>
+                <th>Term</th>
+                <th>Conditions</th>
+                <th>Risk Level</th>
+              </tr>
+            </thead>
+            <tbody id="funding-comparison-table-body">
+              <!-- Comparison table rows will be dynamically generated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="funding-templates" style="display: none;">
+    <!-- Template for a funding option card -->
+    <template id="funding-option-template">
+      <div class="funding-option-card" data-option-id="">
+        <div class="funding-option-header">
+          <h3 class="funding-option-title"></h3>
+          <div class="funding-option-source"></div>
+        </div>
+        <div class="funding-option-details">
+          <div class="funding-detail">
+            <span class="detail-label">Available:</span>
+            <span class="detail-value funding-amount"></span>
+          </div>
+          <div class="funding-detail">
+            <span class="detail-label">Interest Rate:</span>
+            <span class="detail-value funding-interest"></span>
+          </div>
+          <div class="funding-detail">
+            <span class="detail-label">Term:</span>
+            <span class="detail-value funding-term"></span>
+          </div>
+          <div class="funding-detail">
+            <span class="detail-label">Conditions:</span>
+            <div class="detail-value funding-conditions"></div>
+          </div>
+        </div>
+        <div class="funding-option-actions">
+          <input type="range" class="funding-slider" min="0" max="100" value="0" step="5">
+          <div class="funding-amount-display">
+            <span class="amount-label">Selected:</span>
+            <span class="amount-value">$0</span>
+          </div>
+          <button class="btn btn-secondary funding-info-btn">More Info</button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for funding comparison table row -->
+    <template id="funding-comparison-row-template">
+      <tr>
+        <td class="comparison-funding-source"></td>
+        <td class="comparison-amount"></td>
+        <td class="comparison-interest"></td>
+        <td class="comparison-term"></td>
+        <td class="comparison-conditions"></td>
+        <td class="comparison-risk"></td>
+      </tr>
+    </template>
+  </div>
+
+  <div class="phase-actions">
+    <button id="reset-allocations" class="btn btn-secondary">Reset Allocations</button>
+    <button id="finalize-funding" class="btn btn-primary">Finalize Funding Decisions</button>
+  </div>
+</div> 

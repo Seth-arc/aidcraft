@@ -1,0 +1,209 @@
+<div class="modal-content settings-modal">
+  <div class="modal-header">
+    <h2 class="modal-title">Settings</h2>
+    <button class="modal-close" aria-label="Close">&times;</button>
+  </div>
+  
+  <div class="modal-body">
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="general">General</button>
+      <button class="settings-tab" data-tab="accessibility">Accessibility</button>
+      <button class="settings-tab" data-tab="save">Save & Load</button>
+      <button class="settings-tab" data-tab="about">About</button>
+    </div>
+    
+    <div class="settings-tab-content">
+      <!-- General Settings Content -->
+      <div class="settings-content active" id="general-settings">
+        <div class="settings-section">
+          <h3>User Profile</h3>
+          <div class="setting-field">
+            <label for="user-name">Display Name</label>
+            <input type="text" id="user-name" class="setting-input" value="Workshop Participant">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Simulation Settings</h3>
+          <div class="setting-field">
+            <label for="difficulty">Difficulty Level</label>
+            <select id="difficulty" class="setting-select">
+              <option value="easy">Easy - More resources, fewer complications</option>
+              <option value="standard" selected>Standard - Balanced challenge</option>
+              <option value="challenging">Challenging - Limited resources, more complexity</option>
+              <option value="facilitator">Facilitator - Custom settings</option>
+            </select>
+          </div>
+          
+          <div class="setting-field">
+            <label for="timer-enabled">Phase Timer</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="timer-enabled" checked>
+              <label for="timer-enabled"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="auto-save">Auto-Save</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="auto-save" checked>
+              <label for="auto-save"></label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Notifications</h3>
+          <div class="setting-field">
+            <label for="notifications-enabled">Event Notifications</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="notifications-enabled" checked>
+              <label for="notifications-enabled"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="sound-enabled">Sound Effects</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="sound-enabled" checked>
+              <label for="sound-enabled"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="music-enabled">Background Music</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="music-enabled">
+              <label for="music-enabled"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Accessibility Settings Content -->
+      <div class="settings-content" id="accessibility-settings">
+        <div class="settings-section">
+          <h3>Visual Settings</h3>
+          <div class="setting-field">
+            <label for="high-contrast">High Contrast Mode</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="high-contrast">
+              <label for="high-contrast"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="text-size">Text Size</label>
+            <select id="text-size" class="setting-select">
+              <option value="small">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="large">Large</option>
+              <option value="x-large">Extra Large</option>
+            </select>
+          </div>
+          
+          <div class="setting-field">
+            <label for="reduced-motion">Reduce Animations</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="reduced-motion">
+              <label for="reduced-motion"></label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Game Settings</h3>
+          <div class="setting-field">
+            <label for="extended-timers">Extended Time Limits</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="extended-timers">
+              <label for="extended-timers"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="screen-reader-mode">Screen Reader Optimizations</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="screen-reader-mode">
+              <label for="screen-reader-mode"></label>
+            </div>
+          </div>
+          
+          <div class="setting-field">
+            <label for="keyboard-shortcuts">Enhanced Keyboard Navigation</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="keyboard-shortcuts" checked>
+              <label for="keyboard-shortcuts"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Save & Load Content -->
+      <div class="settings-content" id="save-load-settings">
+        <div class="settings-section">
+          <h3>Save Game</h3>
+          <div class="setting-field">
+            <label for="save-name">Save Name</label>
+            <input type="text" id="save-name" class="setting-input" value="AidCraft_Save_1">
+            <button id="save-game-btn" class="btn btn-primary setting-action-btn">Save Game</button>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Load Game</h3>
+          <div class="setting-field">
+            <label for="load-save">Select Save</label>
+            <select id="load-save" class="setting-select">
+              <option value="">-- Select a saved game --</option>
+              <!-- Saved games will be populated here -->
+            </select>
+            <button id="load-game-btn" class="btn btn-primary setting-action-btn" disabled>Load Game</button>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Data Management</h3>
+          <div class="setting-actions">
+            <button id="export-data-btn" class="btn btn-secondary">Export All Data</button>
+            <button id="import-data-btn" class="btn btn-secondary">Import Data</button>
+            <button id="clear-data-btn" class="btn btn-danger">Reset All Data</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- About Content -->
+      <div class="settings-content" id="about-settings">
+        <div class="settings-section about-section">
+          <h3>AidCraft Workshop Simulation</h3>
+          <div class="app-info">
+            <div class="app-version">Version 1.0.0</div>
+            <div class="app-build">Build 20230515</div>
+          </div>
+          <p>An educational simulation exploring development finance and the hidden-debt challenge.</p>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Creators</h3>
+          <p>Developed for educational purposes to understand complex dynamics in development finance.</p>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Acknowledgements</h3>
+          <p>This simulation was created using vanilla HTML, CSS, and JavaScript without external frameworks or libraries.</p>
+          <p>Icons provided by Feather Icons. Sound effects licensed from various creators.</p>
+        </div>
+        
+        <div class="settings-section">
+          <h3>License</h3>
+          <p>© 2023 AidCraft Workshop Simulation. Educational use permitted.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-footer">
+    <button id="settings-apply" class="btn btn-primary">Apply Changes</button>
+    <button id="settings-cancel" class="btn btn-secondary">Cancel</button>
+  </div>
+</div> 

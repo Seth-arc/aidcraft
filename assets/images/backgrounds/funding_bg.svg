@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#e8f5e9"/>
+  <g fill="#c8e6c9" opacity="0.5">
+    <circle cx="200" cy="150" r="100"/>
+    <circle cx="600" cy="300" r="150"/>
+    <circle cx="1000" cy="200" r="80"/>
+    <circle cx="400" cy="450" r="120"/>
+  </g>
+  <text x="600" y="550" font-family="Arial" font-size="24" text-anchor="middle" fill="#388e3c">Funding Phase Background</text>
+</svg> 

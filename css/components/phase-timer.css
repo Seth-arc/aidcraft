@@ -1,0 +1,396 @@
+/* AidCraft Workshop Simulation - Phase Timer Component Styling */
+
+/* Phase Timer Container */
+.phase-timer-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Timer Display */
+.timer-display {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.timer-icon {
+    margin-right: var(--spacing-sm);
+    color: white;
+}
+
+.timer-value {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Timer Progress */
+.timer-progress {
+    width: 200px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    margin: 0 var(--spacing-md);
+    overflow: hidden;
+}
+
+.timer-progress-bar {
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: width 1s linear;
+}
+
+/* Timer Status */
+.timer-status {
+    font-size: 0.9rem;
+    color: white;
+    margin-left: var(--spacing-md);
+}
+
+/* Timer Controls */
+.timer-controls {
+    display: flex;
+    margin-left: var(--spacing-md);
+}
+
+.timer-control-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    margin-left: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.timer-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.timer-control-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Timer States */
+.timer-normal .timer-progress-bar {
+    background-color: var(--secondary-color);
+}
+
+.timer-warning .timer-progress-bar {
+    background-color: var(--warning-color);
+}
+
+.timer-danger .timer-progress-bar {
+    background-color: var(--accent-color);
+}
+
+.timer-paused .timer-progress-bar {
+    background-color: var(--neutral-color);
+}
+
+.timer-finished .timer-progress-bar {
+    background-color: var(--success-color);
+}
+
+/* Timer Animations */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.timer-warning .timer-value {
+    animation: pulse 2s infinite;
+}
+
+.timer-danger .timer-value {
+    animation: pulse 1s infinite;
+}
+
+/* Resources Display */
+.resources-display {
+    display: flex;
+    align-items: center;
+    margin-left: var(--spacing-xl);
+}
+
+.resource {
+    display: flex;
+    align-items: center;
+    margin-right: var(--spacing-lg);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.resource-icon {
+    margin-right: var(--spacing-sm);
+    color: white;
+}
+
+.resource-value {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: white;
+}
+
+.resource-label {
+    margin-left: var(--spacing-xs);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .phase-timer-container {
+        flex-direction: column;
+        align-items: start;
+    }
+    
+    .resources-display {
+        margin-left: 0;
+        margin-top: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .resource {
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .timer-progress {
+        width: 150px;
+    }
+}
+
+/* Timer Overlay (for paused state) */
+.timer-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: var(--z-above);
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-overlay.active {
+    display: flex;
+}
+
+.timer-pause-message {
+    background-color: var(--card-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.timer-pause-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.timer-pause-text {
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.timer-resume-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.timer-resume-btn:hover {
+    background-color: #2980b9;
+}
+
+/* AidCraft Workshop Simulation - Phase Timer Component */
+
+.phase-timer {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  background-color: var(--light-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.phase-timer__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.phase-timer__title {
+  font-size: var(--font-size-medium);
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.phase-timer__controls {
+  display: flex;
+  align-items: center;
+}
+
+.phase-timer__button {
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  color: var(--text-color);
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-timer__button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.phase-timer__button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 95, 122, 0.3);
+}
+
+.phase-timer__button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.phase-timer__button--pause .phase-timer__play-icon {
+  display: none;
+}
+
+.phase-timer__button--pause .phase-timer__pause-icon {
+  display: block;
+}
+
+.phase-timer__button--play .phase-timer__play-icon {
+  display: block;
+}
+
+.phase-timer__button--play .phase-timer__pause-icon {
+  display: none;
+}
+
+.phase-timer__progress-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--medium-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-xs);
+}
+
+.phase-timer__progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease-in-out;
+}
+
+.phase-timer__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.phase-timer__time-remaining {
+  font-size: var(--font-size-small);
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.phase-timer__status {
+  font-size: var(--font-size-small);
+  color: var(--text-muted);
+}
+
+/* Timer states */
+.phase-timer--warning .phase-timer__progress-bar {
+  background-color: var(--warning-color);
+}
+
+.phase-timer--critical .phase-timer__progress-bar {
+  background-color: var(--danger-color);
+  animation: pulse 1.5s infinite;
+}
+
+.phase-timer--paused .phase-timer__progress-bar {
+  background-color: var(--info-color);
+}
+
+.phase-timer--complete .phase-timer__progress-bar {
+  background-color: var(--success-color);
+}
+
+.phase-timer--warning .phase-timer__time-remaining,
+.phase-timer--critical .phase-timer__time-remaining {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+.phase-timer--complete .phase-timer__time-remaining {
+  color: var(--success-color);
+}
+
+/* Animation for critical timer state */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Compact timer for smaller viewports */
+.phase-timer--compact {
+  padding: var(--spacing-sm);
+}
+
+.phase-timer--compact .phase-timer__title {
+  font-size: var(--font-size-small);
+}
+
+.phase-timer--compact .phase-timer__progress-container {
+  height: 6px;
+}
+
+.phase-timer--compact .phase-timer__time-remaining,
+.phase-timer--compact .phase-timer__status {
+  font-size: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .phase-timer {
+    padding: var(--spacing-sm);
+  }
+  
+  .phase-timer__title {
+    font-size: var(--font-size-small);
+  }
+} 

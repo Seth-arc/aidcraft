@@ -1,0 +1,512 @@
+/* AidCraft Workshop Simulation - Negotiation Phase Styles */
+
+.phase-negotiation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.negotiation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
+  grid-gap: var(--spacing-lg);
+}
+
+/* Stakeholder Relationships Section */
+.relationships-section {
+  grid-column: 1 / 3;
+  background-color: var(--light-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.relationships-visualization {
+  width: 100%;
+  height: 320px;
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  margin-top: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.relationship-legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-small);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--border-radius-full);
+}
+
+.legend-allied .legend-color {
+  background-color: var(--success-color);
+}
+
+.legend-neutral .legend-color {
+  background-color: var(--warning-color);
+}
+
+.legend-opposed .legend-color {
+  background-color: var(--danger-color);
+}
+
+/* Active Negotiation Section */
+.active-negotiation-section {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  background-color: var(--light-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.negotiation-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.stakeholder-selection {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-xs);
+  padding: var(--spacing-md);
+  height: 480px;
+  overflow-y: auto;
+}
+
+.stakeholder-selection h3 {
+  font-size: var(--font-size-medium);
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stakeholder-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.stakeholder-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stakeholder-item:hover {
+  background-color: var(--gray-100);
+}
+
+.stakeholder-item.active {
+  background-color: var(--primary-light);
+  border-left: 3px solid var(--primary-color);
+}
+
+.stakeholder-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.stakeholder-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stakeholder-brief {
+  flex-grow: 1;
+}
+
+.stakeholder-name {
+  font-weight: 500;
+  font-size: var(--font-size-small);
+}
+
+.stakeholder-stance {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.negotiation-dialog {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  height: 480px;
+}
+
+.negotiation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.negotiation-partner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stakeholder-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stakeholder-name {
+  font-weight: 600;
+  font-size: var(--font-size-medium);
+}
+
+.stakeholder-role {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.negotiation-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-small);
+}
+
+.relationship-type,
+.satisfaction-level {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.relationship-value,
+.satisfaction-value {
+  font-weight: 600;
+}
+
+.negotiation-messages {
+  flex-grow: 1;
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background-color: var(--gray-50);
+}
+
+.message-placeholder {
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  font-style: italic;
+}
+
+.message {
+  display: flex;
+  gap: var(--spacing-md);
+  max-width: 90%;
+}
+
+.message.from-player {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.message-content {
+  background-color: white;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.message.from-player .message-content {
+  background-color: var(--primary-light);
+}
+
+.message-sender {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.message-text {
+  font-size: var(--font-size-small);
+}
+
+.negotiation-options {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.negotiation-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.negotiation-option:hover {
+  background-color: var(--gray-100);
+}
+
+.option-text {
+  flex-grow: 1;
+  font-size: var(--font-size-small);
+}
+
+.option-effects {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.effect-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.effect-icon {
+  font-size: var(--font-size-medium);
+}
+
+.effect-value {
+  font-weight: 600;
+}
+
+.effect-value.positive {
+  color: var(--success-color);
+}
+
+.effect-value.negative {
+  color: var(--danger-color);
+}
+
+/* Agreements Section */
+.agreements-section {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  background-color: var(--light-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.agreements-list,
+.concessions-list {
+  margin-top: var(--spacing-md);
+}
+
+.agreement-item {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-xs);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.agreement-parties {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.agreement-content {
+  font-size: var(--font-size-small);
+  margin-bottom: var(--spacing-sm);
+}
+
+.agreement-effects {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Coalition Formation Section */
+.coalition-section {
+  grid-column: 1 / 3;
+  grid-row: 3 / 4;
+  background-color: var(--light-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.coalition-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.coalition-group {
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-xs);
+  padding: var(--spacing-md);
+  border-top: 4px solid var(--primary-color);
+}
+
+.coalition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.coalition-name {
+  font-size: var(--font-size-medium);
+  font-weight: 600;
+  margin: 0;
+}
+
+.coalition-strength {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.coalition-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.coalition-member {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+}
+
+.coalition-member-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+}
+
+.coalition-member-name {
+  font-weight: 500;
+}
+
+.coalition-actions {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Phase Actions */
+.phase-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .negotiation-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .relationships-section,
+  .active-negotiation-section,
+  .agreements-section,
+  .coalition-section {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  
+  .negotiation-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .stakeholder-selection {
+    height: auto;
+    max-height: 200px;
+  }
+  
+  .negotiation-dialog {
+    height: 550px;
+  }
+}
+
+@media (max-width: 768px) {
+  .negotiation-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .negotiation-status {
+    align-items: flex-start;
+    width: 100%;
+    margin-top: var(--spacing-xs);
+  }
+  
+  .phase-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .phase-actions button {
+    width: 100%;
+  }
+} 

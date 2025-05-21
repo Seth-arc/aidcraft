@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#f5d3dd"/>
+  <circle cx="100" cy="70" r="40" fill="#e91e63"/>
+  <rect x="60" y="120" width="80" height="60" rx="5" fill="#e91e63"/>
+  <text x="100" y="170" font-family="Arial" font-size="12" text-anchor="middle" fill="#fff">Private Investor</text>
+</svg> 

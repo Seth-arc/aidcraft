@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AidCraft Workshop Simulation</title>
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Component Stylesheets -->
+    <link rel="stylesheet" href="css/components/phase-timer.css">
+    <link rel="stylesheet" href="css/components/user-profile.css">
+    <link rel="stylesheet" href="css/components/endgame-options.css">
+    <link rel="stylesheet" href="css/components/stakeholders.css">
+    <link rel="stylesheet" href="css/components/dashboard.css">
+    <link rel="stylesheet" href="css/components/events.css">
+    
+    <!-- Phase Stylesheets -->
+    <link rel="stylesheet" href="css/phases/analysis.css">
+    <link rel="stylesheet" href="css/phases/funding.css">
+    <link rel="stylesheet" href="css/phases/negotiation.css">
+    <link rel="stylesheet" href="css/phases/outcome.css">
+    
+    <!-- Utility Stylesheets -->
+    <link rel="stylesheet" href="css/utilities/animations.css">
+    <link rel="stylesheet" href="css/utilities/accessibility.css">
+    <link rel="stylesheet" href="css/utilities/responsive.css">
+</head>
+<body>
+    <div id="app-container">
+        <header class="main-header">
+            <div class="logo">
+                <img src="assets/images/logos/aidcraft-logo.svg" alt="AidCraft Logo">
+            </div>
+            <div class="phase-indicator">
+                <div id="phase-name"></div>
+                <div id="phase-timer"></div>
+            </div>
+            <div class="user-profile" id="user-profile"></div>
+        </header>
+        
+        <main id="simulation-content">
+            <!-- Phase content will be dynamically loaded here -->
+        </main>
+        
+        <footer class="main-footer">
+            <div class="navigation-controls">
+                <button id="prev-phase" class="btn btn-secondary">Previous Phase</button>
+                <button id="next-phase" class="btn btn-primary">Next Phase</button>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Core Scripts -->
+    <script src="js/core/state-manager.js"></script>
+    <script src="js/core/data-loader.js"></script>
+    <script src="js/core/game-engine.js"></script>
+    <script src="js/core/event-system.js"></script>
+    <script src="js/core/feedback-system.js"></script>
+    <script src="js/core/analytics-system.js"></script>
+    <script src="js/core/storage-manager.js"></script>
+    
+    <!-- UI Scripts -->
+    <script src="js/ui/ui-interactions.js"></script>
+    <script src="js/ui/phase-timer.js"></script>
+    <script src="js/ui/phase-transition.js"></script>
+    <script src="js/ui/user-profile.js"></script>
+    <script src="js/ui/endgame-options.js"></script>
+    
+    <!-- Phase Scripts -->
+    <script src="js/phases/analysis-phase.js"></script>
+    <script src="js/phases/funding-phase.js"></script>
+    <script src="js/phases/negotiation-phase.js"></script>
+    <script src="js/phases/outcome-phase.js"></script>
+    
+    <!-- Utility Scripts -->
+    <script src="js/utils/data-visualization.js"></script>
+    <script src="js/utils/accessibility.js"></script>
+    <script src="js/utils/performance.js"></script>
+    <script src="js/utils/save-load.js"></script>
+    
+    <!-- Main Application Entry Point -->
+    <script src="js/main.js"></script>
+</body>
+</html> 

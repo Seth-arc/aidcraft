@@ -1,0 +1,734 @@
+{
+  "meta": {
+    "title": "AidCraft Workshop Simulation",
+    "version": "1.0.0",
+    "description": "A simulation focused on development finance and the hidden-debt challenge"
+  },
+  "stakeholders": {
+    "president": {
+      "name": "President",
+      "description": "The head of state, concerned with political stability and economic growth.",
+      "profile": "Experienced politician with strong nationalist tendencies.",
+      "initialStance": "supportive"
+    },
+    "financeMinister": {
+      "name": "Finance Minister",
+      "description": "Responsible for fiscal policy and managing national debt.",
+      "profile": "Pragmatic technocrat focused on economic development.",
+      "initialStance": "cautious"
+    },
+    "parliamentMembers": {
+      "name": "Parliament Members",
+      "description": "Elected officials representing diverse constituent interests.",
+      "profile": "Divided along political lines with varying agendas.",
+      "initialStance": "divided"
+    },
+    "localCommunities": {
+      "name": "Local Communities",
+      "description": "People directly affected by the development project.",
+      "profile": "Primarily concerned with immediate benefits and environmental impacts.",
+      "initialStance": "curious"
+    },
+    "internationalDonors": {
+      "name": "International Donors",
+      "description": "Organizations and countries providing financial assistance.",
+      "profile": "Focused on transparency, sustainability, and governance reforms.",
+      "initialStance": "neutral"
+    },
+    "privateInvestors": {
+      "name": "Private Investors",
+      "description": "Corporations interested in profit-making opportunities.",
+      "profile": "Seeking maximum returns with minimum risk and regulation.",
+      "initialStance": "interested"
+    }
+  },
+  "phases": {
+    "analysis": {
+      "title": "Analysis Phase",
+      "description": "Gather information about the development context and stakeholders.",
+      "timeAllocation": 600,
+      "entryEvents": ["event-welcome", "event-briefing"],
+      "completionCriteria": {
+        "requiredDecisions": ["decision-project-focus", "decision-initial-assessment"]
+      }
+    },
+    "funding": {
+      "title": "Funding Phase",
+      "description": "Explore and select financing options for the development project.",
+      "timeAllocation": 600,
+      "entryEvents": ["event-funding-options"],
+      "completionCriteria": {
+        "requiredDecisions": ["decision-funding-source", "decision-loan-terms"]
+      }
+    },
+    "negotiation": {
+      "title": "Negotiation Phase",
+      "description": "Negotiate with stakeholders to secure support and finalize agreements.",
+      "timeAllocation": 600,
+      "entryEvents": ["event-negotiation-start"],
+      "completionCriteria": {
+        "requiredDecisions": ["decision-stakeholder-concessions", "decision-final-agreement"]
+      }
+    },
+    "outcome": {
+      "title": "Outcome Phase",
+      "description": "Review the consequences of your decisions and the project's sustainability.",
+      "timeAllocation": 300,
+      "entryEvents": ["event-project-results"],
+      "completionCriteria": {}
+    }
+  },
+  "decisions": {
+    "decision-project-focus": {
+      "title": "Project Focus",
+      "description": "Determine the primary focus of the development project.",
+      "phase": "analysis",
+      "choices": [
+        {
+          "id": "focus-infrastructure",
+          "text": "Infrastructure Development",
+          "description": "Focus on building roads, bridges, and transportation networks.",
+          "effects": {
+            "resources": {
+              "budget": -50000,
+              "politicalCapital": 10
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.1 },
+              "financeMinister": { "strength": 0.05 },
+              "localCommunities": { "strength": 0.05 }
+            }
+          }
+        },
+        {
+          "id": "focus-social",
+          "text": "Social Development",
+          "description": "Prioritize healthcare, education, and community services.",
+          "effects": {
+            "resources": {
+              "budget": -30000,
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "localCommunities": { "strength": 0.15 },
+              "internationalDonors": { "strength": 0.1 },
+              "president": { "strength": -0.05 }
+            }
+          }
+        },
+        {
+          "id": "focus-economic",
+          "text": "Economic Growth",
+          "description": "Emphasize industrial development and job creation.",
+          "effects": {
+            "resources": {
+              "budget": -40000,
+              "politicalCapital": 8
+            },
+            "stakeholderRelationships": {
+              "privateInvestors": { "strength": 0.2 },
+              "financeMinister": { "strength": 0.1 },
+              "localCommunities": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 10000,
+              "source": "Private sector incentives"
+            }
+          }
+        }
+      ]
+    },
+    "decision-initial-assessment": {
+      "title": "Initial Assessment",
+      "description": "How thoroughly should the initial project assessment be conducted?",
+      "phase": "analysis",
+      "choices": [
+        {
+          "id": "assessment-thorough",
+          "text": "Thorough Assessment",
+          "description": "Conduct a comprehensive assessment with multiple stakeholder consultations.",
+          "effects": {
+            "resources": {
+              "budget": -20000,
+              "politicalCapital": -5
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.15 },
+              "localCommunities": { "strength": 0.1 },
+              "president": { "strength": -0.05 }
+            }
+          }
+        },
+        {
+          "id": "assessment-balanced",
+          "text": "Balanced Assessment",
+          "description": "Conduct a moderate assessment with key stakeholder input.",
+          "effects": {
+            "resources": {
+              "budget": -10000,
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.05 },
+              "localCommunities": { "strength": 0.05 },
+              "president": { "strength": 0.05 }
+            }
+          }
+        },
+        {
+          "id": "assessment-quick",
+          "text": "Quick Assessment",
+          "description": "Perform a rapid assessment to expedite the project.",
+          "effects": {
+            "resources": {
+              "budget": -5000,
+              "politicalCapital": 10
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.1 },
+              "privateInvestors": { "strength": 0.05 },
+              "internationalDonors": { "strength": -0.1 },
+              "localCommunities": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 25000,
+              "source": "Unforeseen project risks"
+            }
+          }
+        }
+      ]
+    },
+    "decision-funding-source": {
+      "title": "Funding Source",
+      "description": "Select the primary source of funding for the development project.",
+      "phase": "funding",
+      "choices": [
+        {
+          "id": "funding-multilateral",
+          "text": "Multilateral Development Bank",
+          "description": "Secure funding from an international development bank with specific conditions.",
+          "effects": {
+            "resources": {
+              "budget": 500000,
+              "politicalCapital": -5
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.2 },
+              "financeMinister": { "strength": 0.1 },
+              "president": { "strength": -0.05 }
+            }
+          }
+        },
+        {
+          "id": "funding-bilateral",
+          "text": "Bilateral Agreement",
+          "description": "Enter into a direct agreement with a foreign government.",
+          "effects": {
+            "resources": {
+              "budget": 400000,
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.15 },
+              "parliamentMembers": { "strength": 0.05 },
+              "internationalDonors": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 50000,
+              "source": "Undisclosed bilateral conditions"
+            }
+          }
+        },
+        {
+          "id": "funding-private",
+          "text": "Private Investment",
+          "description": "Rely primarily on private sector investment with public incentives.",
+          "effects": {
+            "resources": {
+              "budget": 300000,
+              "politicalCapital": 10
+            },
+            "stakeholderRelationships": {
+              "privateInvestors": { "strength": 0.25 },
+              "financeMinister": { "strength": 0.1 },
+              "localCommunities": { "strength": -0.1 }
+            },
+            "hiddenDebt": {
+              "amount": 100000,
+              "source": "Government guarantees"
+            }
+          }
+        }
+      ]
+    },
+    "decision-loan-terms": {
+      "title": "Loan Terms",
+      "description": "Select the preferred terms for the development financing.",
+      "phase": "funding",
+      "choices": [
+        {
+          "id": "terms-concessional",
+          "text": "Concessional Terms",
+          "description": "Lower interest rate but with governance and transparency requirements.",
+          "effects": {
+            "resources": {
+              "budget": -20000,
+              "politicalCapital": -10
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.2 },
+              "parliamentMembers": { "strength": 0.05 },
+              "president": { "strength": -0.1 }
+            }
+          }
+        },
+        {
+          "id": "terms-market",
+          "text": "Market-Based Terms",
+          "description": "Standard market interest rates with fewer conditions.",
+          "effects": {
+            "resources": {
+              "budget": -50000,
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "financeMinister": { "strength": 0.1 },
+              "privateInvestors": { "strength": 0.15 },
+              "internationalDonors": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 30000,
+              "source": "Market interest fluctuations"
+            }
+          }
+        },
+        {
+          "id": "terms-complex",
+          "text": "Complex Financing Package",
+          "description": "Mixture of grants, loans, and private investment with creative structuring.",
+          "effects": {
+            "resources": {
+              "budget": -10000,
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.1 },
+              "financeMinister": { "strength": 0.15 },
+              "internationalDonors": { "strength": -0.1 }
+            },
+            "hiddenDebt": {
+              "amount": 150000,
+              "source": "Off-balance sheet commitments"
+            }
+          }
+        }
+      ]
+    },
+    "decision-stakeholder-concessions": {
+      "title": "Stakeholder Concessions",
+      "description": "How will you approach stakeholder concerns and demands?",
+      "phase": "negotiation",
+      "choices": [
+        {
+          "id": "concessions-balanced",
+          "text": "Balanced Approach",
+          "description": "Make reasonable concessions to all stakeholders.",
+          "effects": {
+            "resources": {
+              "budget": -40000,
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.05 },
+              "parliamentMembers": { "strength": 0.05 },
+              "localCommunities": { "strength": 0.05 },
+              "internationalDonors": { "strength": 0.05 },
+              "privateInvestors": { "strength": 0.05 }
+            }
+          }
+        },
+        {
+          "id": "concessions-prioritize",
+          "text": "Prioritize Key Stakeholders",
+          "description": "Focus concessions on the most influential stakeholders.",
+          "effects": {
+            "resources": {
+              "budget": -30000,
+              "politicalCapital": 15
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.2 },
+              "financeMinister": { "strength": 0.15 },
+              "privateInvestors": { "strength": 0.1 },
+              "localCommunities": { "strength": -0.15 },
+              "parliamentMembers": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 50000,
+              "source": "Unreported concessions"
+            }
+          }
+        },
+        {
+          "id": "concessions-minimal",
+          "text": "Minimal Concessions",
+          "description": "Stand firm and make minimal concessions to any stakeholders.",
+          "effects": {
+            "resources": {
+              "budget": -10000,
+              "politicalCapital": -20
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": -0.1 },
+              "financeMinister": { "strength": 0.05 },
+              "parliamentMembers": { "strength": -0.1 },
+              "localCommunities": { "strength": -0.2 },
+              "internationalDonors": { "strength": -0.1 },
+              "privateInvestors": { "strength": -0.05 }
+            }
+          }
+        }
+      ]
+    },
+    "decision-final-agreement": {
+      "title": "Final Agreement",
+      "description": "What will be the nature of the final project agreement?",
+      "phase": "negotiation",
+      "choices": [
+        {
+          "id": "agreement-transparent",
+          "text": "Fully Transparent Agreement",
+          "description": "All terms, conditions, and obligations are publicly disclosed.",
+          "effects": {
+            "resources": {
+              "budget": -20000,
+              "politicalCapital": -10
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.25 },
+              "localCommunities": { "strength": 0.2 },
+              "parliamentMembers": { "strength": 0.15 },
+              "president": { "strength": -0.05 },
+              "privateInvestors": { "strength": -0.1 }
+            }
+          }
+        },
+        {
+          "id": "agreement-selective",
+          "text": "Selectively Transparent",
+          "description": "Main terms are public, but some details remain confidential.",
+          "effects": {
+            "resources": {
+              "budget": -10000,
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.1 },
+              "financeMinister": { "strength": 0.15 },
+              "internationalDonors": { "strength": -0.05 },
+              "localCommunities": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 75000,
+              "source": "Confidential obligations"
+            }
+          }
+        },
+        {
+          "id": "agreement-expedited",
+          "text": "Expedited Confidential Agreement",
+          "description": "Fast-track the agreement with limited public disclosure.",
+          "effects": {
+            "resources": {
+              "budget": 0,
+              "politicalCapital": 15
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.2 },
+              "privateInvestors": { "strength": 0.25 },
+              "internationalDonors": { "strength": -0.2 },
+              "localCommunities": { "strength": -0.15 },
+              "parliamentMembers": { "strength": -0.1 }
+            },
+            "hiddenDebt": {
+              "amount": 200000,
+              "source": "Undisclosed commitments"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "events": {
+    "event-welcome": {
+      "title": "Welcome to AidCraft",
+      "description": "Welcome to the AidCraft Workshop Simulation. You are about to embark on a journey through the complex world of development finance, where your decisions will have significant impacts on stakeholders and outcomes.",
+      "type": "information",
+      "choices": [
+        {
+          "id": "welcome-continue",
+          "text": "Continue"
+        }
+      ]
+    },
+    "event-briefing": {
+      "title": "Project Briefing",
+      "description": "You have been tasked with managing a major development project in your country. Your decisions will affect the project's success, national debt levels, and stakeholder relationships.",
+      "type": "information",
+      "choices": [
+        {
+          "id": "briefing-continue",
+          "text": "Begin Analysis Phase"
+        }
+      ]
+    },
+    "event-funding-options": {
+      "title": "Funding Options Available",
+      "description": "Several funding options are now available for your consideration. Each comes with different terms, conditions, and impacts on stakeholders.",
+      "type": "information",
+      "choices": [
+        {
+          "id": "funding-continue",
+          "text": "Explore Options"
+        }
+      ]
+    },
+    "event-negotiation-start": {
+      "title": "Negotiations Begin",
+      "description": "With funding secured, it's time to negotiate with stakeholders to finalize the project details and address concerns.",
+      "type": "information",
+      "choices": [
+        {
+          "id": "negotiation-continue",
+          "text": "Start Negotiations"
+        }
+      ]
+    },
+    "event-project-results": {
+      "title": "Project Results",
+      "description": "The project has been implemented. Now it's time to see the results of your decisions and their impact on the country's development and debt situation.",
+      "type": "information",
+      "choices": [
+        {
+          "id": "results-continue",
+          "text": "View Results"
+        }
+      ]
+    },
+    "event-political-pressure": {
+      "title": "Political Pressure",
+      "description": "The President is pressuring you to accelerate the project timeline before the upcoming election.",
+      "type": "decision",
+      "conditions": {
+        "currentPhase": "analysis"
+      },
+      "choices": [
+        {
+          "id": "pressure-comply",
+          "text": "Comply with the request",
+          "effects": {
+            "resources": {
+              "politicalCapital": 15
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": 0.15 },
+              "internationalDonors": { "strength": -0.1 }
+            },
+            "hiddenDebt": {
+              "amount": 50000,
+              "source": "Rushed planning"
+            }
+          }
+        },
+        {
+          "id": "pressure-resist",
+          "text": "Insist on proper procedures",
+          "effects": {
+            "resources": {
+              "politicalCapital": -10
+            },
+            "stakeholderRelationships": {
+              "president": { "strength": -0.1 },
+              "internationalDonors": { "strength": 0.15 },
+              "financeMinister": { "strength": 0.1 }
+            }
+          }
+        }
+      ]
+    },
+    "event-corruption-allegation": {
+      "title": "Corruption Allegation",
+      "description": "A whistleblower has alleged corruption in the project's procurement process.",
+      "type": "decision",
+      "conditions": {
+        "currentPhase": "funding"
+      },
+      "choices": [
+        {
+          "id": "corruption-investigate",
+          "text": "Launch a full investigation",
+          "effects": {
+            "resources": {
+              "budget": -30000,
+              "politicalCapital": -5
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.2 },
+              "localCommunities": { "strength": 0.1 },
+              "privateInvestors": { "strength": -0.1 }
+            }
+          }
+        },
+        {
+          "id": "corruption-dismiss",
+          "text": "Dismiss as unfounded",
+          "effects": {
+            "resources": {
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": -0.2 },
+              "president": { "strength": 0.1 },
+              "privateInvestors": { "strength": 0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 100000,
+              "source": "Corrupt practices"
+            }
+          }
+        },
+        {
+          "id": "corruption-quietly",
+          "text": "Address quietly behind the scenes",
+          "effects": {
+            "resources": {
+              "budget": -10000,
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "financeMinister": { "strength": 0.05 },
+              "privateInvestors": { "strength": -0.05 }
+            },
+            "hiddenDebt": {
+              "amount": 25000,
+              "source": "Hushed settlements"
+            }
+          }
+        }
+      ]
+    },
+    "event-community-protest": {
+      "title": "Community Protest",
+      "description": "Local communities are protesting against certain aspects of the project they find problematic.",
+      "type": "decision",
+      "conditions": {
+        "currentPhase": "negotiation"
+      },
+      "choices": [
+        {
+          "id": "protest-engage",
+          "text": "Engage directly with community leaders",
+          "effects": {
+            "resources": {
+              "budget": -15000,
+              "politicalCapital": -5
+            },
+            "stakeholderRelationships": {
+              "localCommunities": { "strength": 0.2 },
+              "internationalDonors": { "strength": 0.1 },
+              "president": { "strength": -0.05 }
+            }
+          }
+        },
+        {
+          "id": "protest-compromise",
+          "text": "Offer minor compromises",
+          "effects": {
+            "resources": {
+              "budget": -5000,
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "localCommunities": { "strength": 0.05 },
+              "president": { "strength": 0.05 }
+            }
+          }
+        },
+        {
+          "id": "protest-ignore",
+          "text": "Proceed as planned",
+          "effects": {
+            "resources": {
+              "politicalCapital": -15
+            },
+            "stakeholderRelationships": {
+              "localCommunities": { "strength": -0.25 },
+              "internationalDonors": { "strength": -0.1 },
+              "privateInvestors": { "strength": 0.05 }
+            }
+          }
+        }
+      ]
+    },
+    "event-audit-findings": {
+      "title": "Independent Audit Findings",
+      "description": "An independent audit has revealed potential financial irregularities in the project.",
+      "type": "decision",
+      "conditions": {
+        "currentPhase": "outcome"
+      },
+      "choices": [
+        {
+          "id": "audit-transparent",
+          "text": "Address findings transparently",
+          "effects": {
+            "resources": {
+              "budget": -50000,
+              "politicalCapital": -10
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": 0.15 },
+              "localCommunities": { "strength": 0.1 },
+              "president": { "strength": -0.1 }
+            },
+            "hiddenDebt": {
+              "amount": -75000,
+              "source": "Rectified irregularities"
+            }
+          }
+        },
+        {
+          "id": "audit-minimize",
+          "text": "Minimize the findings",
+          "effects": {
+            "resources": {
+              "politicalCapital": 0
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": -0.1 },
+              "president": { "strength": 0.05 }
+            }
+          }
+        },
+        {
+          "id": "audit-suppress",
+          "text": "Suppress the report",
+          "effects": {
+            "resources": {
+              "politicalCapital": 5
+            },
+            "stakeholderRelationships": {
+              "internationalDonors": { "strength": -0.25 },
+              "localCommunities": { "strength": -0.1 },
+              "president": { "strength": 0.1 }
+            },
+            "hiddenDebt": {
+              "amount": 50000,
+              "source": "Continued irregularities"
+            }
+          }
+        }
+      ]
+    }
+  }
+} 

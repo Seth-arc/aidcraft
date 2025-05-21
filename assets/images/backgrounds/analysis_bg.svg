@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#e3f2fd"/>
+  <g fill="#bbdefb" opacity="0.5">
+    <rect x="100" y="100" width="200" height="150" rx="10"/>
+    <rect x="500" y="150" width="300" height="200" rx="10"/>
+    <rect x="900" y="300" width="200" height="150" rx="10"/>
+    <rect x="300" y="400" width="250" height="100" rx="10"/>
+  </g>
+  <text x="600" y="550" font-family="Arial" font-size="24" text-anchor="middle" fill="#1976d2">Analysis Phase Background</text>
+</svg> 

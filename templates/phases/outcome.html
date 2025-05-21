@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<div class="phase-container phase-outcome">
+  <div class="phase-header">
+    <h1 class="phase-title">Outcome Phase</h1>
+    <div class="phase-description">
+      <p>In this phase, you will see the consequences of your decisions throughout the simulation, revealing the long-term impacts on development, stakeholders, and hidden debt.</p>
+    </div>
+  </div>
+
+  <div class="phase-content">
+    <div class="outcome-overview">
+      <h2 class="section-title">Development Project Outcomes</h2>
+      <div class="outcome-summary" id="outcome-summary">
+        <!-- Outcome summary will be dynamically generated here -->
+      </div>
+    </div>
+
+    <div class="outcome-grid">
+      <!-- Project Success Metrics Section -->
+      <section class="success-metrics-section">
+        <h2 class="section-title">Project Success Metrics</h2>
+        <div class="metrics-container" id="metrics-container">
+          <!-- Success metrics will be dynamically generated here -->
+          <div class="metric-card">
+            <div class="metric-title">Overall Success</div>
+            <div class="metric-value">76%</div>
+            <div class="metric-progress">
+              <div class="metric-bar" style="width: 76%"></div>
+            </div>
+            <div class="metric-description">Your development project achieved good outcomes with moderate sustainability concerns.</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Sustainable Development</div>
+            <div class="metric-value">82%</div>
+            <div class="metric-progress">
+              <div class="metric-bar" style="width: 82%"></div>
+            </div>
+            <div class="metric-description">The project effectively addressed key development needs with strong long-term potential.</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Stakeholder Satisfaction</div>
+            <div class="metric-value">68%</div>
+            <div class="metric-progress">
+              <div class="metric-bar" style="width: 68%"></div>
+            </div>
+            <div class="metric-description">Most stakeholders are satisfied, though some key relationships could be improved.</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Financial Sustainability</div>
+            <div class="metric-value">64%</div>
+            <div class="metric-progress">
+              <div class="metric-bar" style="width: 64%"></div>
+            </div>
+            <div class="metric-description">The financial approach is moderately sustainable with some concerns.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hidden Debt Revelation Section -->
+      <section class="hidden-debt-section">
+        <h2 class="section-title">Hidden Debt Revelation</h2>
+        <div class="hidden-debt-container">
+          <div class="hidden-debt-summary">
+            <div class="debt-impact-level">
+              <div class="impact-label">Hidden Debt Impact</div>
+              <div class="impact-value">Medium</div>
+            </div>
+            <div class="debt-description" id="hidden-debt-description">
+              Your project has accumulated some hidden debt obligations that weren't immediately apparent. While not catastrophic, these will create future budget constraints and potential stakeholder conflicts.
+            </div>
+          </div>
+          <div class="hidden-debt-details" id="hidden-debt-details">
+            <!-- Hidden debt details will be dynamically generated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Stakeholder Results Section -->
+      <section class="stakeholder-results-section">
+        <h2 class="section-title">Stakeholder Outcomes</h2>
+        <div class="stakeholder-results-container" id="stakeholder-results">
+          <!-- Stakeholder results will be dynamically generated here -->
+        </div>
+      </section>
+
+      <!-- Long-term Impact Section -->
+      <section class="longterm-impact-section">
+        <h2 class="section-title">Long-term Impact Projection</h2>
+        <div class="impact-timeline" id="impact-timeline">
+          <!-- Impact timeline will be dynamically generated here -->
+        </div>
+        <div class="impact-visualization" id="impact-visualization">
+          <!-- Impact visualization chart will be dynamically generated here -->
+        </div>
+      </section>
+
+      <!-- Lessons Learned Section -->
+      <section class="lessons-learned-section">
+        <h2 class="section-title">Key Insights</h2>
+        <div class="lessons-container" id="lessons-container">
+          <!-- Lessons will be dynamically generated here -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="outcome-templates" style="display: none;">
+    <!-- Template for a stakeholder outcome card -->
+    <template id="stakeholder-outcome-template">
+      <div class="stakeholder-outcome-card" data-stakeholder-id="">
+        <div class="stakeholder-header">
+          <div class="stakeholder-avatar">
+            <img src="" alt="Stakeholder">
+          </div>
+          <div class="stakeholder-info">
+            <div class="stakeholder-name"></div>
+            <div class="stakeholder-role"></div>
+          </div>
+        </div>
+        <div class="stakeholder-outcome-details">
+          <div class="outcome-satisfaction">
+            <span class="satisfaction-label">Satisfaction:</span>
+            <span class="satisfaction-value"></span>
+          </div>
+          <div class="outcome-relationship">
+            <span class="relationship-label">Final Relationship:</span>
+            <span class="relationship-value"></span>
+          </div>
+          <div class="outcome-consequence">
+            <span class="consequence-label">Consequence:</span>
+            <span class="consequence-value"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for a hidden debt item -->
+    <template id="hidden-debt-item-template">
+      <div class="hidden-debt-item">
+        <div class="debt-source"></div>
+        <div class="debt-amount"></div>
+        <div class="debt-impact"></div>
+      </div>
+    </template>
+
+    <!-- Template for a lesson learned item -->
+    <template id="lesson-item-template">
+      <div class="lesson-item">
+        <div class="lesson-icon"></div>
+        <div class="lesson-content"></div>
+      </div>
+    </template>
+
+    <!-- Template for a timeline event -->
+    <template id="timeline-event-template">
+      <div class="timeline-event">
+        <div class="timeline-point"></div>
+        <div class="timeline-date"></div>
+        <div class="timeline-content">
+          <div class="timeline-title"></div>
+          <div class="timeline-description"></div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <div class="phase-actions">
+    <button id="stakeholder-summary" class="btn btn-secondary">View Stakeholder Summary</button>
+    <button id="hidden-debt-analysis" class="btn btn-secondary">Analyze Hidden Debt</button>
+    <button id="complete-simulation" class="btn btn-primary">Complete Simulation</button>
+  </div>
+</div> 

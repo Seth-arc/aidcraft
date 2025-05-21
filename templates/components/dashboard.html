@@ -1,0 +1,119 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="dashboard-title">
+      <h1 class="app-title">AidCraft Workshop Simulation</h1>
+      <div class="phase-indicator">
+        <span class="phase-label">Current Phase:</span>
+        <span class="phase-name" id="phase-name">Analysis</span>
+      </div>
+    </div>
+    <div class="dashboard-controls">
+      <button class="btn btn-icon" id="help-btn" title="Help">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </button>
+      <button class="btn btn-icon" id="settings-btn" title="Settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+      <button class="btn btn-icon" id="glossary-btn" title="Glossary">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="dashboard-sidebar">
+    <div class="user-profile" id="user-profile">
+      <!-- User profile component will be rendered here -->
+    </div>
+    
+    <div class="phase-navigation">
+      <h3>Phases</h3>
+      <ul class="phase-nav-list">
+        <li class="phase-nav-item active" data-phase="analysis">
+          <span class="phase-icon">📊</span>
+          <span class="phase-name">Analysis</span>
+          <span class="phase-status">Complete</span>
+        </li>
+        <li class="phase-nav-item" data-phase="funding">
+          <span class="phase-icon">💰</span>
+          <span class="phase-name">Funding</span>
+          <span class="phase-status">In Progress</span>
+        </li>
+        <li class="phase-nav-item disabled" data-phase="negotiation">
+          <span class="phase-icon">🤝</span>
+          <span class="phase-name">Negotiation</span>
+          <span class="phase-status">Locked</span>
+        </li>
+        <li class="phase-nav-item disabled" data-phase="outcome">
+          <span class="phase-icon">🏁</span>
+          <span class="phase-name">Outcome</span>
+          <span class="phase-status">Locked</span>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="resources-panel">
+      <h3>Resources</h3>
+      <div class="resource-list">
+        <div class="resource-item">
+          <div class="resource-icon">💵</div>
+          <div class="resource-info">
+            <div class="resource-name">Budget</div>
+            <div class="resource-value" id="resource-budget">$1,000,000</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">⚖️</div>
+          <div class="resource-info">
+            <div class="resource-name">Political Capital</div>
+            <div class="resource-value" id="resource-political">75/100</div>
+          </div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-icon">⏱️</div>
+          <div class="resource-info">
+            <div class="resource-name">Time (Months)</div>
+            <div class="resource-value" id="resource-time">6</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-main">
+    <div class="phase-content-container" id="simulation-content">
+      <!-- The active phase content will be inserted here -->
+    </div>
+  </div>
+  
+  <div class="dashboard-footer">
+    <div class="phase-progress">
+      <button class="btn btn-secondary" id="prev-phase" disabled>Previous Phase</button>
+      <div class="phase-progress-indicators">
+        <div class="progress-step complete" data-phase="analysis">
+          <div class="progress-marker">1</div>
+          <div class="progress-label">Analysis</div>
+        </div>
+        <div class="progress-connector"></div>
+        <div class="progress-step active" data-phase="funding">
+          <div class="progress-marker">2</div>
+          <div class="progress-label">Funding</div>
+        </div>
+        <div class="progress-connector"></div>
+        <div class="progress-step" data-phase="negotiation">
+          <div class="progress-marker">3</div>
+          <div class="progress-label">Negotiation</div>
+        </div>
+        <div class="progress-connector"></div>
+        <div class="progress-step" data-phase="outcome">
+          <div class="progress-marker">4</div>
+          <div class="progress-label">Outcome</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="next-phase">Next Phase</button>
+    </div>
+    
+    <div class="phase-timer-container">
+      <!-- Phase timer component will be rendered here -->
+    </div>
+  </div>
+</div> 

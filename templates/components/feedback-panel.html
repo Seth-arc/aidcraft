@@ -1,0 +1,130 @@
+<div class="feedback-panel" id="feedback-panel">
+  <div class="feedback-panel-header">
+    <h2 class="feedback-panel-title">Provide Feedback</h2>
+    <button class="feedback-close-btn" id="feedback-close-btn" aria-label="Close">&times;</button>
+  </div>
+  
+  <div class="feedback-panel-body">
+    <div class="feedback-tabs">
+      <button class="feedback-tab active" data-tab="phase">Phase Feedback</button>
+      <button class="feedback-tab" data-tab="decision">Decision Feedback</button>
+      <button class="feedback-tab" data-tab="simulation">Simulation Feedback</button>
+    </div>
+    
+    <div class="feedback-tab-content">
+      <!-- Phase Feedback Tab -->
+      <div class="feedback-content active" id="phase-feedback">
+        <div class="feedback-section">
+          <h3>Phase Rating</h3>
+          <p>How would you rate your experience in this phase?</p>
+          <div class="rating-container">
+            <div class="rating-stars">
+              <input type="radio" id="phase-rating-5" name="phase-rating" value="5">
+              <label for="phase-rating-5">★</label>
+              <input type="radio" id="phase-rating-4" name="phase-rating" value="4">
+              <label for="phase-rating-4">★</label>
+              <input type="radio" id="phase-rating-3" name="phase-rating" value="3">
+              <label for="phase-rating-3">★</label>
+              <input type="radio" id="phase-rating-2" name="phase-rating" value="2">
+              <label for="phase-rating-2">★</label>
+              <input type="radio" id="phase-rating-1" name="phase-rating" value="1">
+              <label for="phase-rating-1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>What worked well in this phase?</h3>
+          <textarea id="phase-positives" class="feedback-textarea" rows="3" placeholder="Share your thoughts..."></textarea>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>What could be improved?</h3>
+          <textarea id="phase-improvements" class="feedback-textarea" rows="3" placeholder="Share your suggestions..."></textarea>
+        </div>
+      </div>
+      
+      <!-- Decision Feedback Tab -->
+      <div class="feedback-content" id="decision-feedback">
+        <div class="feedback-section">
+          <h3>Select Decision</h3>
+          <select id="decision-selector" class="feedback-select">
+            <option value="">-- Select a decision --</option>
+            <!-- Decisions will be dynamically populated here -->
+          </select>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>Satisfaction with Outcome</h3>
+          <div class="rating-container">
+            <div class="rating-stars">
+              <input type="radio" id="decision-rating-5" name="decision-rating" value="5">
+              <label for="decision-rating-5">★</label>
+              <input type="radio" id="decision-rating-4" name="decision-rating" value="4">
+              <label for="decision-rating-4">★</label>
+              <input type="radio" id="decision-rating-3" name="decision-rating" value="3">
+              <label for="decision-rating-3">★</label>
+              <input type="radio" id="decision-rating-2" name="decision-rating" value="2">
+              <label for="decision-rating-2">★</label>
+              <input type="radio" id="decision-rating-1" name="decision-rating" value="1">
+              <label for="decision-rating-1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>Comments</h3>
+          <textarea id="decision-comments" class="feedback-textarea" rows="3" placeholder="Share your thoughts about this decision..."></textarea>
+        </div>
+      </div>
+      
+      <!-- Simulation Feedback Tab -->
+      <div class="feedback-content" id="simulation-feedback">
+        <div class="feedback-section">
+          <h3>Overall Simulation Rating</h3>
+          <div class="rating-container">
+            <div class="rating-stars">
+              <input type="radio" id="simulation-rating-5" name="simulation-rating" value="5">
+              <label for="simulation-rating-5">★</label>
+              <input type="radio" id="simulation-rating-4" name="simulation-rating" value="4">
+              <label for="simulation-rating-4">★</label>
+              <input type="radio" id="simulation-rating-3" name="simulation-rating" value="3">
+              <label for="simulation-rating-3">★</label>
+              <input type="radio" id="simulation-rating-2" name="simulation-rating" value="2">
+              <label for="simulation-rating-2">★</label>
+              <input type="radio" id="simulation-rating-1" name="simulation-rating" value="1">
+              <label for="simulation-rating-1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>Most Valuable Aspect</h3>
+          <textarea id="simulation-valuable" class="feedback-textarea" rows="3" placeholder="What was most valuable about this simulation?"></textarea>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>Learning Outcome</h3>
+          <p>How has this simulation affected your understanding of hidden debt?</p>
+          <select id="learning-outcome" class="feedback-select">
+            <option value="">-- Please select --</option>
+            <option value="significantly-improved">Significantly improved my understanding</option>
+            <option value="somewhat-improved">Somewhat improved my understanding</option>
+            <option value="no-change">No significant change in understanding</option>
+            <option value="confused">Made me more confused</option>
+          </select>
+        </div>
+        
+        <div class="feedback-section">
+          <h3>Additional Comments</h3>
+          <textarea id="simulation-comments" class="feedback-textarea" rows="3" placeholder="Any other comments or suggestions..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="feedback-panel-footer">
+    <button id="feedback-submit" class="btn btn-primary">Submit Feedback</button>
+    <button id="feedback-cancel" class="btn btn-secondary">Cancel</button>
+  </div>
+</div> 

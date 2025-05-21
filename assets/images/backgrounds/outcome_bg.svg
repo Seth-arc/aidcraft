@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#f3e5f5"/>
+  <g fill="#e1bee7" opacity="0.5">
+    <rect x="100" y="100" width="150" height="150" rx="75"/>
+    <rect x="500" y="150" width="200" height="200" rx="100"/>
+    <rect x="900" y="200" width="150" height="150" rx="75"/>
+    <rect x="300" y="400" width="180" height="180" rx="90"/>
+  </g>
+  <text x="600" y="550" font-family="Arial" font-size="24" text-anchor="middle" fill="#7b1fa2">Outcome Phase Background</text>
+</svg> 

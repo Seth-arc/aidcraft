@@ -1,0 +1,112 @@
+<div class="stakeholder-panel">
+  <div class="stakeholder-panel-header">
+    <h2 class="stakeholder-panel-title">Stakeholders</h2>
+    <div class="stakeholder-panel-controls">
+      <button class="btn btn-icon stakeholder-panel-toggle" title="Toggle view">
+        <span class="icon-grid"></span>
+      </button>
+      <button class="btn btn-icon stakeholder-filter-toggle" title="Filter stakeholders">
+        <span class="icon-filter"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="stakeholder-filter-options">
+    <div class="filter-option">
+      <label>By Type</label>
+      <select class="stakeholder-type-filter">
+        <option value="all">All Types</option>
+        <option value="government">Government</option>
+        <option value="financial">Financial</option>
+        <option value="community">Community</option>
+        <option value="international">International</option>
+      </select>
+    </div>
+    <div class="filter-option">
+      <label>By Stance</label>
+      <select class="stakeholder-stance-filter">
+        <option value="all">All Stances</option>
+        <option value="supportive">Supportive</option>
+        <option value="neutral">Neutral</option>
+        <option value="opposed">Opposed</option>
+      </select>
+    </div>
+    <div class="filter-option">
+      <label>By Influence</label>
+      <select class="stakeholder-influence-filter">
+        <option value="all">All Levels</option>
+        <option value="high">High Influence</option>
+        <option value="medium">Medium Influence</option>
+        <option value="low">Low Influence</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="stakeholder-list-container">
+    <!-- Stakeholder list will be dynamically generated here -->
+  </div>
+
+  <div class="stakeholder-details-container">
+    <!-- Selected stakeholder details will be shown here -->
+  </div>
+
+  <template id="stakeholder-list-item-template">
+    <div class="stakeholder-list-item" data-stakeholder-id="">
+      <div class="stakeholder-item-avatar">
+        <img src="" alt="Stakeholder">
+      </div>
+      <div class="stakeholder-item-info">
+        <div class="stakeholder-item-name"></div>
+        <div class="stakeholder-item-role"></div>
+      </div>
+      <div class="stakeholder-item-stance">
+        <span class="stance-indicator"></span>
+      </div>
+    </div>
+  </template>
+
+  <template id="stakeholder-details-template">
+    <div class="stakeholder-details">
+      <div class="stakeholder-details-header">
+        <div class="stakeholder-details-avatar">
+          <img src="" alt="Stakeholder">
+        </div>
+        <div class="stakeholder-details-title">
+          <h3 class="stakeholder-details-name"></h3>
+          <div class="stakeholder-details-role"></div>
+          <div class="stakeholder-details-stance"></div>
+        </div>
+      </div>
+      
+      <div class="stakeholder-details-body">
+        <div class="stakeholder-details-section">
+          <h4>Description</h4>
+          <p class="stakeholder-details-description"></p>
+        </div>
+        
+        <div class="stakeholder-details-section">
+          <h4>Interests</h4>
+          <ul class="stakeholder-details-interests"></ul>
+        </div>
+        
+        <div class="stakeholder-details-section">
+          <h4>Influence</h4>
+          <div class="stakeholder-details-influence">
+            <div class="influence-level"></div>
+            <div class="influence-description"></div>
+          </div>
+        </div>
+        
+        <div class="stakeholder-details-section">
+          <h4>Key Relationships</h4>
+          <div class="stakeholder-details-relationships"></div>
+        </div>
+      </div>
+      
+      <div class="stakeholder-details-actions">
+        <button class="btn btn-primary stakeholder-engage-btn">Engage</button>
+        <button class="btn btn-secondary stakeholder-analyze-btn">Analyze</button>
+      </div>
+    </div>
+  </template>
+</div> 
